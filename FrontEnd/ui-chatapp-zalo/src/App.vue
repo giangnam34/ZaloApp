@@ -1,18 +1,20 @@
 <template >
   <!-- <SidebarNav></SidebarNav> -->
   <!-- <HomeChat></HomeChat> -->
-  <ContactNav></ContactNav>
-  <!-- <FriendList></FriendList> -->
+  <!-- <ContactNav></ContactNav> -->
+  <ToDo></ToDo>
+  <FriendList></FriendList>
   <!-- <GroupList></GroupList> -->
-  <InvitationFriendManage></InvitationFriendManage>
+  <!-- <InvitationFriendManage></InvitationFriendManage> -->
 </template>
 
 <script>
 // import SidebarNav from './components/SidebarNav.vue';
-import ContactNav from './components/ContactNav.vue';
-// import FriendList from './components/FriendList.vue';
+// import ContactNav from './components/ContactNav.vue';
+import FriendList from './components/FriendList.vue';
 // import GroupList from './components/GroupList.vue';
-import InvitationFriendManage from './components/InvitationFriendManage.vue';
+// import InvitationFriendManage from './components/InvitationFriendManage.vue';
+import ToDo from './components/ToDo.vue';
 // import HomeChat from './components/HomeChat.vue';
 
 export default {
@@ -20,10 +22,11 @@ export default {
   components: {
     // SidebarNav,
     // HomeChat
-    ContactNav,
-    InvitationFriendManage
+    // ContactNav,
+    // InvitationFriendManage
     // GroupList
-    // FriendList
+    ToDo,
+    FriendList
   }
 }
 </script>

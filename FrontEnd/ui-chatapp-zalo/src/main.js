@@ -11,12 +11,12 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 // /* import specific icons */
-import { faUserSecret, faCommentDots, faCloud, faToolbox, faGear, faMagnifyingGlass, faEllipsis, faUserPlus, faUsers, faCaretDown, faUserGroup, faUsersLine, faEnvelopeOpen, faSort, faFilter, faChevronDown } from '@fortawesome/free-solid-svg-icons'
+import { faUserSecret, faCommentDots, faCloud, faToolbox, faGear, faMagnifyingGlass, faEllipsis, faUserPlus, faUsers, faCaretDown, faUserGroup, faUsersLine, faEnvelopeOpen, faSort, faFilter, faChevronDown, faPlus, faChartSimple } from '@fortawesome/free-solid-svg-icons'
 
 import { faAddressBook, faSquareCheck } from '@fortawesome/free-regular-svg-icons'
 
 // /* add icons to the library */
-library.add(faUserSecret, faCommentDots, faAddressBook, faToolbox, faGear, faCloud, faMagnifyingGlass, faSquareCheck, faUserPlus, faUsers, faCaretDown, faEllipsis, faUserGroup, faUsersLine, faEnvelopeOpen, faSort, faFilter, faChevronDown)
+library.add(faUserSecret, faCommentDots, faAddressBook, faToolbox, faGear, faCloud, faMagnifyingGlass, faSquareCheck, faUserPlus, faUsers, faCaretDown, faEllipsis, faUserGroup, faUsersLine, faEnvelopeOpen, faSort, faFilter, faChevronDown, faPlus, faChartSimple)
 
 createApp(App)
     .component('font-awesome-icon', FontAwesomeIcon)
