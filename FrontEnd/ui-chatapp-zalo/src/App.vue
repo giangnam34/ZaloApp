@@ -1,38 +1,29 @@
-<template >
-  <!-- <SidebarNav></SidebarNav> -->
-  <!-- <HomeChat></HomeChat> -->
-  <!-- <ContactNav></ContactNav> -->
-  <ToDo></ToDo>
-  <FriendList></FriendList>
-  <!-- <GroupList></GroupList> -->
-  <!-- <InvitationFriendManage></InvitationFriendManage> -->
+<template>
+  <div id="app">
+    <ContactNav></ContactNav>
+    <router-view></router-view>
+  </div>
 </template>
 
 <script>
-// import SidebarNav from './components/SidebarNav.vue';
-// import ContactNav from './components/ContactNav.vue';
-import FriendList from './components/FriendList.vue';
-// import GroupList from './components/GroupList.vue';
-// import InvitationFriendManage from './components/InvitationFriendManage.vue';
-import ToDo from './components/ToDo.vue';
-// import HomeChat from './components/HomeChat.vue';
+import ContactNav from './components/ContactNav.vue';
+import router from './router';
 
 export default {
   name: 'App',
+  created() {
+    this.$router.push('/friend-list');
+  },
   components: {
-    // SidebarNav,
-    // HomeChat
-    // ContactNav,
-    // InvitationFriendManage
-    // GroupList
-    ToDo,
-    FriendList
-  }
+    ContactNav
+  },
+  router
 }
 </script>
 
 <style>
 #app {
+  width: 100%;
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -40,6 +31,7 @@ export default {
   display: flex;
   height: 100vh;
 }
+
 * {
   margin: 0;
   padding: 0;

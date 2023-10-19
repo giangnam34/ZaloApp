@@ -12,7 +12,8 @@
             <div class="cart-list">
                 <div class="title" style="height: 64px; width: 100%;">Lời mời kết bạn (2)</div>
                 <div class="list">
-                    <div class="item-list">
+                    <div class="item-list" :class="{ 'hovered': hoveredItem === '1' }" @mouseenter="(hoveredItem = '1')"
+                        @mouseleave="hoveredItem = ''">
                         <div class="friend-info">
                             <div class="avatar-container">
                                 <div class="avatar-wrapper">
@@ -40,7 +41,8 @@
                         </div>
                     </div>
                     <hr style="border: none; border-bottom: 1px solid #ccc; margin-left: 78px;">
-                    <div class="item-list">
+                    <div class="item-list" :class="{ 'hovered': hoveredItem === '2' }" @mouseenter="(hoveredItem = '2')"
+                        @mouseleave="hoveredItem = ''">
                         <div class="friend-info">
                             <div class="avatar-container">
                                 <div class="avatar-wrapper">
@@ -72,7 +74,8 @@
             <div class="cart-list">
                 <div class="title" style="height: 64px; width: 100%;">Lời mời đã gửi (2)</div>
                 <div class="list">
-                    <div class="item-list">
+                    <div class="item-list" :class="{ 'hovered': hoveredItem === '3' }" @mouseenter="(hoveredItem = '3')"
+                        @mouseleave="hoveredItem = ''">
                         <div class="friend-info">
                             <div class="avatar-container">
                                 <div class="avatar-wrapper">
@@ -96,7 +99,8 @@
                         </div>
                     </div>
                     <hr style="border: none; border-bottom: 1px solid #ccc; margin-left: 78px;">
-                    <div class="item-list">
+                    <div class="item-list" :class="{ 'hovered': hoveredItem === '4' }" @mouseenter="(hoveredItem = '4')"
+                        @mouseleave="hoveredItem = ''">
                         <div class="friend-info">
                             <div class="avatar-container">
                                 <div class="avatar-wrapper">
@@ -129,7 +133,8 @@
                     </a>
                 </div>
                 <div class="list">
-                    <div class="item-list">
+                    <div class="item-list" :class="{ 'hovered': hoveredItem === '5' }" @mouseenter="(hoveredItem = '5')"
+                        @mouseleave="hoveredItem = ''">
                         <div class="friend-info">
                             <div class="avatar-container">
                                 <div class="avatar-wrapper">
@@ -157,7 +162,8 @@
                         </div>
                     </div>
                     <hr style="border: none; border-bottom: 1px solid #ccc; margin-left: 78px;">
-                    <div class="item-list">
+                    <div class="item-list" :class="{ 'hovered': hoveredItem === '6' }" @mouseenter="(hoveredItem = '6')"
+                        @mouseleave="hoveredItem = ''">
                         <div class="friend-info">
                             <div class="avatar-container">
                                 <div class="avatar-wrapper">
@@ -192,7 +198,12 @@
   
 <script>
 export default {
-    name: 'FriendList'
+    data() {
+        return {
+            hoveredItem: '',
+        };
+    },
+    name: 'InvitationFriendManage'
 }
 </script>
   
@@ -411,6 +422,21 @@ export default {
         border-radius: 10px;
         overflow: hidden;
         /* Ensures border radius is applied */
+    }
+
+    .hoveredFilter {
+        background-color: #d6dbe1;
+    }
+
+    .hovered {
+        cursor: pointer;
+        background-color: #f3f5f6;
+    }
+
+    .selected {
+        color: #005ae0;
+        background: #e5efff;
+        border: #e5efff;
     }
 }
 </style>

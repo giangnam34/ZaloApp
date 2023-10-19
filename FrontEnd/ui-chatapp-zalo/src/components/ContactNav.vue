@@ -57,7 +57,10 @@
             </div>
             <div id="menu-friend">
                 <div class="menu-contact">
-                    <div class="menu-item selected">
+                    <div class="menu-item"
+                        :class="{ 'selected': selectedMenuItem === 'friends', 'hovered': hoveredItem === 'friends', 'hovering': selectedMenuItem === 'friends' }"
+                        @mouseenter="!isSelected('friends') && (hoveredItem = 'friends')" @mouseleave="hoveredItem = ''"
+                        @click="goToFriendList('friends')">
                         <a id="user-group-icon">
                             <font-awesome-icon icon="fa-solid fa-user-group" />
                         </a>
@@ -65,7 +68,10 @@
                             <span>Danh sách bạn bè</span>
                         </p>
                     </div>
-                    <div class="menu-item">
+                    <div class="menu-item"
+                        :class="{ 'selected': selectedMenuItem === 'groups', 'hovered': hoveredItem === 'groups', 'hovering': selectedMenuItem === 'groups' }"
+                        @mouseenter="!isSelected('groups') && (hoveredItem = 'groups')" @mouseleave="hoveredItem = ''"
+                        @click="goToGroupList('groups')">
                         <a id="group-list-icon">
                             <font-awesome-icon icon="fa-solid fa-users-line" />
                         </a>
@@ -73,7 +79,10 @@
                             <span>Danh sách nhóm</span>
                         </p>
                     </div>
-                    <div class="menu-item">
+                    <div class="menu-item"
+                        :class="{ 'selected': selectedMenuItem === 'friendRequests', 'hovered': hoveredItem === 'friendRequests', 'hovering': selectedMenuItem === 'friendRequests' }"
+                        @mouseenter="!isSelected('friendRequests') && (hoveredItem = 'friendRequests')"
+                        @mouseleave="hoveredItem = ''" @click="goToInvitationFriendManage('friendRequests')">
                         <a id="request-list-icon">
                             <font-awesome-icon icon="fa-solid fa-envelope-open" />
                         </a>
@@ -89,6 +98,32 @@
   
 <script>
 export default {
+    data() {
+        return {
+            selectedMenuItem: 'friends',
+            hoveredItem: '',
+        };
+    },
+    methods: {
+        selectMenuItem(item) {
+            this.selectedMenuItem = item;
+        },
+        isSelected(item) {
+            return this.selectedMenuItem === item;
+        },
+        goToFriendList(item) {
+            this.selectMenuItem(item);
+            this.$router.push('/friend-list');
+        },
+        goToGroupList(item) {
+            this.selectMenuItem(item);
+            this.$router.push('/group-list');
+        },
+        goToInvitationFriendManage(item) {
+            this.selectMenuItem(item);
+            this.$router.push('/invitation-friend-manage');
+        }
+    },
     name: 'ContactNav'
 }
 </script>
@@ -161,7 +196,8 @@ export default {
                     text-align: center;
                 }
             }
-            .nav__tabs_contacts{
+
+            .nav__tabs_contacts {
                 background-color: rgb(22, 119, 193);
             }
         }
@@ -248,7 +284,19 @@ export default {
                 font-weight: bold;
             }
 
-            .selected{
+            .menu-item {
+                cursor: pointer;
+            }
+
+            .selected {
+                background-color: rgb(197, 222, 241);
+            }
+
+            .hovered {
+                background-color: #f3f5f6;
+            }
+
+            .hovering {
                 background-color: rgb(197, 222, 241);
             }
         }
