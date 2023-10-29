@@ -10,7 +10,7 @@
         </div>
         <div class="wrapper">
             <div class="cart-list">
-                <div class="title" style="height: 64px; width: 100%;">Bạn bè (6)</div>
+                <div class="title" style="height: 64px; width: 100%;">Bạn bè ({{ friends.length }})</div>
                 <div class="filter-wrapper">
                     <div class="search-container">
                         <a id="search-icon">
@@ -107,132 +107,68 @@
                 </div>
                 <div class="list">
                     <span style="font-weight: bold; margin-left: 20px;" class="contact-item">T</span>
-                    <div style="display: flex; align-items: center; justify-content: space-between;"
-                        :class="{ 'hovered': hoveredItem === '1' }" @mouseenter="(hoveredItem = '1')"
-                        @mouseleave="hoveredItem = ''">
-                        <div class="friend-info">
-                            <div class="avatar-container">
-                                <div class="avatar-wrapper">
-                                    <img src="https://i.imgur.com/gEKsypv.jpg" class="avatar">
+                    <div class="loop" v-for="friend in friends" :key="friend.id">
+                        <div style="display: flex; align-items: center; justify-content: space-between;"
+                            :class="{ 'hovered': hoveredItem === friend.id }" @mouseenter="(hoveredItem = friend.id)"
+                            @mouseleave="hoveredItem = ''">
+                            <div class="friend-info">
+                                <div class="avatar-container">
+                                    <div class="avatar-wrapper">
+                                        <img :src="friend.img" class="avatar">
+                                    </div>
+                                </div>
+                                <div class="detail">
+                                    <span>{{ friend.name }}</span>
                                 </div>
                             </div>
-                            <div class="detail">
-                                <span>Thanh Thoại</span>
-                            </div>
-                        </div>
-                        <div class="action">
-                            <!-- Các nút hoạt động -->
-                            <a id="ellipsis-icon">
-                                <font-awesome-icon icon="fa-solid fa-ellipsis" />
-                            </a>
-                        </div>
-                    </div>
-                    <hr style="border: none; border-bottom: 1px solid #ccc; margin-left: 78px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between;"
-                        :class="{ 'hovered': hoveredItem === '2' }" @mouseenter="(hoveredItem = '2')"
-                        @mouseleave="hoveredItem = ''">
-                        <div class="friend-info">
-                            <div class="avatar-container">
-                                <div class="avatar-wrapper">
-                                    <img src="https://i.imgur.com/gEKsypv.jpg" class="avatar">
+                            <div class="action">
+                                <div class="popover-action-container" @blur="hidePopover" tabindex="0">
+                                    <a id="ellipsis-icon" @click="(event) => handleClickAction(friend.id, event)">
+                                        <font-awesome-icon icon="fa-solid fa-ellipsis" />
+                                    </a>
+                                    <div class="popoverAction" v-show="friend.id === selectedItem"
+                                        :style="{ right: popoverRight, top: popoverTop }">
+                                        <div class="popover-body">
+                                            <div class="popover-item" :class="{ 'hoveredFilter': hoveredItem === 'info' }"
+                                                @mouseenter="(hoveredItem = 'info')" @mouseleave="hoveredItem = ''">
+                                                <div>
+                                                    Xem thông tin
+                                                </div>
+                                            </div>
+                                            <div class="separator"></div>
+                                            <div class="popover-item" :class="{ 'hoveredFilter': hoveredItem === 'type' }"
+                                                @mouseenter="(hoveredItem = 'type')" @mouseleave="hoveredItem = ''">
+                                                <div>
+                                                    Phân loại
+                                                </div>
+                                            </div>
+                                            <div class="popover-item" :class="{ 'hoveredFilter': hoveredItem === 'rename' }"
+                                                @mouseenter="(hoveredItem = 'rename')" @mouseleave="hoveredItem = ''">
+                                                <div>
+                                                    Đặt tên ghi nhớ
+                                                </div>
+                                            </div>
+                                            <div class="separator"></div>
+                                            <div class="popover-item" :class="{ 'hoveredFilter': hoveredItem === 'block' }"
+                                                @mouseenter="(hoveredItem = 'block')" @mouseleave="hoveredItem = ''">
+                                                <div>
+                                                    Chặn
+                                                </div>
+                                            </div>
+                                            <div class="separator"></div>
+                                            <div class="popover-item" style="color: red"
+                                                :class="{ 'hoveredFilter': hoveredItem === 'delete' }"
+                                                @mouseenter="(hoveredItem = 'delete')" @mouseleave="hoveredItem = ''"
+                                                @click="deleteFriend(friend.id)">
+                                                Xóa bạn
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="detail">
-                                <span>Thanh Thoại</span>
-                            </div>
                         </div>
-                        <div class="action">
-                            <!-- Các nút hoạt động -->
-                            <a id="ellipsis-icon">
-                                <font-awesome-icon icon="fa-solid fa-ellipsis" />
-                            </a>
-                        </div>
+                        <hr style="border: none; border-bottom: 1px solid #ccc; margin-left: 78px;">
                     </div>
-                    <hr style="border: none; border-bottom: 1px solid #ccc; margin-left: 78px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between;"
-                        :class="{ 'hovered': hoveredItem === '3' }" @mouseenter="(hoveredItem = '3')"
-                        @mouseleave="hoveredItem = ''">
-                        <div class="friend-info">
-                            <div class="avatar-container">
-                                <div class="avatar-wrapper">
-                                    <img src="https://i.imgur.com/gEKsypv.jpg" class="avatar">
-                                </div>
-                            </div>
-                            <div class="detail">
-                                <span>Thanh Thoại</span>
-                            </div>
-                        </div>
-                        <div class="action">
-                            <!-- Các nút hoạt động -->
-                            <a id="ellipsis-icon">
-                                <font-awesome-icon icon="fa-solid fa-ellipsis" />
-                            </a>
-                        </div>
-                    </div>
-                    <hr style="border: none; border-bottom: 1px solid #ccc; margin-left: 78px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between;"
-                        :class="{ 'hovered': hoveredItem === '4' }" @mouseenter="(hoveredItem = '4')"
-                        @mouseleave="hoveredItem = ''">
-                        <div class="friend-info">
-                            <div class="avatar-container">
-                                <div class="avatar-wrapper">
-                                    <img src="https://i.imgur.com/gEKsypv.jpg" class="avatar">
-                                </div>
-                            </div>
-                            <div class="detail">
-                                <span>Thanh Thoại</span>
-                            </div>
-                        </div>
-                        <div class="action">
-                            <!-- Các nút hoạt động -->
-                            <a id="ellipsis-icon">
-                                <font-awesome-icon icon="fa-solid fa-ellipsis" />
-                            </a>
-                        </div>
-                    </div>
-                    <hr style="border: none; border-bottom: 1px solid #ccc; margin-left: 78px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between;"
-                        :class="{ 'hovered': hoveredItem === '5' }" @mouseenter="(hoveredItem = '5')"
-                        @mouseleave="hoveredItem = ''">
-                        <div class="friend-info">
-                            <div class="avatar-container">
-                                <div class="avatar-wrapper">
-                                    <img src="https://i.imgur.com/gEKsypv.jpg" class="avatar">
-                                </div>
-                            </div>
-                            <div class="detail">
-                                <span>Thanh Thoại</span>
-                            </div>
-                        </div>
-                        <div class="action">
-                            <!-- Các nút hoạt động -->
-                            <a id="ellipsis-icon">
-                                <font-awesome-icon icon="fa-solid fa-ellipsis" />
-                            </a>
-                        </div>
-                    </div>
-                    <hr style="border: none; border-bottom: 1px solid #ccc; margin-left: 78px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between;"
-                        :class="{ 'hovered': hoveredItem === '6' }" @mouseenter="(hoveredItem = '6')"
-                        @mouseleave="hoveredItem = ''">
-                        <div class="friend-info">
-                            <div class="avatar-container">
-                                <div class="avatar-wrapper">
-                                    <img src="https://i.imgur.com/gEKsypv.jpg" class="avatar">
-                                </div>
-                            </div>
-                            <div class="detail">
-                                <span>Thanh Thoại</span>
-                            </div>
-                        </div>
-                        <div class="action">
-                            <!-- Các nút hoạt động -->
-                            <a id="ellipsis-icon">
-                                <font-awesome-icon icon="fa-solid fa-ellipsis" />
-                            </a>
-                        </div>
-                    </div>
-                    <hr style="border: none; border-bottom: 1px solid #ccc; margin-left: 78px;">
                 </div>
             </div>
         </div>
@@ -248,7 +184,20 @@ export default {
             typeOfFilter: 'Tất cả',
             hoveredItem: '',
             chosenFilter: 'all',
-            chosenType: 'ascending'
+            chosenType: 'ascending',
+            popoverRight: 0,
+            popoverTop: 0,
+            friends: [
+                { id: 1, name: "Friend 1", img: "https://i.imgur.com/gEKsypv.jpg" },
+                { id: 2, name: "Friend 2", img: "https://i.imgur.com/gEKsypv.jpg" },
+                { id: 3, name: "Friend 3", img: "https://i.imgur.com/gEKsypv.jpg" },
+                { id: 4, name: "Friend 4", img: "https://i.imgur.com/gEKsypv.jpg" },
+                { id: 5, name: "Friend 5", img: "https://i.imgur.com/gEKsypv.jpg" },
+                { id: 6, name: "Friend 6", img: "https://i.imgur.com/gEKsypv.jpg" },
+                { id: 7, name: "Friend 7", img: "https://i.imgur.com/gEKsypv.jpg" },
+                { id: 8, name: "Friend 8", img: "https://i.imgur.com/gEKsypv.jpg" },
+                { id: 9, name: "Friend 9", img: "https://i.imgur.com/gEKsypv.jpg" }
+            ]
         };
     },
     methods: {
@@ -283,6 +232,22 @@ export default {
                 this.typeOfFilter = 'Phân loại';
             }
         },
+        handleClickAction(id, event) {
+            this.selectedItem = id;
+            const rect = event.target.getBoundingClientRect();
+            const x = rect.left;
+            const y = rect.top;
+            this.popoverRight = x - 1216 + 'px';
+            this.popoverTop = y - 210 + 'px';
+            event.stopPropagation();
+        },
+        deleteFriend(id) {
+            console.log(id);
+            const index = this.friends.findIndex(friend => friend.id === id);
+            if (index !== -1) {
+                this.friends.splice(index, 1);
+            }
+        },
     },
     name: 'FriendList'
 }
@@ -293,9 +258,10 @@ export default {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    width: 73%;
+    width: 100%;
 
     .header {
+        flex: 0 0 auto;
         height: 64px;
         width: 100%;
         border-top: 1px solid rgb(160, 160, 160);
@@ -321,6 +287,33 @@ export default {
 
     .wrapper {
         background-color: #f4f4f4;
+        flex: 1 1 auto;
+        height: 1200px;
+        overflow: scroll;
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            /* Độ rộng của thanh cuộn */
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #ccc;
+            /* Màu nền của thanh cuộn */
+            border-radius: 4px;
+            /* Bo góc của thanh cuộn */
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #999;
+            /* Màu nền khi di chuột qua thanh cuộn */
+        }
+
+        ::-webkit-scrollbar-track {
+            background-color: #f1f1f1;
+            /* Màu nền của phần bên trong thanh cuộn */
+            border-radius: 4px;
+            /* Bo góc của phần bên trong thanh cuộn */
+        }
     }
 
     .cart-list {
@@ -478,6 +471,43 @@ export default {
 
     .action {
         margin-right: 20px;
+
+        .popover-action-container {
+
+
+            .popoverAction {
+                display: inline-block;
+                position: absolute;
+                border-radius: 4px;
+                z-index: 9999;
+                box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+                border: 1px solid #d6dbe1;
+
+
+                .popover-body {
+                    position: absolute;
+                    background-color: #fff;
+                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+                    height: 210px;
+                    width: 180px;
+                    justify-content: space-between;
+
+                    .separator {
+                        height: 1px;
+                        background: #d6dbe1;
+                        margin: 4px;
+                    }
+
+                    .popover-item {
+                        height: 36px;
+                        padding-left: 14px;
+                        padding-top: 6px;
+                        padding-bottom: 2px;
+                        cursor: pointer;
+                    }
+                }
+            }
+        }
     }
 
     #down-icon {

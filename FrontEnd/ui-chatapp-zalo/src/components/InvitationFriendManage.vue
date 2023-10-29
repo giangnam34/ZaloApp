@@ -212,7 +212,7 @@ export default {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    width: 73%;
+    width: 100%;
 
     .header {
         height: 64px;

@@ -60,7 +60,7 @@
                     <div class="menu-item"
                         :class="{ 'selected': selectedMenuItem === 'friends', 'hovered': hoveredItem === 'friends', 'hovering': selectedMenuItem === 'friends' }"
                         @mouseenter="!isSelected('friends') && (hoveredItem = 'friends')" @mouseleave="hoveredItem = ''"
-                        @click="goToFriendList('friends')">
+                        @click="selectMenuItem('friends')">
                         <a id="user-group-icon">
                             <font-awesome-icon icon="fa-solid fa-user-group" />
                         </a>
@@ -71,7 +71,7 @@
                     <div class="menu-item"
                         :class="{ 'selected': selectedMenuItem === 'groups', 'hovered': hoveredItem === 'groups', 'hovering': selectedMenuItem === 'groups' }"
                         @mouseenter="!isSelected('groups') && (hoveredItem = 'groups')" @mouseleave="hoveredItem = ''"
-                        @click="goToGroupList('groups')">
+                        @click="selectMenuItem('groups')">
                         <a id="group-list-icon">
                             <font-awesome-icon icon="fa-solid fa-users-line" />
                         </a>
@@ -82,7 +82,7 @@
                     <div class="menu-item"
                         :class="{ 'selected': selectedMenuItem === 'friendRequests', 'hovered': hoveredItem === 'friendRequests', 'hovering': selectedMenuItem === 'friendRequests' }"
                         @mouseenter="!isSelected('friendRequests') && (hoveredItem = 'friendRequests')"
-                        @mouseleave="hoveredItem = ''" @click="goToInvitationFriendManage('friendRequests')">
+                        @mouseleave="hoveredItem = ''" @click="selectMenuItem('friendRequests')">
                         <a id="request-list-icon">
                             <font-awesome-icon icon="fa-solid fa-envelope-open" />
                         </a>
@@ -94,10 +94,27 @@
             </div>
         </div>
     </div>
+    <div class="set-width" v-if="selectedMenuItem === 'friends'">
+        <FriendList></FriendList>
+    </div>
+    <div class="set-width" v-if="selectedMenuItem === 'groups'">
+        <GroupList></GroupList>
+    </div>
+    <div class="set-width" v-if="selectedMenuItem === 'friendRequests'">
+        <InvitationFriendManage></InvitationFriendManage>
+    </div>
 </template>
   
 <script>
+import FriendList from './FriendList.vue';
+import GroupList from './GroupList.vue';
+import InvitationFriendManage from './InvitationFriendManage.vue';
 export default {
+    components: {
+        FriendList,
+        GroupList,
+        InvitationFriendManage
+    },
     data() {
         return {
             selectedMenuItem: 'friends',
@@ -110,18 +127,6 @@ export default {
         },
         isSelected(item) {
             return this.selectedMenuItem === item;
-        },
-        goToFriendList(item) {
-            this.selectMenuItem(item);
-            this.$router.push('/friend-list');
-        },
-        goToGroupList(item) {
-            this.selectMenuItem(item);
-            this.$router.push('/group-list');
-        },
-        goToInvitationFriendManage(item) {
-            this.selectMenuItem(item);
-            this.$router.push('/invitation-friend-manage');
         }
     },
     name: 'ContactNav'
@@ -137,7 +142,7 @@ export default {
 
 #sidebarNav {
     height: 100vh;
-    width: 408px;
+    width: 408px;   
     border-right: 1px solid rgb(160, 160, 160);
     display: inline-block;
 
@@ -148,7 +153,7 @@ export default {
         height: 100%;
 
         .nav__tabs__zalo {
-            height: 100px;
+            height: 12%;
             justify-content: center;
             padding-top: 32px;
             box-sizing: border-box;
@@ -175,6 +180,8 @@ export default {
 
         .nav__tabs_top,
         .nav__tabs_bottom {
+
+            height: 30%;
 
             .nav__tabs_message,
             .nav__tabs_contacts,
@@ -203,7 +210,7 @@ export default {
         }
 
         .nav__tabs_middle {
-            height: 270px;
+            height: 32%;
         }
 
     }
@@ -217,7 +224,7 @@ export default {
         //background-color: black;
 
         #search-content {
-            height: 64px;
+            height: 8.45%;
             width: 100%;
             padding: 0 16px;
             display: flex;
@@ -253,7 +260,7 @@ export default {
         }
 
         #menu-friend {
-            height: 100%;
+            height: 91.55%;
             width: 100%;
             max-width: 100%;
             min-width: 300px;
@@ -305,5 +312,8 @@ export default {
 
     }
 
+}
+div.set-width{
+    width: 84%;
 }
 </style>

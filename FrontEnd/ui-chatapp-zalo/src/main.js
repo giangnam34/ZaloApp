@@ -14,12 +14,12 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 // import { createRouter, createWebHistory } from 'vue-router';
 
 // /* import specific icons */
-import { faUserSecret, faCommentDots, faCloud, faToolbox, faGear, faMagnifyingGlass, faEllipsis, faUserPlus, faUsers, faCaretDown, faUserGroup, faUsersLine, faEnvelopeOpen, faSort, faFilter, faChevronDown, faPlus, faChartSimple, faCheck } from '@fortawesome/free-solid-svg-icons'
+import { faUserSecret, faCommentDots, faCloud, faToolbox, faGear, faMagnifyingGlass, faEllipsis, faUserPlus, faUsers, faCaretDown, faUserGroup, faUsersLine, faEnvelopeOpen, faSort, faFilter, faChevronDown, faPlus, faChartSimple, faCheck, faPhone, faKey, faEye, faEyeSlash, faUser } from '@fortawesome/free-solid-svg-icons'
 
 import { faAddressBook, faSquareCheck } from '@fortawesome/free-regular-svg-icons'
 
 // /* add icons to the library */
-library.add(faUserSecret, faCommentDots, faAddressBook, faToolbox, faGear, faCloud, faMagnifyingGlass, faSquareCheck, faUserPlus, faUsers, faCaretDown, faEllipsis, faUserGroup, faUsersLine, faEnvelopeOpen, faSort, faFilter, faChevronDown, faPlus, faChartSimple, faCheck)
+library.add(faUserSecret, faCommentDots, faAddressBook, faToolbox, faGear, faCloud, faMagnifyingGlass, faSquareCheck, faUserPlus, faUsers, faCaretDown, faEllipsis, faUserGroup, faUsersLine, faEnvelopeOpen, faSort, faFilter, faChevronDown, faPlus, faChartSimple, faCheck, faPhone, faKey, faEye, faEyeSlash, faUser)
 
 const app = createApp(App);
 app.component('font-awesome-icon', FontAwesomeIcon);

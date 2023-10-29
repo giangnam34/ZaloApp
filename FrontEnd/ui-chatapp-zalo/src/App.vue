@@ -1,23 +1,19 @@
 <template>
   <div id="app">
-    <ContactNav></ContactNav>
-    <router-view></router-view>
+    <!-- <ContactNav></ContactNav> -->
+    <SignIn></SignIn>
   </div>
 </template>
 
 <script>
-import ContactNav from './components/ContactNav.vue';
-import router from './router';
-
+// import ContactNav from './components/ContactNav.vue';
+import SignIn from './components/SignIn.vue';
 export default {
   name: 'App',
-  created() {
-    this.$router.push('/friend-list');
-  },
   components: {
-    ContactNav
+    // ContactNav,
+    SignIn,
   },
-  router
 }
 </script>
 
