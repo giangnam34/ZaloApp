@@ -1,48 +1,5 @@
 <template>
-    <div id="sidebarNav">
-        <div id="main-tab">
-            <div class="nav__tabs__zalo web" title="Giang Nam">
-                <img src="https://s120-ava-talk.zadn.vn/3/e/6/b/1/120/8b72a04be66a9ef7009df15d86b69810.jpg" class="a-child">
-            </div>
-            <div class="nav__tabs_top">
-                <div class="nav__tabs_message" title="Tin nhắn">
-                    <a id="chat-message-icon">
-                        <font-awesome-icon icon="fa-solid fa-comment-dots" />
-                    </a>
-                </div>
-                <div class="nav__tabs_contacts" title="Danh bạ">
-                    <a id="address-icon">
-                        <font-awesome-icon icon="fa-regular fa-address-book" />
-                    </a>
-                </div>
-                <div class="nav__tabs_to-do" title="To-Do">
-                    <a id="to-do-icon">
-                        <font-awesome-icon icon="fa-regular fa-square-check" style="color: #ffffff;" /> </a>
-                </div>
-            </div>
-            <div class="nav__tabs_middle">
-
-            </div>
-            <div class="nav__tabs_bottom">
-                <div class="nav__tabs_message" title="Cloud của tôi">
-                    <a id="chat-message-icon">
-                        <font-awesome-icon icon="fa-solid fa-cloud" />
-                    </a>
-                </div>
-                <div class="nav__tabs_contacts" title="Công cụ">
-                    <a id="address-icon">
-                        <font-awesome-icon icon="fa-solid fa-toolbox" />
-                    </a>
-                </div>
-                <div class="nav__tabs_to-do" title="Cài đặt">
-                    <a id="to-do-icon">
-                        <font-awesome-icon icon="fa-solid fa-gear" />
-                    </a>
-                </div>
-
-            </div>
-        </div>
-        <div id="chat-message">
+    <div id="chat-message">
             <div class="relative">
                 <div id="search-content">
                     <font-awesome-icon icon="fa-solid fa-magnifying-glass" />
@@ -85,94 +42,22 @@
                     </div>
                 </div>
             </div>
-        </div>
     </div>
 </template>
-  
 <script>
 export default {
-    name: 'SidebarNav'
+    name: 'ChatSidebarNav'
 }
 </script>
-  
-  <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang = "scss">
-::placeholder {
-    //padding-left: 18px;
-    font-size: 14px;
-}
-
-#sidebarNav {
-    height: 100vh;
-    width: 408px;
-    border-right: 1px solid rgb(160, 160, 160);
-    display: inline-block;
-
-    #main-tab {
-        display: inline-block;
-        background-color: rgb(0, 145, 255);
-        width: 16%;
-        height: 100%;
-
-        .nav__tabs__zalo {
-            height: 100px;
-            justify-content: center;
-            padding-top: 32px;
-            box-sizing: border-box;
-
-            .a-child {
-                width: 75%;
-                height: 75%;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                background: var(--surface-background);
-                color: var(--text-secondary);
-                overflow: hidden;
-                object-fit: contain;
-                font-size: .75rem;
-                font-weight: 500;
-                line-height: 1.5;
-                border: 1px solid var(--WA100);
-                box-sizing: border-box;
-                border-radius: 50%;
-                margin-left: 7px;
-            }
-        }
-
-        .nav__tabs_top,
-        .nav__tabs_bottom {
-
-            .nav__tabs_message,
-            .nav__tabs_contacts,
-            .nav__tabs_to-do {
-                height: 64px;
-                width: 100%;
-                display: table;
-
-                #chat-message-icon,
-                #address-icon,
-                #to-do-icon {
-                    color: #fff;
-                    display: table-cell;
-                    font-size: 28px;
-                    vertical-align: middle;
-                    text-align: center;
-                }
-            }
-        }
-
-        .nav__tabs_middle {
-            height: 270px;
-        }
-
-    }
+div {
 
     #chat-message {
         display: inline-block;
-        height: 100%;
-        width: 84%;
+        height: 100vh;
+        width: 22.7%;
         vertical-align: top;
+        border-right: 1px solid rgb(160, 160, 160);
 
         //background-color: black;
 
@@ -289,7 +174,7 @@ export default {
                         display: inline-block;
                         color: #081C36;
                         font-size: 16px;
-                        
+
                     }
 
                     #chat-content {
@@ -308,7 +193,5 @@ export default {
             }
         }
     }
-
 }
 </style>
-  
