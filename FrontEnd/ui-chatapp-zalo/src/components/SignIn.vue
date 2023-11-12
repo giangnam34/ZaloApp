@@ -9,7 +9,7 @@
                         <div class="phone">
                             <span class="label-input">Số điện thoại</span>
                             <div class="phone-input">
-                                <div class="icon-phone">
+                                <div class="icon-phone">    
                                     <font-awesome-icon icon="fa-solid fa-phone" />
                                 </div>
                                 <input class="input" type="text" v-model="phoneNumber" name="phone"
