@@ -44,7 +44,7 @@
                         <div class="container-signin-button">
                             <div class="wrap-signin-button">
                                 <div class="sigin-bgbutton"></div>
-                                <button class="signin-button" :disabled="flag1 || flag2" @click="signIn">Đăng nhập</button>
+                                <button class="signin-button" @click="signIn">Đăng nhập</button>
                             </div>
                         </div>
                         <div class="signup">
@@ -99,10 +99,6 @@ export default {
             if (!isValidPhoneNumber) {
                 this.isError = true;
                 this.validationError = 'Số điện thoại không hợp lệ!';
-                this.$nextTick(() => {
-                    this.$refs.phoneInput.focus();
-                    this.$refs.phoneInput.select();
-                });
             } else {
                 this.isError = false;
                 this.validationError = '';
@@ -114,9 +110,6 @@ export default {
             if (password.length == 0) {
                 this.isError = true;
                 this.validationError = 'Không được để trống mật khẩu!';
-                this.$nextTick(() => {
-                    this.$refs.passwordInput.focus();
-                });
             } else {
                 this.isError = false;
                 this.validationError = '';
@@ -128,6 +121,12 @@ export default {
         },
         updateShowingPage(value) {
             this.showingPage = value;
+        },
+        signIn(){
+            if(this.flag1 || this.flag2){
+                this.isError = true;
+                this.validationError = "Vui lòng nhập đầy đủ số điện thoại và mật khẩu!"
+            }
         }
     }
 };

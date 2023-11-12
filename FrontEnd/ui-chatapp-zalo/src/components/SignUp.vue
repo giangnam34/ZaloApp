@@ -59,8 +59,8 @@
                     <div class="container-signup-button">
                         <div class="wrap-signup-button">
                             <div class="signup-bgbutton"></div>
-                            <button :disabled="(flag1 || flag2 || (flag3 && flag4))" class="signup-button"
-                                @click="signIn">Đăng ký</button>
+                            <button class="signup-button"
+                                @click="signUp">Đăng ký</button>
                         </div>
                     </div>
                     <div class="signin">
@@ -113,10 +113,6 @@ export default {
             if (!isValidPhoneNumber) {
                 this.isError = true;
                 this.validationError = 'Số điện thoại không hợp lệ!';
-                this.$nextTick(() => {
-                    this.$refs.phoneInput.focus();
-                    this.$refs.phoneInput.select();
-                });
             } else {
                 this.isError = false;
                 this.validationError = '';
@@ -129,9 +125,6 @@ export default {
             if (password.length == 0) {
                 this.isError = true;
                 this.validationError = 'Không được để trống mật khẩu!';
-                this.$nextTick(() => {
-                    this.$refs.passwordInput.focus();
-                });
             } else {
                 this.isError = false;
                 this.validationError = '';
@@ -151,9 +144,6 @@ export default {
             if (confirmPassword.length == 0) {
                 this.isError = true;
                 this.validationError = 'Không được để trống xác nhận mật khẩu!';
-                this.$nextTick(() => {
-                    this.$refs.passwordInput.focus();
-                });
             }
             if (!(password == confirmPassword)) {
                 this.isError = true;
@@ -172,17 +162,9 @@ export default {
             if (username.length == 0) {
                 this.isError = true;
                 this.validationError = 'Không được để trống tên người dùng!';
-                this.$nextTick(() => {
-                    this.$refs.nameInput.focus();
-                    this.$refs.nameInput.select();
-                });
             } else if (!regex.test(username)) {
                 this.isError = true;
                 this.validationError = 'Tên người dùng không hợp lệ!';
-                this.$nextTick(() => {
-                    this.$refs.nameInput.focus();
-                    this.$refs.nameInput.select();
-                });
             } else {
                 this.isError = false;
                 this.validationError = '';
@@ -191,6 +173,12 @@ export default {
         },
         showSignIn() {
             this.$emit('update:showingPage', 'signIn');
+        },
+        signUp(){
+            if(this.flag1 || this.flag2 || (this.flag3 && this.flag4)){
+                this.isError = true;
+                this.validationError = "Vui lòng nhập đầy đủ các thông tin!";
+            }
         }
     }
 };

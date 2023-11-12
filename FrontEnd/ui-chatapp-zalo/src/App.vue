@@ -1,19 +1,23 @@
 <template>
-  <SidebarNav></SidebarNav>
+  <!-- <SidebarNav></SidebarNav>
   <ChatSidebarNav></ChatSidebarNav>
-  <HomeChat></HomeChat>
+  <HomeChat></HomeChat> -->
+  <SignIn></SignIn>
+  
 </template>
 
 <script>
-import SidebarNav from './components/MainSidebarNav.vue';
-import HomeChat from './components/HomeChat.vue'
-import ChatSidebarNav from './components/ChatSidebarNav.vue';
+// import SidebarNav from './components/MainSidebarNav.vue';
+// import HomeChat from './components/HomeChat.vue'
+// import ChatSidebarNav from './components/ChatSidebarNav.vue';
+import SignIn from './components/SignIn.vue';
 export default {
   name: 'App',
   components: {
-    SidebarNav,
-    HomeChat,
-    ChatSidebarNav
+    // SidebarNav,
+    // HomeChat,
+    // ChatSidebarNav,
+    SignIn
   }
 }
 </script>
