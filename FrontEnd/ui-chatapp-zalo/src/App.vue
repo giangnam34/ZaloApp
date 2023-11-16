@@ -1,24 +1,71 @@
 <template>
-  <!-- <SidebarNav></SidebarNav>
-  <ChatSidebarNav></ChatSidebarNav>
-  <HomeChat></HomeChat> -->
-  <SignIn></SignIn>
-  
+  <div div v-if="user" class="width-100">
+    <SignIn @userLoggedIn="updateUser"></SignIn>
+  </div>
+  <div div v-if="!user" class="width-100" style="display: flex;">
+    <MainSidebarNav @pageSelected="updateChosenPage"></MainSidebarNav>
+    <div v-if="chosenPage === 1" class="width-100">
+      <ChatSidebarNav></ChatSidebarNav>
+      <HomeChat></HomeChat>
+    </div>
+    <div v-if="chosenPage === 2" class="width-100">
+      <ContactNav></ContactNav>
+    </div>
+    <div v-if="chosenPage === 3" class="width-100">
+      <ToDo></ToDo>
+    </div>
+    <div v-if="chosenPage === 4" class="width-100">
+      <ChatSidebarNav></ChatSidebarNav>
+      <HomeChat></HomeChat>
+    </div>
+    <div v-if="chosenPage === 5" class="width-100">
+      <ChatSidebarNav></ChatSidebarNav>
+      <HomeChat></HomeChat>
+    </div>
+    <div v-if="chosenPage === 6" class="width-100">
+      <ChatSidebarNav></ChatSidebarNav>
+      <HomeChat></HomeChat>
+    </div>
+  </div>
 </template>
 
 <script>
-// import SidebarNav from './components/MainSidebarNav.vue';
-// import HomeChat from './components/HomeChat.vue'
-// import ChatSidebarNav from './components/ChatSidebarNav.vue';
+import MainSidebarNav from './components/MainSidebarNav.vue';
+import HomeChat from './components/HomeChat.vue'
+import ChatSidebarNav from './components/ChatSidebarNav.vue';
+import ContactNav from './components/ContactNav.vue';
+// import FriendList from './components/FriendList.vue';
+// import GroupList from './components/GroupList.vue';
+// import InvitationFriendManage from './components/InvitationFriendManage.vue';
+import ToDo from './components/ToDo.vue';
 import SignIn from './components/SignIn.vue';
 export default {
   name: 'App',
+  data() {
+    return {
+      user: null,
+      chosenPage: 1,
+    }
+  },
   components: {
-    // SidebarNav,
-    // HomeChat,
-    // ChatSidebarNav,
-    SignIn
-  }
+    MainSidebarNav,
+    HomeChat,
+    ChatSidebarNav,
+    SignIn,
+    ContactNav,
+    // FriendList,
+    // GroupList,
+    // InvitationFriendManage,
+    ToDo
+  },
+  methods: {
+    updateUser(userData) {
+      this.user = userData; // Set user data here, or just set it to null if not available
+    },
+    updateChosenPage(page) {
+      this.chosenPage = page;
+    },
+  },
 }
 </script>
 
@@ -26,7 +73,7 @@ export default {
 #app {
   display: block;
   width: 100%;
-  font-family: 'Segoe UI',Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Segoe UI', Avenir, Helvetica, Arial, sans-serif;
   width: 100%;
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -41,5 +88,8 @@ export default {
   padding: 0;
   border: 0;
   font-size: 100%;
+}
+.width-100{
+  width: 100%;
 }
 </style>

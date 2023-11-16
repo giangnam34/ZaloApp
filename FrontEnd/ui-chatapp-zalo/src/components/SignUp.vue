@@ -59,8 +59,7 @@
                     <div class="container-signup-button">
                         <div class="wrap-signup-button">
                             <div class="signup-bgbutton"></div>
-                            <button class="signup-button"
-                                @click="signUp">Đăng ký</button>
+                            <button class="signup-button" @click="signUp">Đăng ký</button>
                         </div>
                     </div>
                     <div class="signin">
@@ -76,6 +75,9 @@
 </template>
 
 <script>
+
+import axios from 'axios';
+
 export default {
     data() {
         return {
@@ -133,7 +135,9 @@ export default {
                 this.error = false;
                 this.validationError = '';
                 this.flag3 = false;
-            }else{
+            } else {
+                this.error = true;
+                this.validationError = "Mật khẩu và xác nhận mật khẩu không khớp!";
                 this.flag3 = true;
                 this.flag4 = true;
             }
@@ -174,11 +178,23 @@ export default {
         showSignIn() {
             this.$emit('update:showingPage', 'signIn');
         },
-        signUp(){
-            if(this.flag1 || this.flag2 || (this.flag3 && this.flag4)){
+        async signUp() {
+
+            if (this.flag1 || this.flag2 || (this.flag3 && this.flag4)) {
                 this.isError = true;
                 this.validationError = "Vui lòng nhập đầy đủ các thông tin!";
             }
+
+            const response = await axios.post('v1/signup', {
+                UserName: this.username,
+                PhoneNumber: this.phoneNumber,
+                Password: this.password,
+                ReEnterPassword: this.confirmPassword
+            });
+
+            console.log(response);
+
+            this.showSignIn();
         }
     }
 };

@@ -55,7 +55,7 @@ div {
     #chat-message {
         display: inline-block;
         height: 100vh;
-        width: 22.7%;
+        width: 23%;
         vertical-align: top;
         border-right: 1px solid rgb(160, 160, 160);
 

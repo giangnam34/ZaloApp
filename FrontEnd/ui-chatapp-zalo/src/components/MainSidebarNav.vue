@@ -157,7 +157,7 @@ export default {
       name: "",
       isShowWhenClickAvatar: false,
       popUpName: "",
-      index: 0,
+      index: 1,
       isShowWhenClickTools: false,
       isShowWhenClickSetting: false,
       isShowWhenHoverData: false
@@ -196,6 +196,7 @@ export default {
       this.index = index;
       if (index === 5) this.isShowWhenClickTools = !this.isShowWhenClickTools;
       else if (index === 6) this.isShowWhenClickSetting = !this.isShowWhenClickSetting;
+      this.$emit('pageSelected', index);
     },
     handleClickOutSide(event) {
       // Lấy tham chiếu (ref) của phần tử bạn muốn kiểm tra
@@ -454,148 +455,6 @@ export default {
               vertical-align: middle;
 
             }
-          }
-        }
-      }
-    }
-  }
-
-  #chat-message {
-    display: inline-block;
-    height: 100%;
-    width: 84%;
-    vertical-align: top;
-
-    //background-color: black;
-
-    #search-content {
-      height: 64px;
-      width: 100%;
-      padding: 0 16px;
-      display: flex;
-      //background-color: black;
-
-      #contact-input-search {
-        height: 45%;
-        width: 100%;
-        margin-top: 18px;
-        border-radius: 6px;
-        background-color: #eaedf0;
-        padding-left: 18px;
-      }
-
-      #contact-input-search:focus {
-        outline-color: #80b3ff;
-        outline-width: 0.05px;
-      }
-
-      .fa-magnifying-glass {
-        position: absolute;
-        margin-left: 2px;
-        margin-top: 26px;
-        font-size: 12px;
-      }
-
-      .fa-user-plus,
-      .fa-users {
-        font-size: 14px;
-        padding-left: 10px;
-        margin-top: 26px;
-      }
-    }
-
-    #category-message {
-      padding-top: 5px;
-      border-bottom: 1px solid #d6dbe2;
-
-      #all-message,
-      #unread-message,
-      #category,
-      #more {
-        display: inline-block;
-        color: #7589a3;
-        padding-left: 16px;
-        font-family: SegoeuiPc, Segoe UI, San Francisco, Helvetica Neue,
-          Helvetica, Lucida Grande, Roboto, Ubuntu, Tahoma, Microsoft Sans Serif,
-          Arial, sans-serif;
-        font-size: 0.875rem;
-        font-weight: 500;
-        line-height: 1.5;
-      }
-
-      #category {
-        margin-left: 80px;
-      }
-
-      #more {
-        display: inline-block;
-      }
-
-      .fa-ellipsis {
-        font-size: 18px;
-        padding-top: 2px;
-      }
-    }
-
-    #list-message {
-      overflow: auto;
-      max-height: 87.5%;
-
-      .message-item {
-        height: 74px;
-        padding: 0 16px;
-
-        .nav__tabs__zalo {
-          display: inline-block;
-          height: 100%;
-          width: 50px;
-          padding-top: 12px;
-
-          .a-child {
-            width: 48px;
-            height: 48px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: var(--surface-background);
-            color: var(--text-secondary);
-            overflow: hidden;
-            object-fit: contain;
-            font-size: 0.75rem;
-            font-weight: 500;
-            line-height: 1.5;
-            border: 1px solid var(--WA100);
-            //box-sizing: border-box;
-            border-radius: 50%;
-            margin-left: 7px;
-          }
-        }
-
-        #content {
-          vertical-align: top;
-          display: inline-block;
-          padding-top: 14px;
-          padding-left: 12px;
-          height: 100%;
-          width: 78%;
-
-          #chat-name {
-            display: inline-block;
-            color: #081c36;
-            font-size: 16px;
-          }
-
-          #chat-content {
-            display: block;
-            color: #7589a3;
-            font-size: 14px;
-          }
-
-          #chat-info {
-            display: inline-block;
-            color: #7589a3;
-            font-size: 12px;
-            float: right;
           }
         }
       }

@@ -9,7 +9,7 @@
                         <div class="phone">
                             <span class="label-input">Số điện thoại</span>
                             <div class="phone-input">
-                                <div class="icon-phone">    
+                                <div class="icon-phone">
                                     <font-awesome-icon icon="fa-solid fa-phone" />
                                 </div>
                                 <input class="input" type="text" v-model="phoneNumber" name="phone"
@@ -65,6 +65,7 @@
 
 <script>
 import SignUp from './SignUp.vue';
+import axios from 'axios';
 export default {
     data() {
         return {
@@ -82,6 +83,7 @@ export default {
     components: {
         SignUp
     },
+    emits: ['userLoggedIn'],
     methods: {
         togglePasswordVisibility() {
             this.showPassword = !this.showPassword;
@@ -122,11 +124,63 @@ export default {
         updateShowingPage(value) {
             this.showingPage = value;
         },
-        signIn(){
-            if(this.flag1 || this.flag2){
+        async signIn() {
+            if (this.flag1 || this.flag2) {
                 this.isError = true;
                 this.validationError = "Vui lòng nhập đầy đủ số điện thoại và mật khẩu!"
+            } else {
+                try {
+                    const response = await axios.post('v1/login', {
+                        userName: this.phoneNumber,
+                        password: this.password
+                    });
+
+                    console.log(response);
+
+                    // Kiểm tra trạng thái phản hồi
+                    if (response.status === 200) {
+                        // Đăng nhập thành công
+                        localStorage.setItem('token', response.data.token);
+
+                        // Lấy thông tin user từ response.data và emit sự kiện userLoggedIn
+                        const user = {
+                            // your user data properties
+                            username: 'example',
+                            // other user properties...
+                            password: 'example'
+                        };
+
+                        this.$emit('userLoggedIn', user);
+
+                        console.log('Đăng nhập thành công!');
+                    } else {
+                        console.error('Đăng nhập không thành công:', response.statusText);
+                        this.isError = true;
+                        this.validationError = 'Tên đăng nhập hoặc mật khẩu không đúng! Vui lòng nhập lại!';
+                    }
+                } catch (error) {
+                    if (error.response) {
+                        console.error('Server responded with an error status:', error.response.status);
+
+                        if (error.response.status === 400) {
+                            this.isError = true;
+                            this.validationError = 'Tên đăng nhập hoặc mật khẩu không đúng! Vui lòng nhập lại!';
+                        } else {
+                            this.isError = true;
+                            this.validationError = 'Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại!';
+                        }
+                    } else if (error.request) {
+                        console.error('No response received from the server:', error.request);
+                        this.isError = true;
+                        this.validationError = 'Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!';
+                    } else {
+                        console.error('Error setting up the request:', error.message);
+                        this.isError = true;
+                        this.validationError = 'Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại!';
+                    }
+                }
             }
+
         }
     }
 };
