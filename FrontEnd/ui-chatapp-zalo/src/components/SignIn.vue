@@ -15,6 +15,7 @@
                                     placeholder="Nhập số điện thoại" @blur="validatePhoneNumber" ref="phoneInput" required>
                             </div>
                             <hr style="border: none; border-bottom: 2px solid #d9d9d9; margin-left: 8px;">
+                            <em class="error" v-if="isError === true">{{ validationErrorPhoneNumber }}</em>
                         </div>
                         <div class="password" data-validate="Vui lòng nhập mật khẩu!">
                             <span class="label-input">Mật khẩu</span>
@@ -31,10 +32,10 @@
                             <hr style="border: none; border-bottom: 2px solid #d9d9d9; margin-left: 8px;">
                         </div>
                         <em class="error" v-if="isError === true">{{ validationError }}</em>
-                        <em class="error" v-if="isError === 'wrong-credential'">Tên đăng nhập hoặc mật khẩu không đúng, vui
+                        <!-- <em class="error" v-if="isError === 'wrong-credential'">Tên đăng nhập hoặc mật khẩu không đúng, vui
                             lòng
                             nhập
-                            lại!</em>
+                            lại!</em> -->
                         <div class="forgot-password">
                             <span :class="{ 'hovered': hoveredItem === 'forgot-password' }"
                                 @mouseenter="(hoveredItem = 'forgot-password')" @mouseleave="hoveredItem = ''">Quên mật
@@ -74,6 +75,7 @@ export default {
             hoveredItem: '',
             phoneNumber: '',
             password: '',
+            validationErrorPhoneNumber: '',
             validationError: '',
             flag1: true,
             flag2: true,
@@ -97,31 +99,24 @@ export default {
             const phoneNumber = this.phoneNumber;
             const isValidPhoneNumber = /^0\d{9}$/.test(phoneNumber);
 
-            if(phoneNumber=='') {
+            if (phoneNumber.length && !isValidPhoneNumber) {
                 this.isError = true;
-                this.validationError = 'Không được để trống số điện thoại!';
-                return;
-            }
-
-            if (!isValidPhoneNumber) {
-                this.isError = true;
-                this.validationError = 'Số điện thoại không hợp lệ!';
+                this.validationErrorPhoneNumber = 'Số điện thoại không hợp lệ!';
+                this.flag1 = true;
             } else {
-                this.isError = false;
-                this.validationError = '';
+                this.validationErrorPhoneNumber = '';
                 this.flag1 = false;
             }
+            if(!this.flag1 && !this.flag2) this.isError = false;
         },
         validatePassword() {
-            const password = this.password;
-            if (password.length == 0) {
-                this.isError = true;
-                this.validationError = 'Không được để trống mật khẩu!';
-            } else {
-                this.isError = false;
-                this.validationError = '';
+            if (this.password.length > 0) 
+            {
                 this.flag2 = false;
+                this.validationError = '';
             }
+            else this.flag2 = true;
+            if( !this.flag1 && !this.flag2) this.isError = false;
         },
         showSignUp() {
             this.showingPage = 'signUp';
@@ -130,50 +125,60 @@ export default {
             this.showingPage = value;
         },
         async signIn() {
-            if (this.phoneNumber=='' || this.password=='') {
+            if (this.phoneNumber=='' && this.password=='') {
                 this.isError = true;
                 this.validationError = "Vui lòng nhập đầy đủ số điện thoại và mật khẩu!"
+            } else if (this.phoneNumber=='') {
+                this.isError = true;
+                this.validationError = "Vui lòng nhập số điện thoại!"
+            } else if (this.password == '') {
+                this.isError = true;
+                this.validationError = "Vui lòng nhập mật khẩu!"
             } else {
-                try {
-                    const response = await axios.post('auth/login', {
-                        userName: this.phoneNumber,
-                        password: this.password
-                    });
+                this.validatePhoneNumber();
+                this.validatePassword();
+                if (!this.isError){
+                    try {
+                        const response = await axios.post('auth/login', {
+                            userName: this.phoneNumber,
+                            password: this.password
+                        });
 
-                    // Kiểm tra trạng thái phản hồi
-                    if (response.status === 200) {
-                        // Đăng nhập thành công
+                        // Kiểm tra trạng thái phản hồi
+                        if (response.status === 200) {
+                            // Đăng nhập thành công
 
-                        const jwtToken = response.data.jwt;
+                            const jwtToken = response.data.jwt;
 
-                        localStorage.setItem('token', jwtToken);
+                            localStorage.setItem('token', jwtToken);
 
-                        this.$emit("userLoggedIn", jwtToken);
+                            this.$emit("userLoggedIn", jwtToken);
 
-                    } else {
-                        console.error('Đăng nhập không thành công:', response.statusText);
-                        this.isError = true;
-                        this.validationError = 'Tên đăng nhập hoặc mật khẩu không đúng! Vui lòng nhập lại!';
-                    }
-                } catch (error) {
-                    if (error.response) {
-                        console.error('Server responded with an error status:', error.response.status);
-
-                        if (error.response.status === 400) {
+                        } else {
+                            console.error('Đăng nhập không thành công:', response.statusText);
                             this.isError = true;
                             this.validationError = 'Tên đăng nhập hoặc mật khẩu không đúng! Vui lòng nhập lại!';
+                        }
+                    } catch (error) {
+                        if (error.response) {
+                            console.error('Server responded with an error status:', error.response.status);
+
+                            if (error.response.status === 400) {
+                                this.isError = true;
+                                this.validationError = 'Tên đăng nhập hoặc mật khẩu không đúng! Vui lòng nhập lại!';
+                            } else {
+                                this.isError = true;
+                                this.validationError = 'Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại!';
+                            }
+                        } else if (error.request) {
+                            console.error('No response received from the server:', error.request);
+                            this.isError = true;
+                            this.validationError = 'Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!';
                         } else {
+                            console.error('Error setting up the request:', error.message);
                             this.isError = true;
                             this.validationError = 'Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại!';
                         }
-                    } else if (error.request) {
-                        console.error('No response received from the server:', error.request);
-                        this.isError = true;
-                        this.validationError = 'Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!';
-                    } else {
-                        console.error('Error setting up the request:', error.message);
-                        this.isError = true;
-                        this.validationError = 'Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại!';
                     }
                 }
             }
