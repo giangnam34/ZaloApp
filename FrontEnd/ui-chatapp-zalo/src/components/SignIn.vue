@@ -66,7 +66,6 @@
 <script>
 import SignUp from './SignUp.vue';
 import axios from 'axios';
-import VueJwtDecode from 'vue-jwt-decode';
 export default {
     data() {
         return {
@@ -99,6 +98,12 @@ export default {
             const phoneNumber = this.phoneNumber;
             const isValidPhoneNumber = /^0\d{9}$/.test(phoneNumber);
 
+            if(phoneNumber=='') {
+                this.isError = true;
+                this.validationError = 'Không được để trống số điện thoại!';
+                return;
+            }
+
             if (!isValidPhoneNumber) {
                 this.isError = true;
                 this.validationError = 'Số điện thoại không hợp lệ!';
@@ -126,7 +131,7 @@ export default {
             this.showingPage = value;
         },
         async signIn() {
-            if (this.flag1 || this.flag2) {
+            if (this.phoneNumber=='' || this.password=='') {
                 this.isError = true;
                 this.validationError = "Vui lòng nhập đầy đủ số điện thoại và mật khẩu!"
             } else {
@@ -136,39 +141,16 @@ export default {
                         password: this.password
                     });
 
-                    console.log(response);
-
                     // Kiểm tra trạng thái phản hồi
                     if (response.status === 200) {
                         // Đăng nhập thành công
 
-                        const fullToken = response.data.jwt;
+                        const jwtToken = response.data.jwt;
 
-                        localStorage.setItem('token', fullToken);
+                        localStorage.setItem('token', jwtToken);
 
-                        const parts = fullToken.split(' ');
-                        if (parts.length > 1) {
-                            const token = parts[1];
+                        this.$emit("userLoggedIn", jwtToken);
 
-                            try {
-                                let decoded = VueJwtDecode.decode(token)
-
-                                const currentUserID = decoded.sub;
-
-                                // Lấy thông tin user từ response.data và emit sự kiện userLoggedIn
-                                const responseUser = await axios.get(`users/${currentUserID}`);
-
-                                const user = responseUser.data;
-
-                                this.$emit('userLoggedIn', user);
-
-                                console.log('Đăng nhập thành công!');
-                            } catch (error) {
-                                console.error('Lỗi khi giải mã JWT:', error);
-                            }
-                        } else {
-                            console.error('Token không hợp lệ.');
-                        }
                     } else {
                         console.error('Đăng nhập không thành công:', response.statusText);
                         this.isError = true;
