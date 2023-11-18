@@ -31,7 +31,8 @@
 
 <script>
 
-// import axios from 'axios';
+import axios from 'axios';
+import { useToast } from "vue-toastification";
 
 export default {
     data() {
@@ -42,6 +43,11 @@ export default {
             otp: '',
         };
     },
+    setup() {
+        // Get toast interface
+        const toast = useToast();
+        return { toast }
+    },
     props: ['phoneNumber'],
     methods: {
         showSignIn() {
@@ -50,44 +56,100 @@ export default {
         showSignUp() {
             this.$emit('update:showOTP', false);
         },
-        async signUp() {
-
-            if (this.phoneNumber == '' && this.password == '' && this.username == '' && this.confirmPassword == '') {
-                this.isError = true;
-                this.validationError = "Vui lòng nhập đầy đủ thông tin!"
-            } else if (this.phoneNumber == '') {
-                this.isError = true;
-                this.validationError = "Vui lòng nhập số điện thoại!"
-            } else if (this.password == '') {
-                this.isError = true;
-                this.validationError = "Vui lòng nhập mật khẩu!"
-            } else if (this.username == '') {
-                this.isError = true;
-                this.validationError = "Vui lòng nhập tên người dùng!"
-            } else if (this.confirmPassword == '') {
-                this.isError = true;
-                this.validationError = "Vui lòng nhập xác nhận mật khẩu!"
-            } else {
-                this.validateName();
-                this.validatePhoneNumber();
-                this.validatePassword();
-                this.validateConfirmPassword();
-
-                if (!this.isError) {
-                    this.showOTP = true;
-                }
-            }
-        },
         handleEnterKey(event) {
             if (event.key === 'Enter') {
                 this.confirm();
             }
         },
-        confirm() {
+        async confirm() {
+            if (!this.isError) {
+                try {
 
+                    const OTPResponse = {
+                        phoneNumber: this.phoneNumber,
+                        otpCode: this.otp
+                    }
+
+                    console.log(OTPResponse);
+
+                    const response = await axios.post('auth/OTP', OTPResponse);
+
+                    console.log(response);
+
+                    // Kiểm tra trạng thái phản hồi
+                    if (response.status === 200) {
+
+                        this.toast.success(response.data, { timeout: 3000 });
+
+                        this.showSignIn();
+
+                    } else {
+                        console.error('Xác thực không thành công:', response.statusText);
+                        this.isError = true;
+                        this.validationError = response.data;
+                    }
+                } catch (error) {
+                    if (error.response) {
+                        console.error('Server responded with an error status:', error.response.status);
+
+                        if (error.response.status === 400) {
+                            this.isError = true;
+                            this.validationError = error.response.data;
+                        } else {
+                            this.isError = true;
+                            this.validationError = error.response.data;
+                        }
+                    } else if (error.request) {
+                        console.error('No response received from the server:', error.request);
+                        this.isError = true;
+                        this.validationError = 'Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!';
+                    } else {
+                        console.error('Error setting up the request:', error.message);
+                        this.isError = true;
+                        this.validationError = 'Đã xảy ra lỗi khi xác thực. Vui lòng thử lại!';
+                    }
+                }
+
+            }
         },
-        sendOtp() {
+        async sendOtp() {
 
+            try {
+                const response = await axios.post(`auth/send-OTP/${this.phoneNumber}`);
+
+                console.log(response);
+
+                // Kiểm tra trạng thái phản hồi
+                if (response.status === 200) {
+
+                    this.toast.info(response.data.msg, { timeout: 3000 });
+
+                } else {
+                    console.error('Xác thực không thành công:', response.statusText);
+                    this.isError = true;
+                    this.validationError = response.data.msg;
+                }
+            } catch (error) {
+                if (error.response) {
+                    console.error('Server responded with an error status:', error.response.status);
+
+                    if (error.response.status === 400) {
+                        this.isError = true;
+                        this.validationError = error.response.data.msg;
+                    } else {
+                        this.isError = true;
+                        this.validationError = error.response.data.msg;
+                    }
+                } else if (error.request) {
+                    console.error('No response received from the server:', error.request);
+                    this.isError = true;
+                    this.validationError = 'Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!';
+                } else {
+                    console.error('Error setting up the request:', error.message);
+                    this.isError = true;
+                    this.validationError = 'Đã xảy ra lỗi khi gửi lại OTP. Vui lòng thử lại!';
+                }
+            }
         },
         validateOTP() {
             const otpRegex = /^\d{6}$/;
