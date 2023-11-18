@@ -36,6 +36,8 @@ import ChatSidebarNav from './components/ChatSidebarNav.vue';
 import ContactNav from './components/ContactNav.vue';
 import ToDo from './components/ToDo.vue';
 import SignIn from './components/SignIn.vue';
+import VueJwtDecode from 'vue-jwt-decode';
+import axios from 'axios';
 export default {
   name: 'App',
   data() {
@@ -52,6 +54,9 @@ export default {
     ContactNav,
     ToDo
   },
+  mounted() {
+    this.checkToken();
+  },
   methods: {
     updateUser(userData) {
       this.user = userData; // Set user data here, or just set it to null if not available
@@ -59,6 +64,41 @@ export default {
     updateChosenPage(page) {
       this.chosenPage = page;
     },
+    checkToken() {
+
+      if(!this.user){
+        return false;
+      }
+
+      const fullToken = localStorage.getItem("token");
+
+      const parts = fullToken.split(' ');
+      if (parts.length > 1) {
+        const token = parts[1];
+
+        try {
+          let decoded = VueJwtDecode.decode(token)
+
+          const currentUserID = decoded.sub;
+
+          // Lấy thông tin user từ response.data và emit sự kiện userLoggedIn
+          const responseUser = axios.get(`users/${currentUserID}`);
+
+          const user = responseUser.data;
+
+          this.user = user;
+
+          if (Date.now() >= decoded.exp * 1000) {
+            return false;
+          }
+          return true;
+        } catch (error) {
+          console.error('Lỗi khi giải mã JWT:', error);
+        }
+      } else {
+        console.error('Token không hợp lệ.');
+      }
+    }
   },
 }
 </script>
@@ -83,7 +123,8 @@ export default {
   border: 0;
   font-size: 100%;
 }
-.width-100{
+
+.width-100 {
   width: 100%;
 }
 </style>

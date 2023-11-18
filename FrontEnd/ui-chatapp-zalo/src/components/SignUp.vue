@@ -1,7 +1,7 @@
 <template>
     <div class="limiter">
         <div class="container">
-            <div class="wrap-signin">
+            <div class="wrap-signup">
                 <div class="validate-form">
                     <span class="title">Đăng ký</span>
                     <div class="name">
@@ -70,6 +70,9 @@
                     </div>
                 </div>
             </div>
+            <div class="show-otp" v-if="showOTP">
+                
+            </div>
         </div>
     </div>
 </template>
@@ -89,6 +92,7 @@ export default {
             password: '',
             confirmPassword: '',
             validationError: '',
+            showOTP: false,
             flag1: true,
             flag2: true,
             flag3: true,
@@ -221,7 +225,7 @@ export default {
         background-image: url('../assets/img/bg-01.jpg');
         background-size: cover;
 
-        .wrap-signin {
+        .wrap-signup {
             width: 500px;
             background: #fff;
             border-radius: 10px;
