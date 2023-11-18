@@ -1,9 +1,9 @@
 <template>
-  <div div v-if="user" class="width-100">
+  <div div v-if="!user" class="width-100">
     <SignIn @userLoggedIn="updateUser"></SignIn>
   </div>
-  <div div v-if="!user" class="width-100" style="display: flex;">
-    <MainSidebarNav @pageSelected="updateChosenPage"></MainSidebarNav>
+  <div div v-if="user" class="width-100" style="display: flex;">
+    <MainSidebarNav @pageSelected="updateChosenPage" :user="user"></MainSidebarNav>
     <div v-if="chosenPage === 1" class="width-100">
       <ChatSidebarNav></ChatSidebarNav>
       <HomeChat></HomeChat>
@@ -34,9 +34,6 @@ import MainSidebarNav from './components/MainSidebarNav.vue';
 import HomeChat from './components/HomeChat.vue'
 import ChatSidebarNav from './components/ChatSidebarNav.vue';
 import ContactNav from './components/ContactNav.vue';
-// import FriendList from './components/FriendList.vue';
-// import GroupList from './components/GroupList.vue';
-// import InvitationFriendManage from './components/InvitationFriendManage.vue';
 import ToDo from './components/ToDo.vue';
 import SignIn from './components/SignIn.vue';
 export default {
@@ -53,9 +50,6 @@ export default {
     ChatSidebarNav,
     SignIn,
     ContactNav,
-    // FriendList,
-    // GroupList,
-    // InvitationFriendManage,
     ToDo
   },
   methods: {

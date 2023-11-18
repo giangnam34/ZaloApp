@@ -17,8 +17,13 @@
     "axios": "^1.6.1",
     "body-parser": "^1.20.2",
     "core-js": "^3.8.3",
+    "jsonwebtoken": "^9.0.2",
+    "stream-browserify": "^3.0.0",
+    "util": "^0.12.5",
     "vue": "^3.2.13",
+    "vue-jwt-decode": "^0.1.0",
     "vue-router": "^4.2.5",
+    "vuejs-jwt": "^1.1.0",
     "vuex": "^4.1.0"
   },
   "devDependencies": {

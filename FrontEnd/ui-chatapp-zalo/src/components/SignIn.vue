@@ -66,6 +66,7 @@
 <script>
 import SignUp from './SignUp.vue';
 import axios from 'axios';
+import VueJwtDecode from 'vue-jwt-decode';
 export default {
     data() {
         return {
@@ -130,7 +131,7 @@ export default {
                 this.validationError = "Vui lòng nhập đầy đủ số điện thoại và mật khẩu!"
             } else {
                 try {
-                    const response = await axios.post('v1/login', {
+                    const response = await axios.post('auth/login', {
                         userName: this.phoneNumber,
                         password: this.password
                     });
@@ -140,19 +141,34 @@ export default {
                     // Kiểm tra trạng thái phản hồi
                     if (response.status === 200) {
                         // Đăng nhập thành công
-                        localStorage.setItem('token', response.data.token);
 
-                        // Lấy thông tin user từ response.data và emit sự kiện userLoggedIn
-                        const user = {
-                            // your user data properties
-                            username: 'example',
-                            // other user properties...
-                            password: 'example'
-                        };
+                        const fullToken = response.data.jwt;
 
-                        this.$emit('userLoggedIn', user);
+                        localStorage.setItem('token', fullToken);
 
-                        console.log('Đăng nhập thành công!');
+                        const parts = fullToken.split(' ');
+                        if (parts.length > 1) {
+                            const token = parts[1];
+
+                            try {
+                                let decoded = VueJwtDecode.decode(token)
+
+                                const currentUserID = decoded.sub;
+
+                                // Lấy thông tin user từ response.data và emit sự kiện userLoggedIn
+                                const responseUser = await axios.get(`users/${currentUserID}`);
+
+                                const user = responseUser.data;
+
+                                this.$emit('userLoggedIn', user);
+
+                                console.log('Đăng nhập thành công!');
+                            } catch (error) {
+                                console.error('Lỗi khi giải mã JWT:', error);
+                            }
+                        } else {
+                            console.error('Token không hợp lệ.');
+                        }
                     } else {
                         console.error('Đăng nhập không thành công:', response.statusText);
                         this.isError = true;

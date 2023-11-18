@@ -2,7 +2,9 @@
   <div id="sidebarNav" @mousemove="getMousePosition">
     <div id="main-tab">
       <div class="nav__tabs__zalo web" title="Giang Nam" ref="avatar" @click="isClickAvatar('avatar')">
-        <img src="https://s120-ava-talk.zadn.vn/3/e/6/b/1/120/8b72a04be66a9ef7009df15d86b69810.jpg" class="a-child" />
+        <div class="avatar-container">
+          <img :src="user.imageAvatarUrl" class="a-child avatar-wrapper" />
+        </div>
         <div id="infoUser" v-show="isShowWhenClickAvatar">
           <div id="userName">Giang Nam</div>
           <hr>
@@ -163,6 +165,9 @@ export default {
       isShowWhenHoverData: false
     };
   },
+  props: {
+    user: Object, // Định nghĩa prop user kiểu Object
+  },
   mounted() {
     document.addEventListener("click", this.handleClickOutSide);
   },
@@ -178,8 +183,8 @@ export default {
       this.name = "";
     },
     isOutDiv(coordinates, subCoordinates) {
-      console.log(coordinates.top,coordinates.bottom, this.coordinatesY);
-      console.log(coordinates.left,coordinates.right,this.coordinatesX);
+      console.log(coordinates.top, coordinates.bottom, this.coordinatesY);
+      console.log(coordinates.left, coordinates.right, this.coordinatesX);
       if (coordinates.top <= this.coordinatesY && coordinates.bottom >= this.coordinatesY
         && coordinates.left <= this.coordinatesX && subCoordinates.right >= this.coordinatesX) return false;
       return true;
@@ -274,33 +279,44 @@ export default {
     .nav__tabs__zalo {
       height: 100px;
       justify-content: center;
-      padding-top: 32px;
+      padding-top: 4px;
       box-sizing: border-box;
+      padding-left: 5px;
 
-      .a-child {
-        position: relative;
-        cursor: pointer;
-        width: 75%;
-        height: 75%;
+      .avatar-container {
+        height: 100%;
         display: flex;
-        justify-content: center;
         align-items: center;
-        background: var(--surface-background);
-        color: var(--text-secondary);
-        overflow: hidden;
-        object-fit: contain;
-        font-size: 0.75rem;
-        font-weight: 500;
-        line-height: 1.5;
-        border: 1px solid var(--WA100);
-        box-sizing: border-box;
-        border-radius: 50%;
-        margin-left: 7px;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .a-child {
+          position: relative;
+          cursor: pointer;
+          background: var(--surface-background);
+          color: var(--text-secondary);
+          overflow: hidden;
+        }
+
+        .avatar-wrapper {
+          width: 50px;
+          height: 50px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          overflow: hidden;
+          border-radius: 50%;
+        }
       }
 
       #infoUser {
-        position: relative;
-        left: 64px;
+        position: absolute;
+        top: 52px; // Thay đổi giá trị nếu cần
+        left: 64px; // Thay đổi giá trị nếu cần
         bottom: 50px;
         height: 157px;
         width: 280px;

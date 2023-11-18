@@ -115,7 +115,7 @@ export default {
         //background-color: black;
 
         #search-content {
-            height: 8.45%;
+            height: 60px;
             width: 100%;
             padding: 0 16px;
             display: flex;
