@@ -45,4 +45,3 @@ library.add(faUserSecret, faCommentDots, faAddressBook, faToolbox, faGear, faClo
 createApp(App)
     .component('font-awesome-icon', FontAwesomeIcon)
     .mount('#app')
-
