@@ -1,8 +1,8 @@
 <template>
-  <div div v-if="!user" class="width-100">
+  <div div v-if="!userIsValid" class="width-100">
     <SignIn @userLoggedIn="updateUser"></SignIn>
   </div>
-  <div div v-if="user" class="width-100" style="display: flex;">
+  <div div v-if="userIsValid" class="width-100" style="display: flex;">
     <MainSidebarNav @pageSelected="updateChosenPage" :user="user"></MainSidebarNav>
     <div v-if="chosenPage === 1" class="width-100">
       <ChatSidebarNav></ChatSidebarNav>
@@ -44,6 +44,7 @@ export default {
     return {
       user: null,
       chosenPage: 1,
+      userIsValid: false,
     }
   },
   components: {
@@ -54,8 +55,14 @@ export default {
     ContactNav,
     ToDo
   },
-  mounted() {
-    this.checkToken();
+  
+  mounted(){
+    this.userIsValid = localStorage.getItem("isValid");
+  },
+  watch: {
+    user() {
+      this.checkToken(); // Gọi hàm checkToken khi user thay đổi
+    },
   },
   methods: {
     updateUser(userData) {
@@ -64,41 +71,39 @@ export default {
     updateChosenPage(page) {
       this.chosenPage = page;
     },
-    checkToken() {
+    async checkToken() {
+  
 
-      if(!this.user){
-        return false;
-      }
-
-      const fullToken = localStorage.getItem("token");
+      const fullToken = localStorage.getItem('token');
 
       const parts = fullToken.split(' ');
       if (parts.length > 1) {
         const token = parts[1];
 
         try {
-          let decoded = VueJwtDecode.decode(token)
+          let decoded = VueJwtDecode.decode(token);
 
           const currentUserID = decoded.sub;
 
           // Lấy thông tin user từ response.data và emit sự kiện userLoggedIn
-          const responseUser = axios.get(`users/${currentUserID}`);
-
+          const responseUser = await axios.get(`users/${currentUserID}`);
           const user = responseUser.data;
 
           this.user = user;
 
           if (Date.now() >= decoded.exp * 1000) {
-            return false;
+            this.userIsValid = false;
+          } else {
+            this.userIsValid = true;
           }
-          return true;
+          localStorage.setItem("isValid", this.userIsValid);
         } catch (error) {
           console.error('Lỗi khi giải mã JWT:', error);
         }
       } else {
         console.error('Token không hợp lệ.');
       }
-    }
+    },
   },
 }
 </script>

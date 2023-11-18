@@ -27,6 +27,8 @@ public class User {
     @Column(unique = true)
     private String phoneNumber;
 
+    private String fullName;
+
     private String password;
 
     private Date birthDay;
