@@ -6,7 +6,7 @@
           <img :src="user.imageAvatarUrl" class="a-child avatar-wrapper" />
         </div>
         <div id="infoUser" v-show="isShowWhenClickAvatar">
-          <div id="userName">Giang Nam</div>
+          <div id="userName">{{ user.fullName }}</div>
           <hr>
           <div id="yourProfile" @mouseover="onHover('yourProfile')" @mouseleave="outHover()"
             :class="{ hoverProfile: isHover && name === 'yourProfile' }">Hồ sơ của bạn</div>
@@ -14,7 +14,7 @@
             :class="{ hoverProfile: isHover && name === 'settingProfile' }">Cài đặt</div>
           <hr>
           <div id="signout" @mouseover="onHover('signout')" @mouseleave="outHover()"
-            :class="{ hoverProfile: isHover && name === 'signout' }">Đăng xuất</div>
+            :class="{ hoverProfile: isHover && name === 'signout' }" @click="logout()">Đăng xuất</div>
         </div>
       </div>
       <div class="nav__tabs_top">
@@ -162,11 +162,19 @@ export default {
       index: 1,
       isShowWhenClickTools: false,
       isShowWhenClickSetting: false,
-      isShowWhenHoverData: false
+      isShowWhenHoverData: false,
+      user: null,
     };
   },
-  props: {
-    user: Object, // Định nghĩa prop user kiểu Object
+  emits: ['userLoggedIn'],
+  created() {
+    // Lấy user từ localStorage
+    const userString = localStorage.getItem('user');
+
+    // Chuyển đổi chuỗi JSON thành đối tượng JavaScript
+    if (userString) {
+      this.user = JSON.parse(userString);
+    }
   },
   mounted() {
     document.addEventListener("click", this.handleClickOutSide);
@@ -230,6 +238,14 @@ export default {
         this.isShowWhenClickAvatar = false;
         this.isShowWhenClickTools = false;
       }
+    },
+    logout() {
+      localStorage.removeItem("token");
+      localStorage.setItem("isValid", false);
+      localStorage.removeItem("user");
+      this.$emit("userLoggedIn", '');
+      event.preventDefault();
+      event.stopPropagation();
     }
   },
   beforeUnmount() {

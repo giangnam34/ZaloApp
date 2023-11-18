@@ -31,4 +31,6 @@ public class GetUserResponse {
     private Boolean isLocked = null;
 
     private Boolean isConfirmed = null;
+
+    private String fullName = null;
 }

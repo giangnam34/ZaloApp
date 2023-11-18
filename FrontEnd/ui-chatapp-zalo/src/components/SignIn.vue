@@ -12,7 +12,8 @@
                                     <font-awesome-icon icon="fa-solid fa-phone" />
                                 </div>
                                 <input class="input" type="text" v-model="phoneNumber" name="phone"
-                                    placeholder="Nhập số điện thoại" @blur="validatePhoneNumber" ref="phoneInput" required>
+                                    placeholder="Nhập số điện thoại" @blur="validatePhoneNumber" ref="phoneInput" required
+                                    @keyup.enter="signIn">
                             </div>
                             <hr style="border: none; border-bottom: 2px solid #d9d9d9; margin-left: 8px;">
                             <em class="error" v-if="isError === true">{{ validationErrorPhoneNumber }}</em>
@@ -24,7 +25,8 @@
                                     <font-awesome-icon icon="fa-solid fa-key" />
                                 </div>
                                 <input class="input" type="password" v-model="password" name="password"
-                                    placeholder="Nhập mật khẩu" @blur="validatePassword" ref="passwordInput" required>
+                                    placeholder="Nhập mật khẩu" @blur="validatePassword" ref="passwordInput" required
+                                    @keyup.enter="signIn">
                                 <button class="toggle-password" @click="togglePasswordVisibility">
                                     <font-awesome-icon :icon="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" />
                                 </button>
@@ -32,13 +34,10 @@
                             <hr style="border: none; border-bottom: 2px solid #d9d9d9; margin-left: 8px;">
                         </div>
                         <em class="error" v-if="isError === true">{{ validationError }}</em>
-                        <!-- <em class="error" v-if="isError === 'wrong-credential'">Tên đăng nhập hoặc mật khẩu không đúng, vui
-                            lòng
-                            nhập
-                            lại!</em> -->
                         <div class="forgot-password">
                             <span :class="{ 'hovered': hoveredItem === 'forgot-password' }"
-                                @mouseenter="(hoveredItem = 'forgot-password')" @mouseleave="hoveredItem = ''">Quên mật
+                                @mouseenter="(hoveredItem = 'forgot-password')" @mouseleave="hoveredItem = ''"
+                                @click="showForgotPassword">Quên mật
                                 khẩu?</span>
                         </div>
                         <div class="container-signin-button">
@@ -61,11 +60,16 @@
     <div v-if="showingPage === 'signUp'" style="width: 100%;">
         <SignUp v-model="showingPage" @update:showingPage="updateShowingPage"></SignUp>
     </div>
+    <div v-if="showingPage === 'forgotPassword'" style="width: 100%;">
+        <ForgotPassword v-model="showingPage" @update:showingPage="updateShowingPage"></ForgotPassword>
+    </div>
 </template>
 
 <script>
 import SignUp from './SignUp.vue';
+import ForgotPassword from './ForgotPassword.vue';
 import axios from 'axios';
+import { useToast } from "vue-toastification";
 export default {
     data() {
         return {
@@ -82,7 +86,13 @@ export default {
         };
     },
     components: {
-        SignUp
+        SignUp,
+        ForgotPassword
+    },
+    setup() {
+        // Get toast interface
+        const toast = useToast();
+        return { toast }
     },
     emits: ['userLoggedIn'],
     methods: {
@@ -107,28 +117,30 @@ export default {
                 this.validationErrorPhoneNumber = '';
                 this.flag1 = false;
             }
-            if(!this.flag1 && !this.flag2) this.isError = false;
+            if (!this.flag1 && !this.flag2) this.isError = false;
         },
         validatePassword() {
-            if (this.password.length > 0) 
-            {
+            if (this.password.length > 0) {
                 this.flag2 = false;
                 this.validationError = '';
             }
             else this.flag2 = true;
-            if( !this.flag1 && !this.flag2) this.isError = false;
+            if (!this.flag1 && !this.flag2) this.isError = false;
         },
         showSignUp() {
             this.showingPage = 'signUp';
+        },
+        showForgotPassword() {
+            this.showingPage = 'forgotPassword';
         },
         updateShowingPage(value) {
             this.showingPage = value;
         },
         async signIn() {
-            if (this.phoneNumber=='' && this.password=='') {
+            if (this.phoneNumber == '' && this.password == '') {
                 this.isError = true;
                 this.validationError = "Vui lòng nhập đầy đủ số điện thoại và mật khẩu!"
-            } else if (this.phoneNumber=='') {
+            } else if (this.phoneNumber == '') {
                 this.isError = true;
                 this.validationError = "Vui lòng nhập số điện thoại!"
             } else if (this.password == '') {
@@ -137,7 +149,7 @@ export default {
             } else {
                 this.validatePhoneNumber();
                 this.validatePassword();
-                if (!this.isError){
+                if (!this.isError) {
                     try {
                         const response = await axios.post('auth/login', {
                             userName: this.phoneNumber,
@@ -151,6 +163,8 @@ export default {
                             const jwtToken = response.data.jwt;
 
                             localStorage.setItem('token', jwtToken);
+
+                            this.toast.success("Đăng nhập thành công!", { timeout: 3000 });
 
                             this.$emit("userLoggedIn", jwtToken);
 
@@ -183,7 +197,12 @@ export default {
                 }
             }
 
-        }
+        },
+        handleEnterKey(event) {
+            if (event.key === 'Enter') {
+                this.signIn();
+            }
+        },
     }
 };
 </script>

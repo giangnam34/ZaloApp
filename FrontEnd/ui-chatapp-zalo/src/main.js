@@ -3,6 +3,9 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import './axios'
+import Toast from "vue-toastification";
+// Import the CSS or use your own!
+import "vue-toastification/dist/index.css";
 // import store from './vuex'
 
 import './assets/style.css'
@@ -22,10 +25,10 @@ import {
     faUserPlus, faUsers, faCaretDown, faUserGroup, faUsersLine, faEnvelopeOpen, faSort, faFilter,
     faChevronDown, faPlus, faChartSimple, faCheck, faPhone, faKey, faEye, faEyeSlash, faPencil, faTag,
     faVideo, faInfo, faPaperclip, faCameraRetro, faFont, faExclamation, faAt, faBullhorn, faWrench, faGlobe,
-    faDatabase, faChevronRight
+    faDatabase, faChevronRight, faUser, faUnlockKeyhole
 } from '@fortawesome/free-solid-svg-icons'
 
-import { faAddressBook, faSquareCheck, faNoteSticky, faImage, faAddressCard, faClock, faFaceLaugh, faThumbsUp, faStar, faUser } from '@fortawesome/free-regular-svg-icons'
+import { faAddressBook, faSquareCheck, faNoteSticky, faImage, faAddressCard, faClock, faFaceLaugh, faThumbsUp, faStar } from '@fortawesome/free-regular-svg-icons'
 
 import { faRocketchat } from '@fortawesome/free-brands-svg-icons'
 
@@ -33,15 +36,24 @@ import { faRocketchat } from '@fortawesome/free-brands-svg-icons'
 library.add(faUserSecret, faCommentDots, faAddressBook, faToolbox, faGear, faCloud, faMagnifyingGlass, faSquareCheck, faUserPlus,
     faUsers, faCaretDown, faEllipsis, faPencil, faTag, faVideo, faInfo, faNoteSticky, faImage, faPaperclip, faCameraRetro,
     faAddressCard, faClock, faFont, faExclamation, faRocketchat, faFaceLaugh, faAt, faThumbsUp, faStar, faBullhorn,
-    faWrench, faGlobe, faDatabase, faChevronRight, faUserGroup, faUsersLine, faEnvelopeOpen, faSort, faFilter, faChevronDown, faPlus, faChartSimple, faCheck, faPhone, faKey, faEye, faEyeSlash, faUser)
+    faWrench, faGlobe, faDatabase, faChevronRight, faUserGroup, faUsersLine, faEnvelopeOpen, faSort, faFilter, faChevronDown,
+    faPlus, faChartSimple, faCheck, faPhone, faKey, faEye, faEyeSlash, faUser, faUnlockKeyhole)
 
+const options = {
+    position: 'top-right',
+    timeout: 5000,
+    closeOnClick: true,
+    pauseOnFocusLoss: false,
+    pauseOnHover: false,
+    draggable: true,
+    draggablePercent: 0.6,
+    showCloseButtonOnHover: false,
+};
 
-// new Vue({
-//     store,
-//     render: h => h(App),
-// }).component('font-awesome-icon', FontAwesomeIcon)
-//     .$mount('app')
+const app = createApp(App);
 
-createApp(App)
-    .component('font-awesome-icon', FontAwesomeIcon)
-    .mount('#app')
+app.use(Toast, options);
+
+app.component('font-awesome-icon', FontAwesomeIcon);
+
+app.mount('#app');

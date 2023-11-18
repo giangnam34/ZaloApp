@@ -1,9 +1,11 @@
 <template>
-  <div div v-if="!userIsValid" class="width-100">
-    <SignIn @userLoggedIn="updateUser"></SignIn>
+  <div v-if="loading" class="width-100">
   </div>
-  <div div v-if="userIsValid" class="width-100" style="display: flex;">
-    <MainSidebarNav @pageSelected="updateChosenPage" :user="user"></MainSidebarNav>
+  <div v-else-if="!userIsValid" class="width-100">
+    <SignIn @userLoggedIn="updateJWT"></SignIn>
+  </div>
+  <div v-else class="width-100" style="display: flex;">
+    <MainSidebarNav @pageSelected="updateChosenPage" @userLoggedIn="updateJWT"></MainSidebarNav>
     <div v-if="chosenPage === 1" class="width-100">
       <ChatSidebarNav></ChatSidebarNav>
       <HomeChat></HomeChat>
@@ -42,9 +44,10 @@ export default {
   name: 'App',
   data() {
     return {
-      user: null,
+      loading: true,
       chosenPage: 1,
       userIsValid: false,
+      jwt: '',
     }
   },
   components: {
@@ -55,54 +58,64 @@ export default {
     ContactNav,
     ToDo
   },
-  
-  mounted(){
-    this.userIsValid = localStorage.getItem("isValid");
-  },
-  watch: {
-    user() {
-      this.checkToken(); // Gọi hàm checkToken khi user thay đổi
-    },
+  async mounted() {
+    await this.checkToken();
+    this.loading = false;
+    console.log(this.userIsValid);
   },
   methods: {
-    updateUser(userData) {
-      this.user = userData; // Set user data here, or just set it to null if not available
+    updateJWT(userData) {
+      this.jwt = userData; // Set user data here, or just set it to null if not available
+      this.checkToken();
     },
     updateChosenPage(page) {
       this.chosenPage = page;
     },
     async checkToken() {
-  
+
 
       const fullToken = localStorage.getItem('token');
 
-      const parts = fullToken.split(' ');
-      if (parts.length > 1) {
-        const token = parts[1];
+      if (fullToken) {
+        const parts = fullToken.split(' ');
+        if (parts.length > 1) {
+          const token = parts[1];
 
-        try {
-          let decoded = VueJwtDecode.decode(token);
+          try {
+            let decoded = VueJwtDecode.decode(token);
 
-          const currentUserID = decoded.sub;
+            const currentUserID = decoded.sub;
 
-          // Lấy thông tin user từ response.data và emit sự kiện userLoggedIn
-          const responseUser = await axios.get(`users/${currentUserID}`);
-          const user = responseUser.data;
+            const responseUser = await axios.get(`users/${currentUserID}`, {
+              headers: {
+                'Authorization': localStorage.getItem("token")
+              }
+            });
+            const user = responseUser.data;
 
-          this.user = user;
+            localStorage.setItem('user', JSON.stringify(user));
 
-          if (Date.now() >= decoded.exp * 1000) {
+            if (Date.now() >= decoded.exp * 1000) {
+              this.userIsValid = false;
+            } else {
+              this.userIsValid = true;
+            }
+            localStorage.setItem("isValid", this.userIsValid);
+          } catch (error) {
+            console.error('Lỗi khi giải mã JWT:', error);
+            localStorage.setItem("isValid", false);
             this.userIsValid = false;
-          } else {
-            this.userIsValid = true;
           }
-          localStorage.setItem("isValid", this.userIsValid);
-        } catch (error) {
-          console.error('Lỗi khi giải mã JWT:', error);
+        } else {
+          console.error('Token không hợp lệ.');
+          localStorage.setItem("isValid", false);
+          this.userIsValid = false;
         }
       } else {
-        console.error('Token không hợp lệ.');
+        localStorage.setItem("isValid", false);
+        this.userIsValid = false;
       }
+
     },
   },
 }

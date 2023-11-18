@@ -1,22 +1,9 @@
 <template>
     <div class="limiter">
         <div class="container">
-            <div class="wrap-signup" v-if="!showOTP">
+            <div class="wrap-forgotPassword" v-if="!showOTP">
                 <div class="validate-form">
-                    <span class="title">Đăng ký</span>
-                    <div class="name">
-                        <span class="label-input">Tên</span>
-                        <div class="name-input">
-                            <div class="icon-user">
-                                <font-awesome-icon icon="fa-solid fa-user" />
-                            </div>
-                            <input class="input" type="text" v-model="username" name="name"
-                                placeholder="Nhập tên người dùng" @blur="validateName" ref="nameInput" required tabindex="1"
-                                @keyup.enter="signUp">
-                        </div>
-                        <em class="error" v-if="isError === true">{{ validationErrorName }}</em>
-                        <hr style="border: none; border-bottom: 2px solid #d9d9d9; margin-left: 8px;">
-                    </div>
+                    <span class="title">Quên mật khẩu</span>
                     <div class="phone">
                         <span class="label-input">Số điện thoại</span>
                         <div class="phone-input">
@@ -25,55 +12,21 @@
                             </div>
                             <input class="input" type="number" v-model="phoneNumber" name="phone"
                                 placeholder="Nhập số điện thoại" @blur="validatePhoneNumber" ref="phoneInput" required
-                                tabindex="2" @keyup.enter="signUp">
+                                @keyup.enter="confirm">
                         </div>
                         <em class="error" v-if="isError === true">{{ validationErrorPhoneNumber }}</em>
                         <hr style="border: none; border-bottom: 2px solid #d9d9d9; margin-left: 8px;">
                     </div>
-                    <div class="password">
-                        <span class="label-input">Mật khẩu</span>
-                        <div class="password-input">
-                            <div class="icon-password">
-                                <font-awesome-icon icon="fa-solid fa-key" />
-                            </div>
-                            <input class="input" type="password" v-model="password" name="password"
-                                placeholder="Nhập mật khẩu" @blur="validatePassword" ref="passwordInput" required
-                                tabindex="3" @keyup.enter="signUp">
-                            <button class="toggle-password" @click="togglePasswordVisibility">
-                                <font-awesome-icon :icon="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" />
-                            </button>
-                        </div>
-                        <em class="error" v-if="isError === true">{{ validationErrorPassword }}</em>
-                        <hr style="border: none; border-bottom: 2px solid #d9d9d9; margin-left: 8px;">
-                    </div>
-                    <div class="password">
-                        <span class="label-input">Xác nhận mật khẩu</span>
-                        <div class="password-input">
-                            <div class="icon-password">
-                                <font-awesome-icon icon="fa-solid fa-key" />
-                            </div>
-                            <input class="input" type="password" v-model="confirmPassword" name="confirmPassword"
-                                placeholder="Nhập lại mật khẩu" @blur="validateConfirmPassword" ref="confirmPasswordInput"
-                                required tabindex="5" @keyup.enter="signUp">
-                            <button class="toggle-password" @click="togglePasswordVisibility">
-                                <font-awesome-icon :icon="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" />
-                            </button>
-                        </div>
-                        <em class="error" v-if="isError === true">{{ validationErrorConfirmPassword }}</em>
-                        <hr style="border: none; border-bottom: 2px solid #d9d9d9; margin-left: 8px;">
-                    </div>
-                    <em class="error" v-if="isError === true">{{ validationError }}</em>
-                    <div class="container-signup-button">
-                        <div class="wrap-signup-button">
-                            <div class="signup-bgbutton"></div>
-                            <button class="signup-button" @click="signUp">Đăng ký</button>
+                    <div class="container-forgotPassword-button">
+                        <div class="wrap-forgotPassword-button">
+                            <div class="forgotPassword-bgbutton"></div>
+                            <button class="forgotPassword-button" @click="confirm">Xác nhận</button>
                         </div>
                     </div>
-                    <div class="signin">
-                        <span class="signin-title">Đã có tài khoản?</span>
+                    <div class="back-to-signin">
                         <span class="signin-link" :class="{ 'hovered': hoveredItem === 'signin' }"
-                            @mouseenter="(hoveredItem = 'signin')" @mouseleave="hoveredItem = ''" @click="showSignIn">Đăng
-                            nhập</span>
+                            @mouseenter="(hoveredItem = 'signin')" @mouseleave="hoveredItem = ''" @click="showSignIn">Quay
+                            lại đăng nhập</span>
                     </div>
                 </div>
             </div>
@@ -92,24 +45,14 @@ import OTP from './OTP.vue';
 export default {
     data() {
         return {
-            showPassword: false,
             isError: true,
             hoveredItem: '',
-            username: '',
             phoneNumber: '',
-            password: '',
-            confirmPassword: '',
-            validationErrorName: '',
             validationErrorPhoneNumber: '',
-            validationErrorPassword: '',
-            validationErrorConfirmPassword: '',
             validationError: '',
             registerUser: null,
             showOTP: false,
             flag1: true,
-            flag2: true,
-            flag3: true,
-            flag4: true,
         };
     },
     components: {
@@ -139,61 +82,12 @@ export default {
             if (!isValidPhoneNumber) {
                 this.isError = true;
                 this.validationErrorPhoneNumber = 'Số điện thoại không hợp lệ!';
-                this.flag2 = true;
+                this.flag1 = true;
             } else {
                 this.validationErrorPhoneNumber = '';
-                this.flag2 = false;
-            }
-            if (!(this.flag1 || this.flag2 || this.flag3 || this.flag4)) this.isError = false;
-        },
-        validatePassword() {
-            const password = this.password;
-            const confirmPassword = this.confirmPassword;
-            if (password.length == 0) {
-                this.isError = true;
-                this.validationErrorPassword = 'Vui lòng nhập mật khẩu!';
-                this.flag3 = true;
-            } else {
-                this.validationErrorPassword = '';
-            }
-            if ((password == confirmPassword) && confirmPassword.length != 0) {
-                this.validationErrorPassword = '';
-                this.flag3 = false;
-            }
-            if (!(this.flag1 || this.flag2 || this.flag3 || this.flag4)) this.isError = false;
-        },
-        validateConfirmPassword() {
-            const password = this.password;
-            const confirmPassword = this.confirmPassword;
-            if (confirmPassword.length == 0) {
-                this.isError = true;
-                this.validationErrorConfirmPassword = 'Vui lòng nhập xác nhận mật khẩu!';
-                this.flag4 = true;
-            }
-            if (!(password == confirmPassword)) {
-                this.isError = true;
-                this.validationErrorConfirmPassword = 'Mật khẩu và xác nhận mật khẩu không khớp!';
-                this.flag3 = true;
-                this.flag4 = true;
-            } else {
-                this.validationErrorConfirmPassword = '';
-                this.flag3 = false;
-                this.flag4 = false;
-            }
-            if (!(this.flag1 || this.flag2 || this.flag3 || this.flag4)) this.isError = false;
-        },
-        validateName() {
-            const username = this.username;
-            if (username.length == 0) {
-                this.isError = true;
-                this.validationErrorName = 'Vui lòng nhập tên người dùng!';
-                this.flag1 = true;
-            }
-            else {
-                this.validationErrorName = '';
                 this.flag1 = false;
             }
-            if (!(this.flag1 || this.flag2 || this.flag3 || this.flag4)) this.isError = false;
+            if (!this.flag1) this.isError = false;
         },
         showSignIn() {
             this.$emit('update:showingPage', 'signIn');
@@ -201,29 +95,17 @@ export default {
         updateShowOTP(value) {
             this.showOTP = value;
         },
+        confirm(){
+            this.showOTP = true;
+        },
         async signUp() {
 
-            if (this.phoneNumber == '' && this.password == '' && this.username == '' && this.confirmPassword == '') {
-                this.isError = true;
-                this.validationError = "Vui lòng nhập đầy đủ thông tin!"
-            } else if (this.phoneNumber == '') {
+            if (this.phoneNumber == '') {
                 this.isError = true;
                 this.validationError = "Vui lòng nhập số điện thoại!"
-            } else if (this.password == '') {
-                this.isError = true;
-                this.validationError = "Vui lòng nhập mật khẩu!"
-            } else if (this.username == '') {
-                this.isError = true;
-                this.validationError = "Vui lòng nhập tên người dùng!"
-            } else if (this.confirmPassword == '') {
-                this.isError = true;
-                this.validationError = "Vui lòng nhập xác nhận mật khẩu!"
             } else {
 
-                this.validateName();
                 this.validatePhoneNumber();
-                this.validatePassword();
-                this.validateConfirmPassword();
 
                 if (!this.isError) {
                     // try {
@@ -280,7 +162,7 @@ export default {
         },
         handleEnterKey(event) {
             if (event.key === 'Enter') {
-                this.signUp();
+                this.confirm();
             }
         },
     }
@@ -308,7 +190,7 @@ export default {
         background-image: url('../assets/img/bg-01.jpg');
         background-size: cover;
 
-        .wrap-signup {
+        .wrap-forgotPassword {
             width: 500px;
             background: #fff;
             border-radius: 10px;
@@ -316,20 +198,6 @@ export default {
             padding: 65px 55px 54px 55px;
 
             .validate-form {
-
-                .forgot-password {
-                    text-align: right;
-                    padding-bottom: 31px;
-                    padding-top: 8px;
-                }
-
-                .error {
-                    display: block;
-                    padding: 0;
-                    color: #DD4B39;
-                    font-size: 0.875rem;
-                }
-
                 .title {
                     display: block;
                     font-family: Poppins-Bold;
@@ -340,12 +208,42 @@ export default {
                     padding-bottom: 49px;
                 }
 
-                .name,
-                .phone,
-                .password {
+                .error {
+                    display: block;
+                    padding: 0;
+                    color: #DD4B39;
+                    font-size: 0.875rem;
+                }
+
+                .phone {
 
                     position: relative;
                     margin-bottom: 23px;
+
+                    .phone-input {
+                        display: flex;
+
+                        .input {
+                            outline: none;
+                            border: none;
+                            font-family: Poppins-Medium;
+                            font-size: 18px;
+                            color: #333;
+                            line-height: 1.2;
+                            display: block;
+                            width: 100%;
+                            height: 55px;
+                            background: 0 0;
+                            padding: 0 7px 0 43px;
+                        }
+
+                        .icon-phone {
+                            display: flex;
+                            align-items: center;
+                            margin-right: 4px;
+                            margin-left: 14px;
+                        }
+                    }
 
                     .label-input {
                         font-family: Poppins-Regular;
@@ -374,45 +272,15 @@ export default {
                     .phone-input input[type="number"] {
                         -moz-appearance: textfield;
                     }
-
-                    .phone-input,
-                    .password-input,
-                    .name-input {
-                        display: flex;
-
-
-                        .input {
-                            outline: none;
-                            border: none;
-                            font-family: Poppins-Medium;
-                            font-size: 18px;
-                            color: #333;
-                            line-height: 1.2;
-                            display: block;
-                            width: 100%;
-                            height: 55px;
-                            background: 0 0;
-                            padding: 0 7px 0 43px;
-                        }
-
-                        .icon-phone,
-                        .icon-password,
-                        .icon-user {
-                            display: flex;
-                            align-items: center;
-                            margin-right: 4px;
-                            margin-left: 14px;
-                        }
-                    }
                 }
 
-                .container-signup-button {
+                .container-forgotPassword-button {
                     display: flex;
                     flex-wrap: wrap;
                     justify-content: center;
                     margin-bottom: 23px;
 
-                    .wrap-signup-button {
+                    .wrap-forgotPassword-button {
                         width: 100%;
                         display: block;
                         position: relative;
@@ -426,7 +294,7 @@ export default {
                         -o-box-shadow: 0 5px 30px 0 rgba(3, 216, 222, .2);
                         -ms-box-shadow: 0 5px 30px 0 rgba(3, 216, 222, .2);
 
-                        .signup-bgbutton {
+                        .forgotPassword-bgbutton {
                             position: absolute;
                             z-index: -1;
                             width: 300%;
@@ -437,7 +305,7 @@ export default {
                             transition: all .4s;
                         }
 
-                        .signup-button {
+                        .forgotPassword-button {
                             touch-action: manipulation;
                             font-family: Poppins-Medium;
                             font-size: 16px;
@@ -458,18 +326,10 @@ export default {
                     }
                 }
 
-                .signin {
+                .back-to-signin {
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-
-                    .signin-title {
-                        font-family: Poppins-Regular;
-                        font-size: 18px;
-                        line-height: 1.5;
-                        color: #666;
-                        margin-bottom: 2px;
-                    }
 
                     .signin-link {
                         font-family: Poppins-Regular;
@@ -478,6 +338,7 @@ export default {
                         text-transform: uppercase;
                     }
                 }
+
             }
 
         }
