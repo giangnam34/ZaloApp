@@ -58,6 +58,9 @@ public class User {
     private CategoryUser category;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private OTPCode otpCode;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private UserOptionPoll userOptionPoll;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
@@ -81,8 +84,9 @@ public class User {
         this.messageChatList = messageChatList;
     }
 
-    public User(String phoneNumber, String password, HashSet<Role> roleList){
+    public User(String phoneNumber, String fullName, String password, HashSet<Role> roleList){
         this.phoneNumber = phoneNumber;
+        this.fullName = fullName;
         this.password = password;
         this.createdAt = new Date();
         this.isConfirmed = false;

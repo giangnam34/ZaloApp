@@ -23,10 +23,10 @@ public class TestController {
         return authenticationService.generateOTPCode(minRange,maxRange);
     }
 
-    @GetMapping("/sendOTP/{phoneNumber}")
-    public Object testSendOTP(@PathVariable String phoneNumber){
-        return authenticationService.sendOTP(phoneNumber);
-    }
+//    @GetMapping("/sendOTP/{phoneNumber}")
+//    public Object testSendOTP(@PathVariable String phoneNumber){
+//        return authenticationService.sendOTP(phoneNumber);
+//    }
 
 
 }
