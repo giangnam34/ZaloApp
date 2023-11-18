@@ -1,6 +1,5 @@
 package com.essay.zaloapp.domain.models;
 
-import com.essay.zaloapp.domain.enums.RoleName;
 import com.essay.zaloapp.domain.enums.Sex;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -49,17 +48,17 @@ public class User {
 
     private Boolean isConfirmed;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private CategoryUser category;
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private UserOptionPoll userOptionPoll;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<MessageChat> messageChatList;
 
     public User(String phoneNumber, String password, Date birthDay, Sex sex, String imageAvatarUrl, String imageCoverPhotoUrl, Date createdAt, Date updatedAt, Date lastActive, Boolean isLocked, Boolean isConfirmed, Set<Role> roles, CategoryUser category, UserOptionPoll userOptionPoll, List<MessageChat> messageChatList) {
@@ -80,12 +79,11 @@ public class User {
         this.messageChatList = messageChatList;
     }
 
-    public User(String phoneNumber, String password){
+    public User(String phoneNumber, String password, HashSet<Role> roleList){
         this.phoneNumber = phoneNumber;
         this.password = password;
         this.createdAt = new Date();
         this.isConfirmed = false;
-        this.roles = new HashSet<Role>();
-        this.roles.add(new Role(RoleName.ROLE_USER));
+        this.roles = roleList;
     }
 }

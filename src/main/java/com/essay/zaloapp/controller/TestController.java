@@ -1,25 +1,32 @@
 package com.essay.zaloapp.controller;
 
-import com.essay.zaloapp.domain.payload.request.TestSomeThing;
-import org.springframework.security.access.prepost.PreAuthorize;
+import com.essay.zaloapp.services.impl.AuthenticationServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
-import java.security.Principal;
-
 @RestController
+@RequestMapping("/test")
 public class TestController {
-    @GetMapping("/test")
-    public String test(Principal userPrincipal){
-        return userPrincipal.getName();
+
+    @Autowired
+    private AuthenticationServiceImpl authenticationService;
+    @GetMapping("/valid/{password}")
+    public Object testValidPassword(@PathVariable String password){
+        return authenticationService.isValidPassword(password);
     }
 
-    @PostMapping("/test")
-    @PreAuthorize("hasRole('USER')")
-    public String test(@Valid @RequestBody TestSomeThing test){
-        return test.getUserName().equals("0968322444") ? "Test thanh cong" : "Test that bai";
+    @GetMapping("/generateOTP/{minRange}/{maxRange}")
+    public Object testGenerateOTP(@PathVariable int minRange, @PathVariable int maxRange){
+        return authenticationService.generateOTPCode(minRange,maxRange);
     }
+
+    @GetMapping("/sendOTP/{phoneNumber}")
+    public Object testSendOTP(@PathVariable String phoneNumber){
+        return authenticationService.sendOTP(phoneNumber);
+    }
+
+
 }
