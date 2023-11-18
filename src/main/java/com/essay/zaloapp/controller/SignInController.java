@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("/v1")
+@RequestMapping("/v1/auth")
 public class SignInController {
 
     @Autowired
