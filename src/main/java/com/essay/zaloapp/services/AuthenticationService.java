@@ -8,4 +8,12 @@ public interface AuthenticationService {
     ResponseEntity<?> login(LoginRequest loginRequest);
 
     ResponseEntity<?> signUp(SignUpRequest signUpRequest);
+
+    boolean isValidPassword(String password);
+
+    String sendOTP(String toPhoneNumber);
+
+    String generateOTPCode(int minRange, int maxRange);
+
+    String formatPhoneNumbertoE164(String phoneNumber);
 }
