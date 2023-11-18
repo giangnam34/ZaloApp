@@ -38,6 +38,25 @@ public class SpeedSMSAPI {
         return buffer.toString();
     }
 
+    public String getStatusMessage(String tranId) throws IOException{
+        URL url = new URL(API_URL + "/sms/status/" + tranId);
+        HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+        conn.setRequestMethod("GET");
+        String userCredentials = mAccessToken + ":x";
+        String basicAuth = "Basic " + DatatypeConverter.printBase64Binary(userCredentials.getBytes());
+        conn.setRequestProperty ("Authorization", basicAuth);
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        String inputLine = "";
+        StringBuffer buffer = new StringBuffer();
+
+        while ((inputLine = in.readLine()) != null) {
+            buffer.append(inputLine);
+        }
+        in.close();
+        return buffer.toString();
+    }
+
     /**
      * Send SMS
      * @param

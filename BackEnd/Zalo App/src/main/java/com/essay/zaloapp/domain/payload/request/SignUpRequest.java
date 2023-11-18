@@ -21,4 +21,7 @@ public class SignUpRequest {
     private String password;
     @NotNull
     private String reEnterPassword;
+    @NotNull
+    private String fullName;
+
 }
