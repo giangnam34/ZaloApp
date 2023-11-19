@@ -1,6 +1,7 @@
 package com.essay.zaloapp.services;
 
 import com.essay.zaloapp.domain.payload.request.AuthorizeOTPResponse;
+import com.essay.zaloapp.domain.payload.request.ForgetPasswordRequest;
 import com.essay.zaloapp.domain.payload.request.LoginRequest;
 import com.essay.zaloapp.domain.payload.request.SignUpRequest;
 import com.essay.zaloapp.domain.payload.response.ResultSMSResponse;
@@ -24,4 +25,6 @@ public interface AuthenticationService {
     String formatPhoneNumbertoE164(String phoneNumber);
 
     ResponseEntity<?> authorizeOTP(AuthorizeOTPResponse authorizeOTPResponse);
+
+    ResponseEntity<?> forgetPassword(ForgetPasswordRequest forgetPasswordRequest);
 }

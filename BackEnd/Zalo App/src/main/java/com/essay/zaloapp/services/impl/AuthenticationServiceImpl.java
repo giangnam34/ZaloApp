@@ -5,6 +5,7 @@ import com.essay.zaloapp.domain.models.OTPCode;
 import com.essay.zaloapp.domain.models.Role;
 import com.essay.zaloapp.domain.models.User;
 import com.essay.zaloapp.domain.payload.request.AuthorizeOTPResponse;
+import com.essay.zaloapp.domain.payload.request.ForgetPasswordRequest;
 import com.essay.zaloapp.domain.payload.request.LoginRequest;
 import com.essay.zaloapp.domain.payload.request.SignUpRequest;
 import com.essay.zaloapp.domain.payload.response.LoginResponse;
@@ -70,35 +71,40 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     @Transactional(rollbackOn = {Exception.class})
     public ResponseEntity<?> signUp(SignUpRequest signUpRequest) throws Exception {
-        if (!signUpRequest.getPassword().equals(signUpRequest.getReEnterPassword())) return ResponseEntity.badRequest().body(new SignUpResponse("Mật khẩu không trùng với Xác nhận mật khẩu!"));
-        if (userRepository.existsUserByPhoneNumber(signUpRequest.getPhoneNumber())) return ResponseEntity.badRequest().body(new SignUpResponse("Số điện thoại đã được sử dụng. Vui lòng thử lại!!!"));
-        if (!isValidPassword(signUpRequest.getPassword())) return ResponseEntity.badRequest().body(new SignUpResponse("Mật khẩu không hợp lệ!"));
+        if (!signUpRequest.getPassword().equals(signUpRequest.getReEnterPassword()))
+            return ResponseEntity.badRequest().body(new SignUpResponse("Mật khẩu không trùng với Xác nhận mật khẩu!"));
+        if (userRepository.existsUserByPhoneNumber(signUpRequest.getPhoneNumber()))
+            return ResponseEntity.badRequest().body(new SignUpResponse("Số điện thoại đã được sử dụng. Vui lòng thử lại!!!"));
+        if (!isValidPassword(signUpRequest.getPassword()))
+            return ResponseEntity.badRequest().body(new SignUpResponse("Mật khẩu không hợp lệ!"));
         try {
             HashSet<Role> roleUser = new HashSet<Role>();
-            roleUser.add((Role)roleRepository.findByName(RoleName.ROLE_USER));
-            String otpCode = generateOTPCode(100000,999999);
-            User user = new User(signUpRequest.getPhoneNumber(),signUpRequest.getFullName(),passwordEncoder.encode(signUpRequest.getPassword()), roleUser);
+            roleUser.add((Role) roleRepository.findByName(RoleName.ROLE_USER));
+            String otpCode = generateOTPCode(100000, 999999);
+            User user = new User(signUpRequest.getPhoneNumber(), signUpRequest.getFullName(), passwordEncoder.encode(signUpRequest.getPassword()), roleUser);
             ResultSMSResponse result = new ObjectMapper().readValue(sendOTP(signUpRequest.getPhoneNumber(), otpCode), ResultSMSResponse.class);
             userRepository.save(user);
             Long statusCode = getStatusSendOTP(result);
-            if (statusCode == 2) return ResponseEntity.badRequest().body(new SignUpResponse("Hmm Có lỗi trong quá trình gửi OTP. Vui lòng thử lại"));
-            user.setOtpCode(new OTPCode(user, com.essay.zaloapp.domain.enums.OTP.AuthorizeAccount,otpCode, new Date(new Date().getTime() + 7*60*60000 + 4*60000)));
-            if (statusCode == 0 || statusCode == -1) return ResponseEntity.ok(new SignUpResponse("Hệ thống đang gửi mã OTP. Xin vui lòng chờ trong ít phút"));
+            if (statusCode == 2)
+                return ResponseEntity.badRequest().body(new SignUpResponse("Hmm Có lỗi trong quá trình gửi OTP. Vui lòng thử lại"));
+            user.setOtpCode(new OTPCode(user, com.essay.zaloapp.domain.enums.OTP.AuthorizeAccount, otpCode, new Date(new Date().getTime() + 7 * 60 * 60000 + 4 * 60000)));
+            if (statusCode == 0 || statusCode == -1)
+                return ResponseEntity.ok(new SignUpResponse("Hệ thống đang gửi mã OTP. Xin vui lòng chờ trong ít phút"));
             return ResponseEntity.ok(new SignUpResponse("Hệ thống đã gửi mã OTP tới số điện thoại. Xin vui lòng kiểm tra và nhập mã"));
-        } catch(Exception e){
+        } catch (Exception e) {
             System.out.println(e.toString());
             throw new Exception("Tạo tài khoản thất bại. Vui lòng thử lại!");
         }
     }
 
     @Override
-    public String sendOTP(String toPhoneNumber, String valueOTP){
-        SpeedSMSAPI api  = new SpeedSMSAPI();
-        String content = "Mã OTP xác thực của bạn là: " + valueOTP ;
+    public String sendOTP(String toPhoneNumber, String valueOTP) {
+        SpeedSMSAPI api = new SpeedSMSAPI();
+        String content = "Mã OTP xác thực của bạn là: " + valueOTP;
         int type = 5;
         String sender = "d4b7294f8ce8412a";
         try {
-            return api.sendSMS(toPhoneNumber,content, type, sender);
+            return api.sendSMS(toPhoneNumber, content, type, sender);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -106,7 +112,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public Long getStatusSendOTP(ResultSMSResponse result) throws InterruptedException, IOException {
-        SpeedSMSAPI api  = new SpeedSMSAPI();
+        SpeedSMSAPI api = new SpeedSMSAPI();
         TimeUnit.SECONDS.sleep(3);
         ResultSendSMSResponse resultSend = new ObjectMapper().readValue(api.getStatusMessage(String.valueOf(result.getData().getTranId())), ResultSendSMSResponse.class);
         return resultSend.getData().get(0).getStatus();
@@ -131,14 +137,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         System.out.println(m.matches());
         return m.matches();
     }
+
     @Override
-    public String generateOTPCode(int minRange, int maxRange){
-        int result = (int)Math.floor(Math.random() * (maxRange - minRange + 1) + minRange);
+    public String generateOTPCode(int minRange, int maxRange) {
+        int result = (int) Math.floor(Math.random() * (maxRange - minRange + 1) + minRange);
         return String.valueOf(result);
     }
 
     @Override
-    public String formatPhoneNumbertoE164(String phoneNumber){
+    public String formatPhoneNumbertoE164(String phoneNumber) {
         String cleanedNumber = phoneNumber.replaceAll("[^0-9]+", "");
 
         if (cleanedNumber.startsWith("0")) {
@@ -153,16 +160,35 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public ResponseEntity<?> authorizeOTP(AuthorizeOTPResponse authorizeOTPResponse){
+    public ResponseEntity<?> authorizeOTP(AuthorizeOTPResponse authorizeOTPResponse) {
         if (!userRepository.existsUserByPhoneNumber(authorizeOTPResponse.getPhoneNumber()))
             return ResponseEntity.badRequest().body("Người dùng chưa đăng ký tài khoản!");
         User user = userRepository.findByPhoneNumber(authorizeOTPResponse.getPhoneNumber());
         if (!user.getOtpCode().getValue().equals(authorizeOTPResponse.getOtpCode()))
             return ResponseEntity.badRequest().body("Mã OTP không đúng!");
-        if (!user.getOtpCode().getExpireTime().after(new Date(new Date().getTime() + 7*60*60000)))
+        if (!user.getOtpCode().getExpireTime().after(new Date(new Date().getTime() + 7 * 60 * 60000)))
             return ResponseEntity.badRequest().body("Mã OTP hết hạn!");
         user.setIsConfirmed(true);
         userRepository.save(user);
         return ResponseEntity.ok("Xác thực tài khoản thành công!");
+    }
+
+    @Override
+    public ResponseEntity<?> forgetPassword(ForgetPasswordRequest forgetPasswordRequest) {
+        ResponseEntity<?> result = authorizeOTP(new AuthorizeOTPResponse(forgetPasswordRequest.getPhoneNumber(), forgetPasswordRequest.getOtpCode()));
+        if (result.getStatusCodeValue() != 200)
+            return result;
+        if (!forgetPasswordRequest.getNewPassword().equals(forgetPasswordRequest.getReEnterPassword()))
+            return ResponseEntity.badRequest().body("Mật khẩu và xác nhận mật khẩu không khớp!!!");
+        if (!isValidPassword(forgetPasswordRequest.getNewPassword()))
+            return ResponseEntity.badRequest().body("Mật khẩu không đủ mạnh!!!");
+        try {
+            User user = userRepository.findByPhoneNumber(forgetPasswordRequest.getPhoneNumber());
+            user.setPassword(passwordEncoder.encode(forgetPasswordRequest.getNewPassword()));
+            userRepository.save(user);
+            return ResponseEntity.ok("Đổi mật khẩu thành công!!!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Có lỗi xảy ra. Vui lòng thử lại!!!");
+        }
     }
 }
