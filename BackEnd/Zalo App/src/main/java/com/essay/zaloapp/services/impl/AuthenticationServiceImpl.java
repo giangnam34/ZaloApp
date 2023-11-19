@@ -4,10 +4,7 @@ import com.essay.zaloapp.domain.enums.RoleName;
 import com.essay.zaloapp.domain.models.OTPCode;
 import com.essay.zaloapp.domain.models.Role;
 import com.essay.zaloapp.domain.models.User;
-import com.essay.zaloapp.domain.payload.request.AuthorizeOTPResponse;
-import com.essay.zaloapp.domain.payload.request.ForgetPasswordRequest;
-import com.essay.zaloapp.domain.payload.request.LoginRequest;
-import com.essay.zaloapp.domain.payload.request.SignUpRequest;
+import com.essay.zaloapp.domain.payload.request.*;
 import com.essay.zaloapp.domain.payload.response.LoginResponse;
 import com.essay.zaloapp.domain.payload.response.ResultSMSResponse;
 import com.essay.zaloapp.domain.payload.response.ResultSendSMSResponse;
@@ -15,6 +12,7 @@ import com.essay.zaloapp.domain.payload.response.SignUpResponse;
 import com.essay.zaloapp.repository.RoleRepository;
 import com.essay.zaloapp.repository.UserRepository;
 import com.essay.zaloapp.secruity.CustomUserDetailsService;
+import com.essay.zaloapp.secruity.UserPrincipal;
 import com.essay.zaloapp.services.AuthenticationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -189,6 +187,28 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             return ResponseEntity.ok("Đổi mật khẩu thành công!!!");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Có lỗi xảy ra. Vui lòng thử lại!!!");
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> changePassword(ChangePasswordRequest changePasswordRequest, UserPrincipal userDetailsService){
+        User user = userRepository.findByPhoneNumber(userDetailsService.getPhoneNumber());
+        if (!user.getIsConfirmed())
+            return ResponseEntity.badRequest().body("Tài khoản chưa kích hoạt!");
+        if (user.getIsLocked())
+            return ResponseEntity.badRequest().body("Tài khoản đã bị khóa!");
+        if (!passwordEncoder.matches(changePasswordRequest.getOldPassword(), user.getPassword()))
+            return ResponseEntity.badRequest().body("Sai mật khẩu! Vui lòng thử lại!");
+        if (!changePasswordRequest.getNewPassword().equals(changePasswordRequest.getReEnterNewPassword()))
+            return ResponseEntity.badRequest().body("Mật khẩu mới không trùng với xác nhận mật khẩu!");
+        if (!isValidPassword(changePasswordRequest.getNewPassword()))
+            return ResponseEntity.badRequest().body("Mật khẩu mới không đủ mạnh! Vui lòng đặt mật khẩu khác!");
+        try {
+            user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
+            userRepository.save(user);
+            return ResponseEntity.ok("Thay đổi mật khẩu thành công!");
+        } catch(Exception e){
+            return ResponseEntity.badRequest().body("Có lỗi xảy ra! Vui lòng thử lại!");
         }
     }
 }

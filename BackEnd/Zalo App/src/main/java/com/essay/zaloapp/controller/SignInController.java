@@ -2,19 +2,20 @@ package com.essay.zaloapp.controller;
 
 import com.essay.zaloapp.domain.models.OTPCode;
 import com.essay.zaloapp.domain.models.User;
-import com.essay.zaloapp.domain.payload.request.AuthorizeOTPResponse;
-import com.essay.zaloapp.domain.payload.request.ForgetPasswordRequest;
-import com.essay.zaloapp.domain.payload.request.LoginRequest;
-import com.essay.zaloapp.domain.payload.request.SignUpRequest;
+import com.essay.zaloapp.domain.payload.request.*;
 import com.essay.zaloapp.domain.payload.response.ResultSMSResponse;
 import com.essay.zaloapp.domain.payload.response.SignUpResponse;
 import com.essay.zaloapp.repository.UserRepository;
+import com.essay.zaloapp.secruity.CustomUserDetailsService;
+import com.essay.zaloapp.secruity.UserPrincipal;
 import com.essay.zaloapp.services.AuthenticationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -72,9 +73,16 @@ public class SignInController {
         return ResponseEntity.ok(new SignUpResponse("Hệ thống đã gửi mã OTP tới số điện thoại. Xin vui lòng kiểm tra và nhập mã"));
     }
 
-    @PostMapping("/forgetPassword")
+    @PutMapping ("/forgetPassword")
     public ResponseEntity<?> forgetPassword(@RequestBody ForgetPasswordRequest forgetPasswordRequest){
         return authenticationService.forgetPassword(forgetPasswordRequest);
     }
-    
+    @PutMapping("/changePassword")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest, @AuthenticationPrincipal UserPrincipal userDetailsService){
+        System.out.println("Id: " + userDetailsService.getId());
+        System.out.println("Password: " + userDetailsService.getPassword());
+        System.out.println("Phone number: " + userDetailsService.getPhoneNumber());
+        return authenticationService.changePassword(changePasswordRequest,userDetailsService);
+    }
 }
