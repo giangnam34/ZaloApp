@@ -36,9 +36,11 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Sex sex;
 
-    private String imageAvatarUrl;
+    @Lob
+    private byte[] imageAvatarUrl;
 
-    private String imageCoverPhotoUrl;
+    @Lob
+    private byte[] imageCoverPhotoUrl;
 
     private Date createdAt;
 
@@ -66,7 +68,7 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<MessageChat> messageChatList;
 
-    public User(String phoneNumber, String password, Date birthDay, Sex sex, String imageAvatarUrl, String imageCoverPhotoUrl, Date createdAt, Date updatedAt, Date lastActive, Boolean isLocked, Boolean isConfirmed, Set<Role> roles, CategoryUser category, UserOptionPoll userOptionPoll, List<MessageChat> messageChatList) {
+    public User(String phoneNumber, String password, Date birthDay, Sex sex, byte[] imageAvatarUrl, byte[] imageCoverPhotoUrl, Date createdAt, Date updatedAt, Date lastActive, Boolean isLocked, Boolean isConfirmed, Set<Role> roles, CategoryUser category, UserOptionPoll userOptionPoll, List<MessageChat> messageChatList) {
         this.phoneNumber = phoneNumber;
         this.password = password;
         this.birthDay = birthDay;
