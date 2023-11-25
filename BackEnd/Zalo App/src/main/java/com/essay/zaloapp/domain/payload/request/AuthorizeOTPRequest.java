@@ -7,7 +7,7 @@ import lombok.*;
 @Getter
 @Setter
 @ToString
-public class AuthorizeOTPResponse {
+public class AuthorizeOTPRequest {
     public String phoneNumber;
     public String otpCode;
 }

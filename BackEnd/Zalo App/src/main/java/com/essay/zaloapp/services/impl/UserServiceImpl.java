@@ -1,6 +1,7 @@
 package com.essay.zaloapp.services.impl;
 
 import com.essay.zaloapp.domain.models.User;
+import com.essay.zaloapp.domain.payload.request.ChangePhoneNumberUserRequest;
 import com.essay.zaloapp.domain.payload.response.GetUserResponse;
 import com.essay.zaloapp.repository.UserRepository;
 import com.essay.zaloapp.services.UserService;
@@ -80,5 +81,16 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public ResponseEntity<?> updatePhoneNumberUser(Long userId, ChangePhoneNumberUserRequest changePhoneNumberUserRequest) throws Exception{
+        try {
+            User user = userRepository.findById(userId);
+            if (userRepository.existsUserByPhoneNumber(changePhoneNumberUserRequest.getNewPhoneNumber())) return ResponseEntity.badRequest().body("Số điện thoại không hợp lệ. Vui lòng thử lại");
+            user.setPhoneNumber(changePhoneNumberUserRequest.getNewPhoneNumber());
+            return ResponseEntity.ok("Cập nhật số điện thoại thành công!!!");
+        } catch (Exception e){
+            throw new Exception("Có lỗi xảy ra. Vui lòng thử lại!!!");
+        }
+    }
 
 }

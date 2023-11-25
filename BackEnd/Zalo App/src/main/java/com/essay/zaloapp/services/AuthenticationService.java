@@ -3,7 +3,6 @@ package com.essay.zaloapp.services;
 import com.essay.zaloapp.domain.payload.request.*;
 import com.essay.zaloapp.domain.payload.response.ResultSMSResponse;
 import com.essay.zaloapp.secruity.UserPrincipal;
-import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
@@ -23,7 +22,7 @@ public interface AuthenticationService {
 
     String formatPhoneNumbertoE164(String phoneNumber);
 
-    ResponseEntity<?> authorizeOTP(AuthorizeOTPResponse authorizeOTPResponse);
+    ResponseEntity<?> authorizeOTP(AuthorizeOTPRequest authorizeOTPRequest);
 
     ResponseEntity<?> forgetPassword(ForgetPasswordRequest forgetPasswordRequest);
 

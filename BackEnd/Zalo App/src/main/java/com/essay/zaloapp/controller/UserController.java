@@ -2,6 +2,7 @@ package com.essay.zaloapp.controller;
 
 import com.essay.zaloapp.Constant.Message;
 import com.essay.zaloapp.domain.payload.request.ChangePasswordRequest;
+import com.essay.zaloapp.domain.payload.request.ChangePhoneNumberUserRequest;
 import com.essay.zaloapp.secruity.UserPrincipal;
 import com.essay.zaloapp.services.AuthenticationService;
 import com.essay.zaloapp.services.UserService;
@@ -70,5 +71,11 @@ public class UserController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Resource> getImageCoverAvatar(@AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
         return userService.getImageCoverAvatar(userPrincipal.getId());
+    }
+
+    @PostMapping("/changePhoneNumber")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> changePhoneNumber(@RequestBody ChangePhoneNumberUserRequest changePhoneNumberUserRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+        return userService.updatePhoneNumberUser(userPrincipal.getId(),changePhoneNumberUserRequest);
     }
 }
