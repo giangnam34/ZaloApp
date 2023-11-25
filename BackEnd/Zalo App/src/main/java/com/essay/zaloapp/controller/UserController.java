@@ -30,6 +30,7 @@ public class UserController {
     @Autowired
     private AuthenticationService authenticationService;
 
+    // Tìm thông tin user
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getUserById(@PathVariable("id") Long id, UserPrincipal principal){
@@ -37,6 +38,7 @@ public class UserController {
         return userService.getUserById(id);
     }
 
+    // Đổi mật khẩu
     @PutMapping("/changePassword")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest, @AuthenticationPrincipal UserPrincipal userPrincipal){
@@ -64,26 +66,41 @@ public class UserController {
     @GetMapping(value = "/imageAvatar", produces = MediaType.IMAGE_JPEG_VALUE)
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Resource> getImageAvatar(@AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
-        return userService.getImageAvatar(userPrincipal.getId());
+        return ResponseEntity.ok(userService.getImageAvatar(userPrincipal.getId()));
+    }
+
+    @GetMapping(value = "/imageAvatarAnotherUser/{phoneNumber}", produces = MediaType.IMAGE_JPEG_VALUE)
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Resource> getAnotherImageAvatar(@PathVariable String phoneNumber,@AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+        return ResponseEntity.ok(userService.getImageAvatar(phoneNumber));
     }
 
     // Nhận ảnh bìa
     @GetMapping(value = "/imageCoverAvatar", produces = MediaType.IMAGE_JPEG_VALUE)
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Resource> getImageCoverAvatar(@AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
-        return userService.getImageCoverAvatar(userPrincipal.getId());
+        return ResponseEntity.ok(userService.getImageCoverAvatar(userPrincipal.getId()));
     }
 
+    // Đổi số điện thoại người dùng
     @PostMapping("/changePhoneNumber")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> changePhoneNumber(@RequestBody ChangePhoneNumberUserRequest changePhoneNumberUserRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
         return userService.updatePhoneNumberUser(userPrincipal.getId(),changePhoneNumberUserRequest);
     }
 
+    // Cập nhật thông tin người dùng
     @PostMapping("/changeInfoUser")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> changeInfoUser(@RequestBody ChangeInfoUserRequest changeInfoUserRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
         System.out.println(changeInfoUserRequest.toString());
         return userService.updateInfoUser(userPrincipal.getId(),changeInfoUserRequest);
     }
+
+    @GetMapping(value = "/findUserByPhoneNumber/{phoneNumber}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> findUserByPhoneNumber(@PathVariable String phoneNumber) throws Exception {
+        return userService.findUserByPhoneNumber(phoneNumber);
+    }
+
 }

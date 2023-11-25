@@ -18,6 +18,5 @@ public class ChangeInfoUserRequest {
 
     private Sex sex;
 
-
     private Date birthday;
 }

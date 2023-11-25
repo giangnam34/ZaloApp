@@ -4,6 +4,7 @@ import com.essay.zaloapp.domain.models.User;
 import com.essay.zaloapp.domain.payload.request.ChangeInfoUserRequest;
 import com.essay.zaloapp.domain.payload.request.ChangePhoneNumberUserRequest;
 import com.essay.zaloapp.domain.payload.response.GetUserResponse;
+import com.essay.zaloapp.domain.payload.response.findUserByPhoneNumberResponse;
 import com.essay.zaloapp.repository.UserRepository;
 import com.essay.zaloapp.services.UserService;
 import org.modelmapper.ModelMapper;
@@ -51,10 +52,29 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<Resource> getImageAvatar(Long userId) throws Exception {
+    public Resource getImageAvatar(Long userId) throws Exception {
         try{
             User user = userRepository.findById(userId);
-            return ResponseEntity.ok(new ByteArrayResource(user.getImageAvatarUrl()));
+            return new ByteArrayResource(user.getImageAvatarUrl());
+        } catch(Exception e){
+            throw new Exception("Có lỗi xảy ra. Vui lòng thử lại!!!");
+        }
+    }
+
+    @Override
+    public Resource getImageAvatar(User user) throws Exception {
+        try{
+            return new ByteArrayResource(user.getImageAvatarUrl());
+        } catch(Exception e){
+            throw new Exception("Có lỗi xảy ra. Vui lòng thử lại!!!");
+        }
+    }
+
+    @Override
+    public Resource getImageAvatar(String phoneNumber) throws Exception {
+        try{
+            User user = userRepository.findByPhoneNumber(phoneNumber);
+            return new ByteArrayResource(user.getImageAvatarUrl());
         } catch(Exception e){
             throw new Exception("Có lỗi xảy ra. Vui lòng thử lại!!!");
         }
@@ -73,10 +93,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<Resource> getImageCoverAvatar(Long userId) throws Exception {
+    public Resource getImageCoverAvatar(Long userId) throws Exception {
         try{
             User user = userRepository.findById(userId);
-            return ResponseEntity.ok(new ByteArrayResource(user.getImageCoverPhotoUrl()));
+            return new ByteArrayResource(user.getImageCoverPhotoUrl());
+        } catch(Exception e){
+            throw new Exception("Có lỗi xảy ra. Vui lòng thử lại!!!");
+        }
+    }
+
+    @Override
+    public Resource getImageCoverAvatar(User user) throws Exception {
+        try{
+            return new ByteArrayResource(user.getImageCoverPhotoUrl());
         } catch(Exception e){
             throw new Exception("Có lỗi xảy ra. Vui lòng thử lại!!!");
         }
@@ -104,6 +133,18 @@ public class UserServiceImpl implements UserService {
             if (changeInfoUserRequest.getBirthday() != null) user.setBirthDay(changeInfoUserRequest.getBirthday());
             userRepository.save(user);
             return ResponseEntity.ok("Cập nhật thông tin cá nhân thành công!!!");
+        } catch (Exception e){
+            throw new Exception("Có lỗi xảy ra. Vui lòng thử lại!!!");
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> findUserByPhoneNumber(String phoneNumber) throws Exception{
+        try {
+            User user = userRepository.findByPhoneNumber(phoneNumber);
+            if (user == null) return ResponseEntity.badRequest().body(" Số điện thoại chưa đăng ký tài khoản hoặc không cho phép tìm kiếm!");
+            findUserByPhoneNumberResponse findUserByPhoneNumberResponse = new findUserByPhoneNumberResponse(user.getFullName(), "http://localhost:8181/v1/users/imageAvatarAnotherUser/" + phoneNumber,phoneNumber);
+            return ResponseEntity.ok(findUserByPhoneNumberResponse);
         } catch (Exception e){
             throw new Exception("Có lỗi xảy ra. Vui lòng thử lại!!!");
         }
