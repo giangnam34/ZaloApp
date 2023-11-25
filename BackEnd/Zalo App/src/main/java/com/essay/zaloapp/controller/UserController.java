@@ -1,6 +1,7 @@
 package com.essay.zaloapp.controller;
 
 import com.essay.zaloapp.Constant.Message;
+import com.essay.zaloapp.domain.payload.request.ChangeInfoUserRequest;
 import com.essay.zaloapp.domain.payload.request.ChangePasswordRequest;
 import com.essay.zaloapp.domain.payload.request.ChangePhoneNumberUserRequest;
 import com.essay.zaloapp.secruity.UserPrincipal;
@@ -77,5 +78,12 @@ public class UserController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> changePhoneNumber(@RequestBody ChangePhoneNumberUserRequest changePhoneNumberUserRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
         return userService.updatePhoneNumberUser(userPrincipal.getId(),changePhoneNumberUserRequest);
+    }
+
+    @PostMapping("/changeInfoUser")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> changeInfoUser(@RequestBody ChangeInfoUserRequest changeInfoUserRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+        System.out.println(changeInfoUserRequest.toString());
+        return userService.updateInfoUser(userPrincipal.getId(),changeInfoUserRequest);
     }
 }
