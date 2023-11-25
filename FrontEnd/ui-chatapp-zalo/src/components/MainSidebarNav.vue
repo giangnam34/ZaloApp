@@ -1,7 +1,7 @@
 <template>
   <div id="sidebarNav" @mousemove="getMousePosition">
     <div id="main-tab">
-      <div class="nav__tabs__zalo web" title="Giang Nam" ref="avatar" @click="isClickAvatar('avatar')">
+      <div class="nav__tabs__zalo web" :title="user.fullName" ref="avatar" @click="isClickAvatar('avatar')">
         <div class="avatar-container">
           <img :src="user.imageAvatarUrl" class="a-child avatar-wrapper" />
         </div>
