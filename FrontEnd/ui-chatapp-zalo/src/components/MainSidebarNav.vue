@@ -9,7 +9,7 @@
           <div id="userName">{{ user.fullName }}</div>
           <hr>
           <div id="yourProfile" @mouseover="onHover('yourProfile')" @mouseleave="outHover()"
-            :class="{ hoverProfile: isHover && name === 'yourProfile' }">Hồ sơ của bạn</div>
+            :class="{ hoverProfile: isHover && name === 'yourProfile' }" @click="emitOpenDialogEvent">Hồ sơ của bạn</div>
           <div id="setting" @mouseover="onHover('settingProfile')" @mouseleave="outHover()"
             :class="{ hoverProfile: isHover && name === 'settingProfile' }">Cài đặt</div>
           <hr>
@@ -143,13 +143,18 @@
             </div>
           </div>
         </div>
+        <UserInfo v-model:showPopup="showPopup"></UserInfo>
       </div>
     </div>
   </div>
 </template>
   
 <script>
+import UserInfo from './UserInfo.vue';
 export default {
+  components: {
+    UserInfo
+  },
   name: "SidebarNav",
   data() {
     return {
@@ -164,6 +169,7 @@ export default {
       isShowWhenClickSetting: false,
       isShowWhenHoverData: false,
       user: null,
+      showPopup: false,
     };
   },
   emits: ['userLoggedIn'],
@@ -180,6 +186,9 @@ export default {
     document.addEventListener("click", this.handleClickOutSide);
   },
   methods: {
+    emitOpenDialogEvent() {
+      this.showPopup = true;
+    },
     onHover(name) {
       this.isHover = true;
       this.name = name;
