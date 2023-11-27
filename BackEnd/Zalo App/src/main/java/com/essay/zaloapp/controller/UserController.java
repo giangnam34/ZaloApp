@@ -4,6 +4,7 @@ import com.essay.zaloapp.Constant.Message;
 import com.essay.zaloapp.domain.payload.request.ChangeInfoUserRequest;
 import com.essay.zaloapp.domain.payload.request.ChangePasswordRequest;
 import com.essay.zaloapp.domain.payload.request.ChangePhoneNumberUserRequest;
+import com.essay.zaloapp.domain.payload.request.FriendRequest;
 import com.essay.zaloapp.secruity.UserPrincipal;
 import com.essay.zaloapp.services.AuthenticationService;
 import com.essay.zaloapp.services.UserService;
@@ -97,10 +98,32 @@ public class UserController {
         return userService.updateInfoUser(userPrincipal.getId(),changeInfoUserRequest);
     }
 
-    @GetMapping(value = "/findUserByPhoneNumber/{phoneNumber}")
+    // Tìm thông tin người dùng qua số điện thoại
+    @GetMapping("/findUserByPhoneNumber/{phoneNumber}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> findUserByPhoneNumber(@PathVariable String phoneNumber) throws Exception {
         return userService.findUserByPhoneNumber(phoneNumber);
     }
+
+    // Kết bạn với người dùng, friendRequest.fromPhoneNumberUser là người gửi lời mời, friendRequest.toPhoneNumberUser là người nhận lời mời
+    @PostMapping("/sendInviteFriend")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> addFriend(@RequestBody FriendRequest friendRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+        return userService.sendInviteFriend(userPrincipal.getId(),friendRequest);
+    }
+
+    // Chấp nhận lời mời của người dùng, friendRequest.fromPhoneNumberUser là người chấp nhận lời mời, friendRequest.toPhoneNumberUser là người được chấp nhận lời mời (người gửi lời mời)
+    @PostMapping("/acceptingInviteFriend")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> acceptingInviteFriend(@RequestBody FriendRequest friendRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+        return userService.acceptingInviteFriend(userPrincipal.getId(),friendRequest);
+    }
+
+    @PostMapping("/cancelInviteFriend")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> cancelInviteFriend(@RequestBody FriendRequest friendRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+        return userService.cancelInviteFriend(userPrincipal.getId(),friendRequest);
+    }
+
 
 }
