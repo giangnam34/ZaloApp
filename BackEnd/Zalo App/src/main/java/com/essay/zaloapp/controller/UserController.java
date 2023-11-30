@@ -119,11 +119,38 @@ public class UserController {
         return userService.acceptingInviteFriend(userPrincipal.getId(),friendRequest);
     }
 
+    // Hủy lời mời kết bạn
     @PostMapping("/cancelInviteFriend")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> cancelInviteFriend(@RequestBody FriendRequest friendRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
         return userService.cancelInviteFriend(userPrincipal.getId(),friendRequest);
     }
 
+    // Hủy kết bạn
+    @PostMapping("/unFriendUser")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> unFriendUser(@RequestBody FriendRequest friendRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+        return userService.unFriendUser(userPrincipal.getId(),friendRequest);
+    }
+
+    // Chặn người dùng
+    @PostMapping("/blockFriendUser")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> blockFriendUser(@RequestBody FriendRequest friendRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+        return userService.blockFriendUser(userPrincipal.getId(),friendRequest);
+    }
+
+    // Hiển thị danh sách bạn bè
+    @GetMapping("/getAllFriendUser")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> getAllFriendUser(@RequestBody FriendRequest friendRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+        return userService.listAllFriend(userPrincipal.getId());
+    }
+
+    @GetMapping("/getAllInviteFriend")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> getAllInviteFriendUser(@RequestBody FriendRequest friendRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+        return userService.listAllInviteFriend(userPrincipal.getId());
+    }
 
 }
