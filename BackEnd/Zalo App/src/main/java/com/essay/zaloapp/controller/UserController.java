@@ -1,7 +1,10 @@
 package com.essay.zaloapp.controller;
 
 import com.essay.zaloapp.Constant.Message;
+import com.essay.zaloapp.domain.payload.request.ChangeInfoUserRequest;
 import com.essay.zaloapp.domain.payload.request.ChangePasswordRequest;
+import com.essay.zaloapp.domain.payload.request.ChangePhoneNumberUserRequest;
+import com.essay.zaloapp.domain.payload.request.FriendRequest;
 import com.essay.zaloapp.secruity.UserPrincipal;
 import com.essay.zaloapp.services.AuthenticationService;
 import com.essay.zaloapp.services.UserService;
@@ -28,6 +31,7 @@ public class UserController {
     @Autowired
     private AuthenticationService authenticationService;
 
+    // Tìm thông tin user
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getUserById(@PathVariable("id") Long id, UserPrincipal principal){
@@ -35,6 +39,7 @@ public class UserController {
         return userService.getUserById(id);
     }
 
+    // Đổi mật khẩu
     @PutMapping("/changePassword")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest, @AuthenticationPrincipal UserPrincipal userPrincipal){
@@ -62,13 +67,63 @@ public class UserController {
     @GetMapping(value = "/imageAvatar", produces = MediaType.IMAGE_JPEG_VALUE)
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Resource> getImageAvatar(@AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
-        return userService.getImageAvatar(userPrincipal.getId());
+        return ResponseEntity.ok(userService.getImageAvatar(userPrincipal.getId()));
+    }
+
+    @GetMapping(value = "/imageAvatarAnotherUser/{phoneNumber}", produces = MediaType.IMAGE_JPEG_VALUE)
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Resource> getAnotherImageAvatar(@PathVariable String phoneNumber,@AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+        return ResponseEntity.ok(userService.getImageAvatar(phoneNumber));
     }
 
     // Nhận ảnh bìa
     @GetMapping(value = "/imageCoverAvatar", produces = MediaType.IMAGE_JPEG_VALUE)
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Resource> getImageCoverAvatar(@AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
-        return userService.getImageCoverAvatar(userPrincipal.getId());
+        return ResponseEntity.ok(userService.getImageCoverAvatar(userPrincipal.getId()));
     }
+
+    // Đổi số điện thoại người dùng
+    @PostMapping("/changePhoneNumber")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> changePhoneNumber(@RequestBody ChangePhoneNumberUserRequest changePhoneNumberUserRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+        return userService.updatePhoneNumberUser(userPrincipal.getId(),changePhoneNumberUserRequest);
+    }
+
+    // Cập nhật thông tin người dùng
+    @PostMapping("/changeInfoUser")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> changeInfoUser(@RequestBody ChangeInfoUserRequest changeInfoUserRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+        System.out.println(changeInfoUserRequest.toString());
+        return userService.updateInfoUser(userPrincipal.getId(),changeInfoUserRequest);
+    }
+
+    // Tìm thông tin người dùng qua số điện thoại
+    @GetMapping("/findUserByPhoneNumber/{phoneNumber}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> findUserByPhoneNumber(@PathVariable String phoneNumber) throws Exception {
+        return userService.findUserByPhoneNumber(phoneNumber);
+    }
+
+    // Kết bạn với người dùng, friendRequest.fromPhoneNumberUser là người gửi lời mời, friendRequest.toPhoneNumberUser là người nhận lời mời
+    @PostMapping("/sendInviteFriend")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> addFriend(@RequestBody FriendRequest friendRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+        return userService.sendInviteFriend(userPrincipal.getId(),friendRequest);
+    }
+
+    // Chấp nhận lời mời của người dùng, friendRequest.fromPhoneNumberUser là người chấp nhận lời mời, friendRequest.toPhoneNumberUser là người được chấp nhận lời mời (người gửi lời mời)
+    @PostMapping("/acceptingInviteFriend")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> acceptingInviteFriend(@RequestBody FriendRequest friendRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+        return userService.acceptingInviteFriend(userPrincipal.getId(),friendRequest);
+    }
+
+    @PostMapping("/cancelInviteFriend")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> cancelInviteFriend(@RequestBody FriendRequest friendRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+        return userService.cancelInviteFriend(userPrincipal.getId(),friendRequest);
+    }
+
+
 }

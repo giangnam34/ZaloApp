@@ -16,8 +16,6 @@ import com.essay.zaloapp.secruity.UserPrincipal;
 import com.essay.zaloapp.services.AuthenticationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -160,11 +158,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public ResponseEntity<?> authorizeOTP(AuthorizeOTPResponse authorizeOTPResponse) {
-        if (!userRepository.existsUserByPhoneNumber(authorizeOTPResponse.getPhoneNumber()))
+    public ResponseEntity<?> authorizeOTP(AuthorizeOTPRequest authorizeOTPRequest) {
+        if (!userRepository.existsUserByPhoneNumber(authorizeOTPRequest.getPhoneNumber()))
             return ResponseEntity.badRequest().body("Người dùng chưa đăng ký tài khoản!");
-        User user = userRepository.findByPhoneNumber(authorizeOTPResponse.getPhoneNumber());
-        if (!user.getOtpCode().getValue().equals(authorizeOTPResponse.getOtpCode()))
+        User user = userRepository.findByPhoneNumber(authorizeOTPRequest.getPhoneNumber());
+        if (!user.getOtpCode().getValue().equals(authorizeOTPRequest.getOtpCode()))
             return ResponseEntity.badRequest().body("Mã OTP không đúng!");
         if (!user.getOtpCode().getExpireTime().after(new Date(new Date().getTime() + 7 * 60 * 60000)))
             return ResponseEntity.badRequest().body("Mã OTP hết hạn!");
@@ -175,7 +173,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public ResponseEntity<?> forgetPassword(ForgetPasswordRequest forgetPasswordRequest) {
-        ResponseEntity<?> result = authorizeOTP(new AuthorizeOTPResponse(forgetPasswordRequest.getPhoneNumber(), forgetPasswordRequest.getOtpCode()));
+        ResponseEntity<?> result = authorizeOTP(new AuthorizeOTPRequest(forgetPasswordRequest.getPhoneNumber(), forgetPasswordRequest.getOtpCode()));
         if (result.getStatusCodeValue() != 200)
             return result;
         if (!forgetPasswordRequest.getNewPassword().equals(forgetPasswordRequest.getReEnterPassword()))

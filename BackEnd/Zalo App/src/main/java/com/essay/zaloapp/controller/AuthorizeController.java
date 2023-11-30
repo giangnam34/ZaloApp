@@ -41,8 +41,8 @@ public class AuthorizeController {
     }
 
     @PostMapping("/OTP")
-    public ResponseEntity<?> authorizeOTP(@RequestBody AuthorizeOTPResponse authorizeOTPResponse){
-        return authenticationService.authorizeOTP(authorizeOTPResponse);
+    public ResponseEntity<?> authorizeOTP(@RequestBody AuthorizeOTPRequest authorizeOTPRequest){
+        return authenticationService.authorizeOTP(authorizeOTPRequest);
     }
 
     @PostMapping("/send-OTP/{phoneNumber}")
