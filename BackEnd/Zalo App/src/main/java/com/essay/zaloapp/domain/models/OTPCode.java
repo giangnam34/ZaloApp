@@ -20,6 +20,7 @@ public class OTPCode {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "id_user")
     private User user;
