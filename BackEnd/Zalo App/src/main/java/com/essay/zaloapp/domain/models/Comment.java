@@ -16,7 +16,7 @@ public class Comment {
 
     @OneToOne
     @JoinColumn(name = "comment_top_id")
-    private Comment comment;
+    private Comment commentTop;
 
     private Date createdAt;
 

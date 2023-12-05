@@ -40,16 +40,21 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
+
     @Autowired
     private AuthenticationManager authenticationManager;
+
     @Autowired
     private TokenProvider tokenProvider;
+
     @Autowired
     private PasswordEncoder passwordEncoder;
+
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
-    private RoleRepository roleRepository;
+    protected RoleRepository roleRepository;
 
     @Override
     public ResponseEntity<?> login(LoginRequest loginRequest) {
@@ -85,7 +90,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             Long statusCode = getStatusSendOTP(result);
             if (statusCode == 2)
                 return ResponseEntity.badRequest().body(new SignUpResponse("Hmm Có lỗi trong quá trình gửi OTP. Vui lòng thử lại"));
-            user.setOtpCode(new OTPCode(user, com.essay.zaloapp.domain.enums.OTP.AuthorizeAccount, otpCode, new Date(new Date().getTime() + 7 * 60 * 60000 + 4 * 60000)));
+            user.setOtpCode(new OTPCode(user, com.essay.zaloapp.domain.enums.OTP.AuthorizeAccount, otpCode, new Date(new Date().getTime() + 7 * 60 * 60*1000 + 4 * 60000)));
             if (statusCode == 0 || statusCode == -1)
                 return ResponseEntity.ok(new SignUpResponse("Hệ thống đang gửi mã OTP. Xin vui lòng chờ trong ít phút"));
             return ResponseEntity.ok(new SignUpResponse("Hệ thống đã gửi mã OTP tới số điện thoại. Xin vui lòng kiểm tra và nhập mã"));

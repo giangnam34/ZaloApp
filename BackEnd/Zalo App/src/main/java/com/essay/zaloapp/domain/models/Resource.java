@@ -22,5 +22,8 @@ public class Resource {
     @Enumerated(EnumType.STRING)
     private ResourceType resourceType;
 
-
+    public Resource(String resourceValue, ResourceType resourceType) {
+        this.resourceValue = resourceValue;
+        this.resourceType = resourceType;
+    }
 }
