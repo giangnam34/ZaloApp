@@ -49,7 +49,6 @@ public class FileStorageServiceImpl implements FileStorageService {
             System.out.println(this.fileStorageLocation);
             String filePath = this.fileStorageLocation + "\\" + fileName;
             ((MultipartFile) file).transferTo(new File(filePath));
-            //Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
             System.out.println(filePath);
             return fileName;
         } catch (IOException ex) {

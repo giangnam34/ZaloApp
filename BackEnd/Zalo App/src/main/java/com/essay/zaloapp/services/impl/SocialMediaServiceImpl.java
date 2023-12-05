@@ -21,6 +21,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -44,10 +45,18 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     public String createNewPost(Long userId, CreateNewPostRequest createNewPostRequest){
         try{
             User user = userRepository.findById(userId);
-            List<Resource> resourceList = Arrays.stream(createNewPostRequest.getFiles()).map(p -> new Resource(fileStorageService.storeFile(p), p.getContentType().contains("video") ? ResourceType.Video : ResourceType.Image )).collect(Collectors.toList());
-            Post post = new Post(new Date(new Date().getTime() + 7 * 60 * 60*1000), new Date(new Date().getTime() + 7 * 60 * 60*1000), createNewPostRequest.getContent(),createNewPostRequest.getAudience(),user, resourceList);
-            List<PostUser> postUserList = createNewPostRequest.getUserTagIDList().stream().map(p -> new PostUser(post, userRepository.findByPhoneNumber(p), PostUserType.TagUser)).collect(Collectors.toList());
-            post.setPostUserList(postUserList);
+            if ( (createNewPostRequest.getFiles() == null || (createNewPostRequest.getFiles() != null && createNewPostRequest.getFiles()[0].isEmpty())) && (createNewPostRequest.getContent() == null || createNewPostRequest.getContent().isEmpty()) && ( createNewPostRequest.getUserTagIDList() == null || createNewPostRequest.getUserTagIDList().isEmpty())) {
+                return "Bài đăng phải có nội dung hoặc hình ảnh hoặc gắn thẻ người dùng!";
+            }
+            List<Resource> resourceList = new ArrayList<>();
+            if (createNewPostRequest.getFiles() != null && !createNewPostRequest.getFiles()[0].isEmpty()) {
+                resourceList = Arrays.stream(createNewPostRequest.getFiles()).map(p -> new Resource(fileStorageService.storeFile(p), p.getContentType().contains("video") ? ResourceType.Video : ResourceType.Image )).collect(Collectors.toList());
+            }
+            Post post = new Post(new Date(new Date().getTime() + 7 * 60 * 60*1000), new Date(new Date().getTime() + 7 * 60 * 60*1000), createNewPostRequest.getContent(),createNewPostRequest.getAudience() != null ? createNewPostRequest.getAudience() : Audience.AllFriend,user, resourceList);
+            if (createNewPostRequest.getUserTagIDList() != null && !createNewPostRequest.getUserTagIDList().isEmpty()) {
+                List<PostUser> postUserList = createNewPostRequest.getUserTagIDList().stream().map(p -> new PostUser(post, userRepository.findByPhoneNumber(p), PostUserType.TagUser)).collect(Collectors.toList());
+                post.setPostUserList(postUserList);
+            }
             postRepository.save(post);
             return "Đăng bài viết thành công!";
         } catch(Exception e){
@@ -75,13 +84,17 @@ public class SocialMediaServiceImpl implements SocialMediaService {
         try{
             Post post = postRepository.findByIdAndUser_Id(postId, userId);
             if (post == null) throw new Exception("Bạn không có quyền chỉnh sửa bài viết này hoặc bài viết không còn tồn tại nữa!");
-            post.setContentPost(createNewPostRequest.getContent());
-            post.setAudienceValue(createNewPostRequest.getAudience());
-            List<PostUser> postUserList = createNewPostRequest.getUserTagIDList().stream().map(p -> new PostUser(post, userRepository.findByPhoneNumber(p), PostUserType.TagUser)).collect(Collectors.toList());
-            post.setPostUserList(postUserList);
+            if (createNewPostRequest.getContent() != null) post.setContentPost(createNewPostRequest.getContent());
+            if (createNewPostRequest.getAudience() != null) post.setAudienceValue(createNewPostRequest.getAudience());
+            if (createNewPostRequest.getUserTagIDList() != null) {
+                List<PostUser> postUserList = createNewPostRequest.getUserTagIDList().stream().map(p -> new PostUser(post, userRepository.findByPhoneNumber(p), PostUserType.TagUser)).collect(Collectors.toList());
+                post.setPostUserList(postUserList);
+            }
             post.setUpdateAt(new Date(new Date().getTime() + 7*60*60*1000));
-            List<Resource> resourceList = Arrays.stream(createNewPostRequest.getFiles()).map(p -> new Resource(fileStorageService.storeFile(p), p.getContentType().contains("video") ? ResourceType.Video : ResourceType.Image )).collect(Collectors.toList());
-            post.setResourceList(resourceList);
+            if (createNewPostRequest.getFiles() != null) {
+                List<Resource> resourceList = Arrays.stream(createNewPostRequest.getFiles()).map(p -> new Resource(fileStorageService.storeFile(p), p.getContentType().contains("video") ? ResourceType.Video : ResourceType.Image)).collect(Collectors.toList());
+                post.setResourceList(resourceList);
+            }
             postRepository.save(post);
             return "Chỉnh sửa bài viết thành công!";
         } catch(Exception e){

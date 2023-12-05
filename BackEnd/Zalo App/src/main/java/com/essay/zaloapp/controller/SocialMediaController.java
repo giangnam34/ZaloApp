@@ -23,6 +23,7 @@ public class SocialMediaController {
     @Autowired()
     private SocialMediaService socialMediaService;
 
+    // Đăng bài viết mới
     @PostMapping(value = "/create-new-post", produces = MediaType.ALL_VALUE)
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> createNewPost(@AuthenticationPrincipal UserPrincipal userPrincipal,@ModelAttribute CreateNewPostRequest createNewPostRequest){
@@ -30,6 +31,7 @@ public class SocialMediaController {
         return result.equals("Đăng bài viết thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
+    // Cập nhật quyền riêng tư bài viết
     @GetMapping(value = "/update-audience-post/{postId}/{audience}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> updateAudiencePost(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long postId, @PathVariable Audience audience){
@@ -37,13 +39,15 @@ public class SocialMediaController {
         return result.equals("Đổi đối tượng bài viết thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
-    @PostMapping(value = "/update-audience-post/{postId}", produces = MediaType.ALL_VALUE)
+    // Cập nhật bài viết
+    @PostMapping(value = "/update-post/{postId}", produces = MediaType.ALL_VALUE)
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> updatePost(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long postId, @ModelAttribute CreateNewPostRequest createNewPostRequest){
         String result = socialMediaService.updatePost(userPrincipal.getId(), postId,createNewPostRequest);
         return result.equals("Chỉnh sửa bài viết thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
+    // Xem tất cả bài viết đã đăng
     @GetMapping(value = "/get-all-info-post", produces = MediaType.ALL_VALUE)
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> updatePost(@AuthenticationPrincipal UserPrincipal userPrincipal){
@@ -51,4 +55,5 @@ public class SocialMediaController {
         return result.getMesage().equals("Thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
+    //
 }
