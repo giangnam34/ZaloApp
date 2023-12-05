@@ -1,7 +1,6 @@
 package com.essay.zaloapp.services;
 
 import com.essay.zaloapp.domain.models.User;
-import com.essay.zaloapp.domain.payload.request.FriendRequest;
 import com.essay.zaloapp.domain.payload.request.ChangeInfoUserRequest;
 import com.essay.zaloapp.domain.payload.request.ChangePhoneNumberUserRequest;
 import com.essay.zaloapp.domain.payload.request.FriendRequest;
