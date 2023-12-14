@@ -1,7 +1,6 @@
 package com.essay.zaloapp.domain.models;
 
 import com.essay.zaloapp.domain.enums.Audience;
-import com.essay.zaloapp.domain.models.Composite.PostUserId;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -47,7 +46,10 @@ public class Post {
     private Post postTop;
 
     @OneToMany(mappedBy="postTop")
-    private List<Post> postList;
+    private List<Post> postTopList;
+
+    @OneToMany(mappedBy = "post")
+    private List<Comment> commentList;
 
     public Post(Date createdAt, Date updateAt, String contentPost, Audience value, User user, List<Resource> resourceList) {
         this.createdAt = createdAt;

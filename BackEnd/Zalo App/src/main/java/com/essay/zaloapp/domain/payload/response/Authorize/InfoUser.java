@@ -1,14 +1,13 @@
-package com.essay.zaloapp.domain.payload.response;
+package com.essay.zaloapp.domain.payload.response.Authorize;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.core.io.Resource;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class findUserByPhoneNumberResponse {
+public class InfoUser {
 
     private String userName;
 

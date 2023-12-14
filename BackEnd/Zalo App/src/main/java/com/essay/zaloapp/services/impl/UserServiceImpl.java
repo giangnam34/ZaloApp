@@ -7,9 +7,9 @@ import com.essay.zaloapp.domain.models.User;
 import com.essay.zaloapp.domain.payload.request.ChangeInfoUserRequest;
 import com.essay.zaloapp.domain.payload.request.ChangePhoneNumberUserRequest;
 import com.essay.zaloapp.domain.payload.request.FriendRequest;
+import com.essay.zaloapp.domain.payload.response.Authorize.InfoUser;
 import com.essay.zaloapp.domain.payload.response.GetAllInviteFriendResponse;
 import com.essay.zaloapp.domain.payload.response.GetUserResponse;
-import com.essay.zaloapp.domain.payload.response.findUserByPhoneNumberResponse;
 import com.essay.zaloapp.repository.FriendsRepository;
 import com.essay.zaloapp.repository.UserRepository;
 import com.essay.zaloapp.services.FileStorageService;
@@ -167,8 +167,8 @@ public class UserServiceImpl implements UserService {
         try {
             User user = userRepository.findByPhoneNumber(phoneNumber);
             if (user == null || !user.getIsConfirmed() || user.getIsLocked()) return ResponseEntity.badRequest().body(" Số điện thoại chưa đăng ký tài khoản hoặc không cho phép tìm kiếm!");
-            findUserByPhoneNumberResponse findUserByPhoneNumberResponse = new findUserByPhoneNumberResponse(user.getFullName(), "http://localhost:8181/v1/users/imageAvatarAnotherUser/" + phoneNumber,phoneNumber);
-            return ResponseEntity.ok(findUserByPhoneNumberResponse);
+            InfoUser InfoUser = new InfoUser(user.getFullName(), "http://localhost:8181/v1/users/imageAvatarAnotherUser/" + phoneNumber,phoneNumber);
+            return ResponseEntity.ok(InfoUser);
         } catch (Exception e){
             throw new Exception("Có lỗi xảy ra. Vui lòng thử lại!!!");
         }
@@ -349,10 +349,10 @@ public class UserServiceImpl implements UserService {
         try{
             List<Friends> friendsList = friendsRepository.findByFriendsIdUser1(userId);
             friendsList.addAll(friendsRepository.findByFriendsIdUser2(userId));
-            List<findUserByPhoneNumberResponse> result = new ArrayList<>();
+            List<InfoUser> result = new ArrayList<>();
             for (Friends friend : friendsList) {
                 if (friend.getFriendStatus().equals(FriendStatus.IsFriend))
-                    result.add(new findUserByPhoneNumberResponse(Objects.equals(userId, friend.getFriendsId().getUser1().getId()) ? friend.getFriendsId().getUser2().getFullName() : friend.getFriendsId().getUser1().getFullName(),
+                    result.add(new InfoUser(Objects.equals(userId, friend.getFriendsId().getUser1().getId()) ? friend.getFriendsId().getUser2().getFullName() : friend.getFriendsId().getUser1().getFullName(),
                             "http://localhost:8181/v1/users/imageAvatarAnotherUser/" + (Objects.equals(userId, friend.getFriendsId().getUser1().getId()) ? friend.getFriendsId().getUser2().getPhoneNumber() : friend.getFriendsId().getUser1().getPhoneNumber()),
                             Objects.equals(userId, friend.getFriendsId().getUser1().getId()) ? friend.getFriendsId().getUser2().getPhoneNumber() : friend.getFriendsId().getUser1().getPhoneNumber()));
             }
