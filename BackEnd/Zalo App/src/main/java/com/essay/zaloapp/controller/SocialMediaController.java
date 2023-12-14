@@ -51,5 +51,17 @@ public class SocialMediaController {
         return result.getMesage().equals("Thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
-    //
+    // Thích bài viết
+    @PutMapping("/like-post/{userId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> likePost(@AuthenticationPrincipal UserPrincipal userPrincipal, @P){
+
+    }
+    // Thêm bình luận mới
+    // Cập nhật bình luận
+    // Xóa bình luận
+    // Thích bình luận
+    // Số lượng bình luận
+    // Thông tin tất cả bình luận
+    // Thông tin bình luận
 }
