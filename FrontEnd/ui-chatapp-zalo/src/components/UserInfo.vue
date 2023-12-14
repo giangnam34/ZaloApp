@@ -6,6 +6,7 @@
                     <div class="icon-close" @click="closeDialog"><font-awesome-icon icon="fa-solid fa-x" /></div>
                 </h2>
             </v-card-title>
+            <hr style="border: none; border-bottom: 1px solid #ccc;">
             <v-card-text class="dialog-content">
                 <div class="profile-photo">
                     <div class="cover-avatar">
@@ -22,30 +23,71 @@
                         </div>
                     </div>
                 </div>
+                <hr style="border: none; border-bottom: 1px solid #ccc;">
                 <div class="profile-information">
                     <div class="profile-header">
-                        Thông tin cá nhân
+                        <strong>Thông tin cá nhân</strong>
                     </div>
                     <div>
                         <div class="user-profile-details">
                             <div class="user-profile-item">
-                                <span>Điện thoại</span>
-                                <span>{{ user.phoneNumber }}</span>
+                                <span class="title">Điện thoại</span>
+                                <span class="content">{{ user.phoneNumber }}</span>
                             </div>
                             <div class="user-profile-item">
-                                <span>Giới tính</span>
-                                <span>{{ user.sex === 'Male' ? 'Nam' : 'Nữ' }}</span>
+                                <span class="title">Giới tính</span>
+                                <span class="content">{{ user.sex === 'Male' ? 'Nam' : 'Nữ' }}</span>
                             </div>
                             <div class="user-profile-item">
-                                <span>Ngày sinh</span>
-                                <span>{{ formattedBirthday }}</span>
+                                <span class="title">Ngày sinh</span>
+                                <span class="content">{{ formattedBirthday }}</span>
                             </div>
                         </div>
                     </div>
                 </div>
+                <hr style="border: none; border-bottom: 1px solid #ccc;">
                 <div class="profile-action">
-
+                    <div class="update-button" @click="openUpdateDialog">
+                        <font-awesome-icon icon="fa-solid fa-pen-to-square" />
+                        <span>Cập nhật</span>
+                    </div>
                 </div>
+            </v-card-text>
+        </v-card>
+    </v-dialog>
+    <v-dialog class="dialog-container" v-model="updateDialogVisible" max-width="352px">
+        <v-card class="dialog-component">
+            <v-card-title class="dialog-title">
+                <div style="display: flex;">
+                    <div @click="closeUpdateDialog" style="cursor: pointer; margin-right: 10px"><font-awesome-icon
+                            icon="fa-solid fa-x" />
+                    </div>
+                    <h2>Cập nhật thông tin tài khoản</h2>
+                </div>
+            </v-card-title>
+            <v-card-text>
+                <v-form @submit.prevent="submitUpdateForm">
+                    <v-text-field label="Họ và tên" v-model="updatedFullName"></v-text-field>
+                    <v-row>
+                        <v-col>
+                            <v-text-field v-model="updatedGender" label="Chọn giới tính" readonly
+                                @click="toggleGenderMenu"></v-text-field>
+                            <v-menu v-model="genderMenu" :close-on-content-click="false" transition="scale-transition"
+                                offset-y origin="bottom left">
+                                <v-list>
+                                    <v-list-item v-for="genderOption in genderOptions" :key="genderOption"
+                                        @click="selectGender(genderOption)">
+                                        <v-list-item-title>{{ genderOption }}</v-list-item-title>
+                                    </v-list-item>
+                                </v-list>
+                            </v-menu>
+                        </v-col>
+                    </v-row>
+                    <v-text-field label="Ngày sinh" v-model="updatedBirthday" type="date"
+                        format="yyyy-MM-dd"></v-text-field>
+
+                    <v-btn type="submit">Lưu</v-btn>
+                </v-form>
             </v-card-text>
         </v-card>
     </v-dialog>
@@ -60,10 +102,7 @@ export default {
         showPopup: Boolean
     },
     created() {
-        // Lấy user từ localStorage
         const userString = localStorage.getItem('user');
-
-        // Chuyển đổi chuỗi JSON thành đối tượng JavaScript
         if (userString) {
             this.user = JSON.parse(userString);
         }
@@ -72,6 +111,12 @@ export default {
         return {
             dialogVisible: false,
             user: null,
+            updateDialogVisible: false,
+            updatedFullName: '',
+            updatedBirthday: null,
+            updatedGender: '',
+            genderOptions: ['Nam', 'Nữ'],
+            genderMenu: false,
         };
     },
     computed: {
@@ -101,6 +146,33 @@ export default {
         closeDialog() {
             this.dialogVisible = false;
             this.$emit('update:showPopup', false); // emit sự kiện để cập nhật showPopup trong component cha
+        },
+        openUpdateDialog() {
+            this.updateDialogVisible = true;
+
+            this.updatedFullName = this.user.fullName;
+            this.updatedGender = this.user.sex === 'Male' ? 'Nam' : 'Nữ';
+            this.updatedBirthday = this.formatDate(new Date(this.user.birthDay));
+
+        },
+        closeUpdateDialog() {
+            this.updateDialogVisible = false;
+        },
+        submitUpdateForm() {
+            this.closeUpdateDialog(); // Đóng dialog sau khi hoàn tất cập nhật
+        },
+        formatDate(date) {
+            const year = date.getFullYear();
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        },
+        toggleGenderMenu() {
+            this.genderMenu = !this.genderMenu;
+        },
+        selectGender(genderOption) {
+            this.updatedGender = genderOption;
+            this.genderMenu = false;
         },
     },
 };
@@ -219,17 +291,43 @@ export default {
 
             .profile-information {
 
-                .profile-header {}
+                .profile-header {
+                    margin-top: 5px;
+                    margin-bottom: 10px;
+                    margin-left: 3px;
+                }
 
-                div {
-                    .user-profile-details {
+                .user-profile-details {
+                    display: flex;
+                    flex-direction: column;
 
-                        .user-profile-item {}
+                    .user-profile-item {
+                        display: flex;
+                        justify-content: space-between;
+                        margin-bottom: 10px;
+
+                        .title {
+                            flex-basis: 40%;
+                            margin-left: 3px;
+                        }
+
+                        .content {
+                            flex-basis: 60%;
+                        }
                     }
                 }
             }
 
-            .profile-action {}
+            .profile-action {
+                height: 40px;
+
+                .update-button {
+                    margin-top: 10px;
+                    display: flex;
+                    justify-content: center;
+                    cursor: pointer;
+                }
+            }
         }
     }
 }

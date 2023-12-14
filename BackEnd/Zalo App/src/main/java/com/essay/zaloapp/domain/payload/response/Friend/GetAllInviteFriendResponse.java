@@ -1,4 +1,4 @@
-package com.essay.zaloapp.domain.payload.response;
+package com.essay.zaloapp.domain.payload.response.Friend;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

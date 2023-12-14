@@ -1,7 +1,7 @@
 package com.essay.zaloapp.controller;
 
 import com.essay.zaloapp.domain.enums.Audience;
-import com.essay.zaloapp.domain.payload.request.CreateNewPostRequest;
+import com.essay.zaloapp.domain.payload.request.SocialMedia.CreateNewPostRequest;
 import com.essay.zaloapp.secruity.UserPrincipal;
 import com.essay.zaloapp.services.SocialMediaService;
 import com.essay.zaloapp.services.impl.SocialMediaServiceImpl;

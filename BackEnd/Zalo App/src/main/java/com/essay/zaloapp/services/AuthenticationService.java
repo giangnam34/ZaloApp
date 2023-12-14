@@ -1,7 +1,7 @@
 package com.essay.zaloapp.services;
 
-import com.essay.zaloapp.domain.payload.request.*;
-import com.essay.zaloapp.domain.payload.response.ResultSMSResponse;
+import com.essay.zaloapp.domain.payload.request.Authorize.*;
+import com.essay.zaloapp.domain.payload.response.Authorize.ResultSMSResponse;
 import com.essay.zaloapp.secruity.UserPrincipal;
 import org.springframework.http.ResponseEntity;
 

@@ -30,10 +30,11 @@ import {
     faUserPlus, faUsers, faCaretDown, faUserGroup, faUsersLine, faEnvelopeOpen, faSort, faFilter,
     faChevronDown, faPlus, faChartSimple, faCheck, faPhone, faKey, faEye, faEyeSlash, faPencil, faTag,
     faVideo, faInfo, faPaperclip, faCameraRetro, faFont, faExclamation, faAt, faBullhorn, faWrench, faGlobe,
-    faDatabase, faChevronRight, faUser, faUnlockKeyhole, faX
+    faDatabase, faChevronRight, faUser, faUnlockKeyhole, faX, faNewspaper, faEllipsisVertical, faPenToSquare,
+    faUserTag
 } from '@fortawesome/free-solid-svg-icons'
 
-import { faAddressBook, faSquareCheck, faNoteSticky, faImage, faAddressCard, faClock, faFaceLaugh, faThumbsUp, faStar } from '@fortawesome/free-regular-svg-icons'
+import { faAddressBook, faSquareCheck, faNoteSticky, faImage, faAddressCard, faClock, faFaceLaugh, faThumbsUp, faStar, faHeart, faComment, faImages } from '@fortawesome/free-regular-svg-icons'
 
 import { faRocketchat } from '@fortawesome/free-brands-svg-icons'
 
@@ -42,7 +43,9 @@ library.add(faUserSecret, faCommentDots, faAddressBook, faToolbox, faGear, faClo
     faUsers, faCaretDown, faEllipsis, faPencil, faTag, faVideo, faInfo, faNoteSticky, faImage, faPaperclip, faCameraRetro,
     faAddressCard, faClock, faFont, faExclamation, faRocketchat, faFaceLaugh, faAt, faThumbsUp, faStar, faBullhorn,
     faWrench, faGlobe, faDatabase, faChevronRight, faUserGroup, faUsersLine, faEnvelopeOpen, faSort, faFilter, faChevronDown,
-    faPlus, faChartSimple, faCheck, faPhone, faKey, faEye, faEyeSlash, faUser, faUnlockKeyhole, faX)
+    faPlus, faChartSimple, faCheck, faPhone, faKey, faEye, faEyeSlash, faUser, faUnlockKeyhole, faX, faNewspaper, faHeart, faComment,
+    faEllipsisVertical, faPenToSquare, faImages, faUserTag
+)
 
 const vuetify = createVuetify({
     components,

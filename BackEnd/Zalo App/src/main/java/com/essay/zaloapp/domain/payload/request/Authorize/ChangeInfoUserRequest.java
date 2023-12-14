@@ -1,4 +1,4 @@
-package com.essay.zaloapp.domain.payload.request;
+package com.essay.zaloapp.domain.payload.request.Authorize;
 
 import com.essay.zaloapp.domain.enums.Sex;
 import lombok.AllArgsConstructor;

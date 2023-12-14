@@ -2,9 +2,12 @@ package com.essay.zaloapp.controller;
 
 import com.essay.zaloapp.domain.models.OTPCode;
 import com.essay.zaloapp.domain.models.User;
-import com.essay.zaloapp.domain.payload.request.*;
-import com.essay.zaloapp.domain.payload.response.ResultSMSResponse;
-import com.essay.zaloapp.domain.payload.response.SignUpResponse;
+import com.essay.zaloapp.domain.payload.request.Authorize.AuthorizeOTPRequest;
+import com.essay.zaloapp.domain.payload.request.Authorize.ForgetPasswordRequest;
+import com.essay.zaloapp.domain.payload.request.Authorize.LoginRequest;
+import com.essay.zaloapp.domain.payload.request.Authorize.SignUpRequest;
+import com.essay.zaloapp.domain.payload.response.Authorize.ResultSMSResponse;
+import com.essay.zaloapp.domain.payload.response.Authorize.SignUpResponse;
 import com.essay.zaloapp.repository.UserRepository;
 import com.essay.zaloapp.services.AuthenticationService;
 import com.fasterxml.jackson.databind.ObjectMapper;

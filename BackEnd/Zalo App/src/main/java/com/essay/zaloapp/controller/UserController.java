@@ -1,10 +1,10 @@
 package com.essay.zaloapp.controller;
 
 import com.essay.zaloapp.Constant.Message;
-import com.essay.zaloapp.domain.payload.request.ChangeInfoUserRequest;
-import com.essay.zaloapp.domain.payload.request.ChangePasswordRequest;
-import com.essay.zaloapp.domain.payload.request.ChangePhoneNumberUserRequest;
-import com.essay.zaloapp.domain.payload.request.FriendRequest;
+import com.essay.zaloapp.domain.payload.request.Authorize.ChangeInfoUserRequest;
+import com.essay.zaloapp.domain.payload.request.Authorize.ChangePasswordRequest;
+import com.essay.zaloapp.domain.payload.request.Authorize.ChangePhoneNumberUserRequest;
+import com.essay.zaloapp.domain.payload.request.Friend.FriendRequest;
 import com.essay.zaloapp.secruity.UserPrincipal;
 import com.essay.zaloapp.services.AuthenticationService;
 import com.essay.zaloapp.services.UserService;
@@ -13,13 +13,11 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.security.Principal;
 
 @RestController
 @RequestMapping("/v1/users")

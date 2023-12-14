@@ -36,6 +36,12 @@
             <font-awesome-icon icon="fa-regular fa-square-check" style="color: #ffffff" />
           </a>
         </div>
+        <div class="nav__tabs_posts" title="Bài đăng" @mouseover="onHover('posts')" @mouseleave="outHover()"
+          @click="onClick(10)" :class="{ hover: isHover && name === 'posts', isChoose: index === 10 }">
+          <a id="post-icon">
+            <font-awesome-icon icon="fa-solid fa-newspaper" style="color: #ffffff" />
+          </a>
+        </div>
       </div>
       <div class="nav__tabs_middle"></div>
       <div class="nav__tabs_bottom">
@@ -290,7 +296,7 @@ export default {
 }
 
 #sidebarNav {
-  height: 99.2vh;
+  height: 100vh;
   width: 64px;
   //border-right: 1px solid rgb(160, 160, 160);
   display: inline-block;
@@ -388,14 +394,16 @@ export default {
 
       .nav__tabs_message,
       .nav__tabs_contacts,
-      .nav__tabs_to-do {
+      .nav__tabs_to-do,
+      .nav__tabs_posts {
         height: 64px;
         width: 100%;
         display: table;
 
         #chat-message-icon,
         #address-icon,
-        #to-do-icon {
+        #to-do-icon,
+        #post-icon {
           color: #fff;
           display: table-cell;
           font-size: 28px;
@@ -438,7 +446,7 @@ export default {
     }
 
     .nav__tabs_middle {
-      height: 270px;
+      height: 188px;
     }
 
     .nav__tabs_bottom {

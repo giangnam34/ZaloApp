@@ -1,4 +1,4 @@
-package com.essay.zaloapp.domain.payload.response;
+package com.essay.zaloapp.domain.payload.response.Authorize;
 
 import lombok.Getter;
 import lombok.Setter;

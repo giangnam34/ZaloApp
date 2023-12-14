@@ -179,10 +179,10 @@ export default {
 
                             if (error.response.status === 400) {
                                 this.isError = true;
-                                this.validationError = 'Tên đăng nhập hoặc mật khẩu không đúng! Vui lòng nhập lại!';
+                                this.validationError = 'Xảy ra lỗi trong quá trình đăng nhập!';
                             } else {
                                 this.isError = true;
-                                this.validationError = 'Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại!';
+                                this.validationError = 'Tên đăng nhập hoặc mật khẩu không đúng! Vui lòng nhập lại!';
                             }
                         } else if (error.request) {
                             console.error('No response received from the server:', error.request);

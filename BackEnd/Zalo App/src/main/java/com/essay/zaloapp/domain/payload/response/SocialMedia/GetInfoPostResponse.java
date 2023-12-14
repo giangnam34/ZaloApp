@@ -1,8 +1,7 @@
 package com.essay.zaloapp.domain.payload.response.SocialMedia;
 
 import com.essay.zaloapp.domain.enums.Audience;
-import com.essay.zaloapp.domain.models.Post;
-import com.essay.zaloapp.domain.payload.response.findUserByPhoneNumberResponse;
+import com.essay.zaloapp.domain.payload.response.Authorize.findUserByPhoneNumberResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
