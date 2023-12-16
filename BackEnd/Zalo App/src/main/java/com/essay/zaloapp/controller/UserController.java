@@ -141,7 +141,7 @@ public class UserController {
     // Hiển thị danh sách bạn bè
     @GetMapping("/getAllFriendUser")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> getAllFriendUser(@RequestBody FriendRequest friendRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+    public ResponseEntity<?> getAllFriendUser(@AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
         return userService.listAllFriend(userPrincipal.getId());
     }
 

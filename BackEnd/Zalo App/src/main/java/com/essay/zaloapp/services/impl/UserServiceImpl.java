@@ -304,7 +304,7 @@ public class UserServiceImpl implements UserService {
                 friends.setIsDelete(Objects.equals(userId, user1.getId()) ? 1L : 2L);
                 friendsRepository.save(friends);
             }
-            return ResponseEntity.badRequest().body("Có lỗi xảy ra. Vui lòng thử lại!!!");
+            return ResponseEntity.ok("Xóa bạn người này thành công!!!");
         } catch (Exception e){
             throw new Exception("Có lỗi xảy ra. Vui lòng thử lại!!!");
         }

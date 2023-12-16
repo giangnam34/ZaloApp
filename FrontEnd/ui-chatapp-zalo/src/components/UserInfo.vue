@@ -40,7 +40,7 @@
                             </div>
                             <div class="user-profile-item">
                                 <span class="title">Ngày sinh</span>
-                                <span class="content">{{ formattedBirthday }}</span>
+                                <span class="content">{{ displayedDate }}</span>
                             </div>
                         </div>
                     </div>
@@ -86,7 +86,7 @@
                     <v-text-field label="Ngày sinh" v-model="updatedBirthday" type="date"
                         format="yyyy-MM-dd"></v-text-field>
 
-                    <v-btn type="submit">Lưu</v-btn>
+                    <v-btn type="submit" @click="updateUserInfo">Lưu</v-btn>
                 </v-form>
             </v-card-text>
         </v-card>
@@ -96,16 +96,24 @@
 <script>
 import { format, parseISO } from 'date-fns';
 import viLocale from 'date-fns/locale/vi';
+import axios from 'axios';
+import { useToast } from "vue-toastification";
 export default {
     name: "UserInfo",
     props: {
         showPopup: Boolean
+    },
+    setup() {
+        // Get toast interface
+        const toast = useToast();
+        return { toast }
     },
     created() {
         const userString = localStorage.getItem('user');
         if (userString) {
             this.user = JSON.parse(userString);
         }
+        this.formattedBirthday();
     },
     data() {
         return {
@@ -117,16 +125,8 @@ export default {
             updatedGender: '',
             genderOptions: ['Nam', 'Nữ'],
             genderMenu: false,
+            displayedDate: '',
         };
-    },
-    computed: {
-        formattedBirthday() {
-            if (this.user && this.user.birthDay) {
-                const parsedDate = parseISO(this.user.birthDay);
-                return format(parsedDate, "dd 'tháng' MM, yyyy", { locale: viLocale });
-            }
-            return '';
-        },
     },
     watch: {
         // Sử dụng watch để theo dõi sự thay đổi của prop từ component cha
@@ -139,6 +139,12 @@ export default {
         }
     },
     methods: {
+        formattedBirthday() {
+            if (this.user && this.user.birthDay) {
+                const parsedDate = parseISO(this.user.birthDay);
+                this.displayedDate = format(parsedDate, "dd 'tháng' MM, yyyy", { locale: viLocale });
+            }
+        },
         openDialog() {
             this.dialogVisible = true;
             this.$emit('update:showPopup', true); // emit sự kiện để cập nhật showPopup trong component cha
@@ -147,25 +153,30 @@ export default {
             this.dialogVisible = false;
             this.$emit('update:showPopup', false); // emit sự kiện để cập nhật showPopup trong component cha
         },
-        openUpdateDialog() {
-            this.updateDialogVisible = true;
-
-            this.updatedFullName = this.user.fullName;
-            this.updatedGender = this.user.sex === 'Male' ? 'Nam' : 'Nữ';
-            this.updatedBirthday = this.formatDate(new Date(this.user.birthDay));
-
-        },
-        closeUpdateDialog() {
-            this.updateDialogVisible = false;
-        },
-        submitUpdateForm() {
-            this.closeUpdateDialog(); // Đóng dialog sau khi hoàn tất cập nhật
-        },
         formatDate(date) {
             const year = date.getFullYear();
             const month = (date.getMonth() + 1).toString().padStart(2, '0');
             const day = date.getDate().toString().padStart(2, '0');
             return `${year}-${month}-${day}`;
+        },
+        openUpdateDialog() {
+            this.updateDialogVisible = true;
+            this.dialogVisible = false;
+            this.updatedFullName = this.user.fullName;
+            this.updatedGender = this.user.sex === 'Male' ? 'Nam' : 'Nữ';
+            const parts = this.displayedDate.split(" ");
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[2].replace("tháng", ""), 10);
+            const year = parseInt(parts[3], 10);
+            const date = new Date(year, month - 1, day);
+            this.updatedBirthday = this.formatDate(date);
+        },
+        closeUpdateDialog() {
+            this.updateDialogVisible = false;
+            this.dialogVisible = true;
+        },
+        submitUpdateForm() {
+            this.closeUpdateDialog(); // Đóng dialog sau khi hoàn tất cập nhật
         },
         toggleGenderMenu() {
             this.genderMenu = !this.genderMenu;
@@ -173,6 +184,58 @@ export default {
         selectGender(genderOption) {
             this.updatedGender = genderOption;
             this.genderMenu = false;
+        },
+        async updateUserInfo() {
+            try {
+
+                const dateString = this.updatedBirthday;
+                const dateObject = new Date(dateString);
+
+                const changeInfoUserRequest = {
+                    fullName: this.updatedFullName,
+                    sex: this.updatedGender === 'Nam' ? 'Male' : 'Female',
+                    birthday: dateObject,
+                }
+
+                console.log(changeInfoUserRequest);
+
+                const response = await axios.post(`users/changeInfoUser`, changeInfoUserRequest, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token")
+                    }
+                });
+
+                if (response.status === 200) {
+                    this.user.fullName = changeInfoUserRequest.fullName;
+                    this.user.sex = changeInfoUserRequest.sex;
+                    const year = changeInfoUserRequest.birthday.getUTCFullYear();
+                    const month = String(changeInfoUserRequest.birthday.getUTCMonth() + 1).padStart(2, "0");
+                    const day = String(changeInfoUserRequest.birthday.getUTCDate()).padStart(2, "0");
+                    const hours = String(changeInfoUserRequest.birthday.getUTCHours()).padStart(2, "0");
+                    const minutes = String(changeInfoUserRequest.birthday.getUTCMinutes()).padStart(2, "0");
+                    const seconds = String(changeInfoUserRequest.birthday.getUTCSeconds()).padStart(2, "0");
+                    const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.000+00:00`;
+                    this.user.birthDay = formattedDate;
+                    this.formattedBirthday();
+                    this.updateDialogVisible = false;
+                    this.dialogVisible = true;
+                    this.toast.success(response.data, { timeout: 3000 });
+                } else {
+                    this.toast.error(response.data, { timeout: 3000 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 3000 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 3000 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 3000 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 3000 });
+                }
+            }
         },
     },
 };
