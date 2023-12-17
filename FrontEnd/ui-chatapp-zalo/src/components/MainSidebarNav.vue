@@ -149,7 +149,7 @@
             </div>
           </div>
         </div>
-        <UserInfo v-model:showPopup="showPopup"></UserInfo>
+        <UserInfo v-model:showPopup="showPopup" v-model="user" @update="handleUserUpdate"></UserInfo>
       </div>
     </div>
   </div>
@@ -157,6 +157,7 @@
   
 <script>
 import UserInfo from './UserInfo.vue';
+import axios from 'axios';
 export default {
   components: {
     UserInfo
@@ -188,10 +189,20 @@ export default {
       this.user = JSON.parse(userString);
     }
   },
+  // watch: {
+  //   'user.imageAvatarUrl': {
+  //     handler: 'fetchAvatar',
+  //   },
+  // },
   mounted() {
     document.addEventListener("click", this.handleClickOutSide);
+    this.fetchAvatar();
   },
   methods: {
+    handleUserUpdate() {
+      // Xử lý khi thông tin user thay đổi từ UserInfo
+      this.fetchAvatar();
+    },
     emitOpenDialogEvent() {
       this.showPopup = true;
     },
@@ -261,7 +272,23 @@ export default {
       this.$emit("userLoggedIn", '');
       event.preventDefault();
       event.stopPropagation();
-    }
+    },
+    fetchAvatar() {
+      axios.get(`users/imageAvatar`, {
+        headers: {
+          'Authorization': localStorage.getItem("token"),
+        },
+        responseType: 'blob',
+      }).then(response => {
+        if (this.user.imageAvatarUrl) {
+          URL.revokeObjectURL(this.user.imageAvatarUrl);
+        }
+        this.user.imageAvatarUrl = URL.createObjectURL(response.data);
+      }).catch(error => {
+        console.error('Error fetching avatar:', error);
+      });
+      console.log('user.imageAvatarUrl changed:', this.user.imageAvatarUrl);
+    },
   },
   beforeUnmount() {
     document.removeEventListener("click", this.handleClickOutside);

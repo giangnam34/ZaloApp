@@ -69,14 +69,12 @@ public class UserController {
     }
 
     @GetMapping(value = "/imageAvatarAnotherUser/{phoneNumber}", produces = MediaType.IMAGE_JPEG_VALUE)
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Resource> getAnotherUserImageAvatar(@PathVariable String phoneNumber,@AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+    public ResponseEntity<Resource> getAnotherUserImageAvatar(@PathVariable String phoneNumber) throws Exception {
         return ResponseEntity.ok(userService.getImageAvatar(phoneNumber));
     }
 
     @GetMapping(value = "/imageCoverAvatarAnotherUser/{phoneNumber}", produces = MediaType.IMAGE_JPEG_VALUE)
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Resource> getAnotherUserImageCoverAvatar(@PathVariable String phoneNumber,@AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+    public ResponseEntity<Resource> getAnotherUserImageCoverAvatar(@PathVariable String phoneNumber) throws Exception {
         return ResponseEntity.ok(userService.getImageCoverAvatar(phoneNumber));
     }
 

@@ -10,12 +10,21 @@
             <v-card-text class="dialog-content">
                 <div class="profile-photo">
                     <div class="cover-avatar">
-                        <img class="cover-image" src="https://i.imgur.com/gEKsypv.jpg" alt="None" crossorigin="anonymous">
+                        <label for="addFileInput1" class="cursor-pointer">
+                            <img class="cover-image" :src="user.imageCoverPhotoUrl" alt="None" crossorigin="anonymous">
+                        </label>
+                        <input type="file" id="addFileInput1" ref="fileInput" @change="addFileCoverAvatar"
+                            style="display: none;" accept="image/*">
                     </div>
                     <div class="ava-name-container">
                         <div class="avatar-profile">
                             <div class="avatar">
-                                <img class="avatar-image" src="https://i.imgur.com/gEKsypv.jpg">
+                                <label for="addFileInput2" class="cursor-pointer">
+                                    <img class="avatar-image" :src="user.imageAvatarUrl">
+                                </label>
+                                <input type="file" id="addFileInput2" ref="fileInput" @change="addFileAvatar"
+                                    style="display: none;" accept="image/*">
+
                             </div>
                         </div>
                         <div class="fullname-profile">
@@ -107,6 +116,10 @@ export default {
         // Get toast interface
         const toast = useToast();
         return { toast }
+    },
+    mounted() {
+        this.fetchAvatar();
+        this.fetchCoverAvatar();
     },
     created() {
         const userString = localStorage.getItem('user');
@@ -219,26 +232,115 @@ export default {
                     this.formattedBirthday();
                     this.updateDialogVisible = false;
                     this.dialogVisible = true;
-                    this.toast.success(response.data, { timeout: 3000 });
+                    this.toast.success(response.data, { timeout: 1500 });
                 } else {
-                    this.toast.error(response.data, { timeout: 3000 });
+                    this.toast.error(response.data, { timeout: 1500 });
                 }
             } catch (error) {
                 if (error.response) {
                     if (error.response.status === 400) {
-                        this.toast.error(error.response.data, { timeout: 3000 });
+                        this.toast.error(error.response.data, { timeout: 1500 });
                     } else {
-                        this.toast.error(error.response.data, { timeout: 3000 });
+                        this.toast.error(error.response.data, { timeout: 1500 });
                     }
                 } else if (error.request) {
-                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 3000 });
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
                 } else {
-                    this.toast.error('Error setting up the request:' + error.message, { timeout: 3000 });
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
                 }
             }
         },
-    },
-};
+        async addFileCoverAvatar(event) {
+            try {
+                const formData = new FormData();
+                formData.append('file', event.target.files[0]);
+
+                const response = await axios.post(`users/changeImageCoverAvatar`, formData, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token"),
+                        'Content-Type': 'multipart/form-data',
+                    }
+                });
+
+                if (response.status === 200) {
+                    this.fetchCoverAvatar();
+                    this.toast.success(response.data, { timeout: 1500 });
+                } else {
+                    this.toast.error(response.data, { timeout: 1500 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
+            }
+        },
+        async addFileAvatar(event) {
+            try {
+                const formData = new FormData();
+                formData.append('file', event.target.files[0]);
+
+                const response = await axios.post(`users/changeImageAvatar`, formData, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token"),
+                        'Content-Type': 'multipart/form-data',
+                    }
+                });
+
+                if (response.status === 200) {
+                    this.fetchAvatar();
+                    this.$emit('update', this.user);
+                    this.toast.success(response.data, { timeout: 1500 });
+                } else {
+                    this.toast.error(response.data, { timeout: 1500 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
+            }
+        },
+        fetchCoverAvatar() {
+            axios.get(`users/imageCoverAvatar`, {
+                headers: {
+                    'Authorization': localStorage.getItem("token"),
+                },
+                responseType: 'blob',
+            }).then(response => {
+                this.user.imageCoverPhotoUrl = URL.createObjectURL(response.data);
+            }).catch(error => {
+                console.error('Error fetching avatar:', error);
+            });
+        },
+        fetchAvatar() {
+            axios.get(`users/imageAvatar`, {
+                headers: {
+                    'Authorization': localStorage.getItem("token"),
+                },
+                responseType: 'blob',
+            }).then(response => {
+                this.user.imageAvatarUrl = URL.createObjectURL(response.data);
+            }).catch(error => {
+                console.error('Error fetching avatar:', error);
+            });
+        },
+    }
+}
 </script>
   
 <style scoped lang="scss">

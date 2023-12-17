@@ -272,19 +272,19 @@ export default {
 
                 } else {
                     console.error(response.body);
-                    this.toast.error(response.body, { timeout: 3000 });
+                    this.toast.error(response.body, { timeout: 1500 });
                 }
             } catch (error) {
                 if (error.response) {
                     if (error.response.status === 400) {
-                        this.toast.error(error.response.data, { timeout: 3000 });
+                        this.toast.error(error.response.data, { timeout: 1500 });
                     } else {
-                        this.toast.error(error.response.data, { timeout: 3000 });
+                        this.toast.error(error.response.data, { timeout: 1500 });
                     }
                 } else if (error.request) {
-                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 3000 });
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
                 } else {
-                    this.toast.error('Error setting up the request:' + error.message, { timeout: 3000 });
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
                 }
             }
         },
@@ -303,23 +303,23 @@ export default {
 
                 if (response.status === 200) {
                     this.friends = this.friends.filter(friend => friend.phoneNumber !== phoneNumber);
-                    this.toast.success(response.body, { timeout: 3000 });
+                    this.toast.success(response.body, { timeout: 1500 });
                 } else {
                     console.error(response.body);
-                    this.toast.error(response.body, { timeout: 3000 });
+                    this.toast.error(response.body, { timeout: 1500 });
                 }
             } catch (error) {
                 if (error.response) {
 
                     if (error.response.status === 400) {
-                        this.toast.error(error.response.data, { timeout: 3000 });
+                        this.toast.error(error.response.data, { timeout: 1500 });
                     } else {
-                        this.toast.error(error.response.data, { timeout: 3000 });
+                        this.toast.error(error.response.data, { timeout: 1500 });
                     }
                 } else if (error.request) {
-                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 3000 });
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
                 } else {
-                    this.toast.error('Error setting up the request:' + error.message, { timeout: 3000 });
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
                 }
             }
         },
@@ -338,22 +338,22 @@ export default {
 
                 if (response.status === 200) {
                     this.friends = this.friends.filter(friend => friend.phoneNumber !== phoneNumber);
-                    this.toast.success(response.body, { timeout: 3000 });
+                    this.toast.success(response.body, { timeout: 1500 });
                 } else {
                     console.error(response.body);
-                    this.toast.error(response.body || 'Đã xảy ra lỗi!', { timeout: 3000 });
+                    this.toast.error(response.body || 'Đã xảy ra lỗi!', { timeout: 1500 });
                 }
             } catch (error) {
                 if (error.response) {
                     if (error.response.status === 400) {
-                        this.toast.error(error.response.data, { timeout: 3000 });
+                        this.toast.error(error.response.data, { timeout: 1500 });
                     } else {
-                        this.toast.error(error.response.data, { timeout: 3000 });
+                        this.toast.error(error.response.data, { timeout: 1500 });
                     }
                 } else if (error.request) {
-                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 3000 });
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
                 } else {
-                    this.toast.error('Error setting up the request:' + error.message, { timeout: 3000 });
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
                 }
             }
         },

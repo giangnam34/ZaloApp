@@ -164,7 +164,7 @@ export default {
 
                             localStorage.setItem('token', jwtToken);
 
-                            this.toast.success("Đăng nhập thành công!", { timeout: 3000 });
+                            this.toast.success("Đăng nhập thành công!", { timeout: 1500 });
 
                             this.$emit("userLoggedIn", jwtToken);
 
