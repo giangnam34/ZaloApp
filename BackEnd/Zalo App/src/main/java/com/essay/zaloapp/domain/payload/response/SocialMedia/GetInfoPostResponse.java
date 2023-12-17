@@ -1,17 +1,20 @@
 package com.essay.zaloapp.domain.payload.response.SocialMedia;
 
 import com.essay.zaloapp.domain.enums.Audience;
-import com.essay.zaloapp.domain.payload.response.Authorize.findUserByPhoneNumberResponse;
+import com.essay.zaloapp.domain.payload.response.Authorize.InfoUser;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
+import lombok.ToString;
+import org.springframework.core.io.Resource;
 
+import java.util.Date;
 import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class GetInfoPostResponse {
 
     private Long id;
@@ -25,12 +28,16 @@ public class GetInfoPostResponse {
     private GetInfoPostResponse postFather;
 
     // Danh sách bạn bè được gắn thẻ hoặc được chỉ định nhìn thầy/không thấy bài viết
-    private List<findUserByPhoneNumberResponse> userTagList;
+    private List<InfoUser> userTagList;
 
-    private List<findUserByPhoneNumberResponse> userLikeList;
+    private List<InfoUser> userLikeList;
 
-    private List<findUserByPhoneNumberResponse> userShareList;
+    private List<InfoUser> userShareList;
 
     // Hình ảnh hoặc video kèm theo
-    private MultipartFile[] files;
+    private List<String> files;
+
+    private Date createdAt;
+
+    private Date updatedAt;
 }

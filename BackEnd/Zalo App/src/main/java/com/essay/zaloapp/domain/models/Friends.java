@@ -18,9 +18,18 @@ public class Friends {
 	@EmbeddedId
 	private FriendsId friendsId;
 
+	@ManyToOne(cascade = CascadeType.ALL)
+	@MapsId("idUser1")
+	@JoinColumn(name = "user_id_1")
+	private User user1;
+
+	@ManyToOne(cascade = CascadeType.ALL)
+	@MapsId("idUser2")
+	@JoinColumn(name = "user_id_2")
+	private User user2;
+
 	private Date friendFrom;
 
-	//
 	private Long isBlock;
 
 	private Long isDelete;

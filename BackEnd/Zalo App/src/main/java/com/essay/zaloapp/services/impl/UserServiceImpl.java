@@ -17,6 +17,7 @@ import com.essay.zaloapp.services.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -66,7 +67,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public ResponseEntity<?> updateImageAvatar(Long userId, MultipartFile file){
         try{
+            if (file == null || file.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Thiếu hình ảnh để cập nhật");
             User user = userRepository.findById(userId);
+            if (file.getContentType().contains("video/mp4")) throw new Exception();
             user.setImageAvatarUrl(fileStorageService.storeFile(file));
             userRepository.save(user);
             return ResponseEntity.ok("Cập nhật ảnh đại diện thành công!");
@@ -107,6 +110,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public ResponseEntity<?> updateImageCoverAvatar(Long userId, MultipartFile file) {
         try{
+            if (file == null || file.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Thiếu hình ảnh để cập nhật");
             User user = userRepository.findById(userId);
             user.setImageCoverPhotoUrl(fileStorageService.storeFile(file));
             userRepository.save(user);
@@ -167,8 +171,8 @@ public class UserServiceImpl implements UserService {
         try {
             User user = userRepository.findByPhoneNumber(phoneNumber);
             if (user == null || !user.getIsConfirmed() || user.getIsLocked()) return ResponseEntity.badRequest().body(" Số điện thoại chưa đăng ký tài khoản hoặc không cho phép tìm kiếm!");
-            findUserByPhoneNumberResponse findUserByPhoneNumberResponse = new findUserByPhoneNumberResponse(user.getFullName(), "http://localhost:8181/v1/users/imageAvatarAnotherUser/" + phoneNumber,phoneNumber);
-            return ResponseEntity.ok(findUserByPhoneNumberResponse);
+            InfoUser InfoUser = new InfoUser(user.getFullName(), "http://localhost:8181/v1/users/imageAvatarAnotherUser/" + phoneNumber,phoneNumber);
+            return ResponseEntity.ok(InfoUser);
         } catch (Exception e){
             throw new Exception("Có lỗi xảy ra. Vui lòng thử lại!!!");
         }
@@ -190,8 +194,8 @@ public class UserServiceImpl implements UserService {
                 user1 = user2;
                 user2 = userTMP;
             }
-            if (friendsRepository.existsFriendsByFriendsId(new FriendsId(user1,user2))){
-                Friends friends = friendsRepository.findByFriendsId(new FriendsId(user1,user2));
+            if (friendsRepository.existsFriendsByFriendsId(new FriendsId(user1.getId(),user2.getId()))){
+                Friends friends = friendsRepository.findByFriendsId(new FriendsId(user1.getId(),user2.getId()));
                 if (friends.getFriendStatus().equals(FriendStatus.WaitingAccept)){
                     if (!friends.getSendInviteBy() && Objects.equals(user1.getId(), userId))
                         return ResponseEntity.badRequest().body("Đã gửi lời mời kết bạn từ trước. Vui lòng chờ người dùng phản hồi.");
@@ -208,7 +212,7 @@ public class UserServiceImpl implements UserService {
                         return ResponseEntity.badRequest().body("Người dùng đã chặn bạn! Xin thứ lỗi!");
                 }
             }
-            Friends friend = new Friends(new FriendsId(user1,user2), null, 0L, 0L, user2.getFullName(), user1.getFullName(), !Objects.equals(user1.getId(), userId), FriendStatus.WaitingAccept);
+            Friends friend = new Friends(new FriendsId(user1.getId(),user2.getId()), null, 0L, 0L, user2.getFullName(), user1.getFullName(), !Objects.equals(user1.getId(), userId), FriendStatus.WaitingAccept);
             friendsRepository.save(friend);
             return ResponseEntity.ok("Gửi lời mời kết bạn thành công!!!");
         } catch (Exception e){
@@ -233,17 +237,21 @@ public class UserServiceImpl implements UserService {
                 user1 = user2;
                 user2 = userTMP;
             }
-            Friends friends = friendsRepository.findByFriendsId(new FriendsId(user1,user2));
-            System.out.println(friends.getFriendsId().getUser1().getId());
-            System.out.println(friends.getFriendsId().getUser2().getId());
+            Friends friends = friendsRepository.findByFriendsId(new FriendsId(user1.getId(),user2.getId()));
             System.out.println(friends.getSendInviteBy());
             if (!friends.getSendInviteBy() && Objects.equals(user1.getId(), userId) || friends.getSendInviteBy() && Objects.equals(user2.getId(), userId))
                 return ResponseEntity.status(401).body("Bạn không có quyền để thực hiện hành động này!");
             if (friends.getFriendStatus().equals(FriendStatus.WaitingAccept)){
-                friends.setFriendStatus(FriendStatus.IsFriend);
-                friends.setFriendFrom(new Date(new Date().getTime() + 7 * 60 * 60000));
-                friendsRepository.save(friends);
-                return ResponseEntity.ok("Chấp nhận lời mời kết bạn thành công!!!");
+                if (addFriendRequest.getIsAcceptingInvite()) {
+                    friends.setFriendStatus(FriendStatus.IsFriend);
+                    friends.setFriendFrom(new Date(new Date().getTime() + 7 * 60 * 60000));
+                    friendsRepository.save(friends);
+                    return ResponseEntity.ok("Chấp nhận lời mời kết bạn thành công!!!");
+                }
+                else {
+                    friendsRepository.delete(friends);
+                    return ResponseEntity.ok("Không chấp nhận lời mời thành công!!!");
+                }
             }
             return ResponseEntity.badRequest().body("Có lỗi xảy ra. Vui lòng thử lại!!!");
         } catch (Exception e){
@@ -268,7 +276,7 @@ public class UserServiceImpl implements UserService {
                 user1 = user2;
                 user2 = userTMP;
             }
-            Friends friends = friendsRepository.findByFriendsId(new FriendsId(user1,user2));
+            Friends friends = friendsRepository.findByFriendsId(new FriendsId(user1.getId(),user2.getId()));
             if ( friends == null || (!friends.getSendInviteBy() && Objects.equals(user1.getId(), userId)) || (friends.getSendInviteBy() && Objects.equals(user2.getId(), userId)) )
                 return ResponseEntity.status(401).body("Bạn không có quyền để thực hiện hành động này!");
             if (friends.getFriendStatus().equals(FriendStatus.WaitingAccept)) {
@@ -298,7 +306,7 @@ public class UserServiceImpl implements UserService {
                 user1 = user2;
                 user2 = userTMP;
             }
-            Friends friends = friendsRepository.findByFriendsId(new FriendsId(user1,user2));
+            Friends friends = friendsRepository.findByFriendsId(new FriendsId(user1.getId(),user2.getId()));
             if (friends.getFriendStatus().equals(FriendStatus.IsFriend)){
                 friends.setFriendStatus(FriendStatus.IsUnFriend);
                 friends.setIsDelete(Objects.equals(userId, user1.getId()) ? 1L : 2L);
@@ -327,8 +335,8 @@ public class UserServiceImpl implements UserService {
                 user1 = user2;
                 user2 = userTMP;
             }
-            if (friendsRepository.existsFriendsByFriendsId(new FriendsId(user1,user2))){
-                Friends friends = friendsRepository.findByFriendsId(new FriendsId(user1,user2));
+            if (friendsRepository.existsFriendsByFriendsId(new FriendsId(user1.getId(),user2.getId()))){
+                Friends friends = friendsRepository.findByFriendsId(new FriendsId(user1.getId(),user2.getId()));
                 if (friends.getFriendStatus().equals(FriendStatus.ISBlock) && ((friends.getIsBlock() == 1 && Objects.equals(user2.getId(), userId)) || (friends.getIsBlock() == 2 && Objects.equals(user1.getId(), userId)))){
                     return ResponseEntity.badRequest().body("Người dùng đã block bạn từ trước!!!");
                 }
@@ -336,7 +344,7 @@ public class UserServiceImpl implements UserService {
                 friends.setIsBlock(Objects.equals(user1.getId(), userId) ? 1L : 2L);
                 return ResponseEntity.ok("Chặn người dùng này thành công!!!");
             }
-            Friends friends = new Friends(new FriendsId(user1,user2), null, Objects.equals(user1.getId(), userId) ? 1L : 2L, 0L, user2.getFullName(), user1.getFullName(), null, FriendStatus.ISBlock);
+            Friends friends = new Friends(new FriendsId(user1.getId(),user2.getId()), null, Objects.equals(user1.getId(), userId) ? 1L : 2L, 0L, user2.getFullName(), user1.getFullName(), null, FriendStatus.ISBlock);
             friendsRepository.save(friends);
             return ResponseEntity.ok("Chặn người dùng này thành công!!!");
         } catch (Exception e){
@@ -349,12 +357,12 @@ public class UserServiceImpl implements UserService {
         try{
             List<Friends> friendsList = friendsRepository.findByFriendsIdUser1(userId);
             friendsList.addAll(friendsRepository.findByFriendsIdUser2(userId));
-            List<findUserByPhoneNumberResponse> result = new ArrayList<>();
+            List<InfoUser> result = new ArrayList<>();
             for (Friends friend : friendsList) {
                 if (friend.getFriendStatus().equals(FriendStatus.IsFriend))
-                    result.add(new findUserByPhoneNumberResponse(Objects.equals(userId, friend.getFriendsId().getUser1().getId()) ? friend.getFriendsId().getUser2().getFullName() : friend.getFriendsId().getUser1().getFullName(),
-                            "http://localhost:8181/v1/users/imageAvatarAnotherUser/" + (Objects.equals(userId, friend.getFriendsId().getUser1().getId()) ? friend.getFriendsId().getUser2().getPhoneNumber() : friend.getFriendsId().getUser1().getPhoneNumber()),
-                            Objects.equals(userId, friend.getFriendsId().getUser1().getId()) ? friend.getFriendsId().getUser2().getPhoneNumber() : friend.getFriendsId().getUser1().getPhoneNumber()));
+                    result.add(new InfoUser(Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getFullName() : friend.getUser1().getFullName(),
+                            "http://localhost:8181/v1/users/imageAvatarAnotherUser/" + (Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getPhoneNumber() : friend.getUser1().getPhoneNumber()),
+                            Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getPhoneNumber() : friend.getUser1().getPhoneNumber()));
             }
             return ResponseEntity.ok(result);
         } catch (Exception e){
@@ -371,11 +379,11 @@ public class UserServiceImpl implements UserService {
             List<GetAllInviteFriendResponse> result = new ArrayList<>();
             for (Friends friend : friendsList) {
                 if (friend.getFriendStatus().equals(FriendStatus.WaitingAccept))
-                    result.add(new GetAllInviteFriendResponse(Objects.equals(userId, friend.getFriendsId().getUser1().getId()) ? friend.getFriendsId().getUser2().getFullName() : friend.getFriendsId().getUser1().getFullName(),
-                            "http://localhost:8181/v1/users/imageAvatarAnotherUser/" + (Objects.equals(userId, friend.getFriendsId().getUser1().getId()) ? friend.getFriendsId().getUser2().getPhoneNumber() : friend.getFriendsId().getUser1().getPhoneNumber()),
-                            Objects.equals(userId, friend.getFriendsId().getUser1().getId()) ? friend.getFriendsId().getUser2().getPhoneNumber() : friend.getFriendsId().getUser1().getPhoneNumber(),
-                            (friend.getSendInviteBy() && Objects.equals(userId, friend.getFriendsId().getUser2().getId())) ||
-                                    (!friend.getSendInviteBy() && Objects.equals(userId, friend.getFriendsId().getUser1().getId()))));
+                    result.add(new GetAllInviteFriendResponse(Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getFullName() : friend.getUser1().getFullName(),
+                            "http://localhost:8181/v1/users/imageAvatarAnotherUser/" + (Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getPhoneNumber() : friend.getUser1().getPhoneNumber()),
+                            Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getPhoneNumber() : friend.getUser1().getPhoneNumber(),
+                            (friend.getSendInviteBy() && Objects.equals(userId, friend.getUser2().getId())) ||
+                                    (!friend.getSendInviteBy() && Objects.equals(userId, friend.getUser1().getId()))));
             }
             return ResponseEntity.ok(result);
         } catch (Exception e){

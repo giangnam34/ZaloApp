@@ -69,6 +69,9 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<PostUser> postUserList;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<CommentUser> commentUserList;
+
     public User(String phoneNumber, String password, Date birthDay, Sex sex, String imageAvatarUrl, String imageCoverPhotoUrl, Date createdAt, Date updatedAt, Date lastActive, Boolean isLocked, Boolean isConfirmed, Set<Role> roles, CategoryUser category, UserOptionPoll userOptionPoll, List<MessageChat> messageChatList) {
         this.phoneNumber = phoneNumber;
         this.password = password;
@@ -94,5 +97,10 @@ public class User {
         this.createdAt = new Date();
         this.isConfirmed = false;
         this.roles = roleList;
+    }
+
+    @PreUpdate
+    public void updateTime(){
+        this.updatedAt = new Date(new Date().getTime() + 7*60*60*1000);
     }
 }

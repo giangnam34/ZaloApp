@@ -17,6 +17,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 
 @RestController
@@ -50,14 +51,14 @@ public class UserController {
     // Đổi ảnh đại diện
     @PostMapping("/changeImageAvatar")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> changeImageAvatar(@RequestParam("file") MultipartFile file, @AuthenticationPrincipal UserPrincipal userPrincipal) throws IOException {
+    public ResponseEntity<?> changeImageAvatar(@RequestParam(value = "file", required = false) MultipartFile file, @AuthenticationPrincipal UserPrincipal userPrincipal) throws IOException {
         return userService.updateImageAvatar(userPrincipal.getId(),file);
     }
 
     // Đổi ảnh bìa
     @PostMapping("/changeImageCoverAvatar")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> changeImageCoverAvatar(@RequestParam("file") MultipartFile file, @AuthenticationPrincipal UserPrincipal userPrincipal) throws IOException {
+    public ResponseEntity<?> changeImageCoverAvatar(@RequestParam(value = "file", required = false) MultipartFile file, @AuthenticationPrincipal UserPrincipal userPrincipal) throws IOException {
         return userService.updateImageCoverAvatar(userPrincipal.getId(),file);
     }
 
@@ -70,7 +71,7 @@ public class UserController {
 
     @GetMapping(value = "/imageAvatarAnotherUser/{phoneNumber}", produces = MediaType.IMAGE_JPEG_VALUE)
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Resource> getAnotherImageAvatar(@PathVariable String phoneNumber,@AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+    public ResponseEntity<Resource> getAnotherUserImageAvatar(@PathVariable String phoneNumber,@AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
         return ResponseEntity.ok(userService.getImageAvatar(phoneNumber));
     }
 

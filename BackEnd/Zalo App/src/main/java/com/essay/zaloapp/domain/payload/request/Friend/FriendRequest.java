@@ -14,4 +14,7 @@ public class FriendRequest {
 
     // Người nhận
     private String toPhoneNumberUser;
+
+    // Xác nhận hay không xác nhận lời mời
+    private Boolean isAcceptingInvite;
 }

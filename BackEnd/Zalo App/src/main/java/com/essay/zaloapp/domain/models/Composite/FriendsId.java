@@ -3,10 +3,7 @@ package com.essay.zaloapp.domain.models.Composite;
 import com.essay.zaloapp.domain.models.User;
 import lombok.*;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Embeddable;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import java.io.Serializable;
 
 @Embeddable
@@ -17,11 +14,10 @@ import java.io.Serializable;
 @EqualsAndHashCode
 public class FriendsId implements Serializable {
 
-	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "phoneNumberUser1")
-	private User user1;
+	@Column(name = "user_id1")
+	private Long user1;
 
-	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "phoneNumberUser2")
-	private User user2;
+	@Column(name = "user_id2")
+	private Long user2;
+
 }

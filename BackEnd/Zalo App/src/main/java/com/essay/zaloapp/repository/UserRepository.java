@@ -13,4 +13,6 @@ public interface UserRepository extends CrudRepository<User, String> {
 
     Boolean existsUserByPhoneNumber(String phoneNumber);
 
+    Boolean existsUserById(Long userId);
+
 }
