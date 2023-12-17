@@ -8,7 +8,7 @@ import com.essay.zaloapp.domain.payload.request.Authorize.ChangeInfoUserRequest;
 import com.essay.zaloapp.domain.payload.request.Authorize.ChangePhoneNumberUserRequest;
 import com.essay.zaloapp.domain.payload.request.Friend.FriendRequest;
 import com.essay.zaloapp.domain.payload.response.Authorize.GetUserResponse;
-import com.essay.zaloapp.domain.payload.response.Authorize.findUserByPhoneNumberResponse;
+import com.essay.zaloapp.domain.payload.response.Authorize.InfoUser;
 import com.essay.zaloapp.domain.payload.response.Friend.GetAllInviteFriendResponse;
 import com.essay.zaloapp.repository.FriendsRepository;
 import com.essay.zaloapp.repository.UserRepository;

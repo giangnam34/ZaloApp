@@ -19,12 +19,12 @@ public class Friends {
 	private FriendsId friendsId;
 
 	@ManyToOne(cascade = CascadeType.ALL)
-	@MapsId("idUser1")
+	@MapsId("user1")
 	@JoinColumn(name = "user_id_1")
 	private User user1;
 
 	@ManyToOne(cascade = CascadeType.ALL)
-	@MapsId("idUser2")
+	@MapsId("user2")
 	@JoinColumn(name = "user_id_2")
 	private User user2;
 
