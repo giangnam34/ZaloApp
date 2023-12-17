@@ -45,7 +45,7 @@ public class SocialMediaController {
         return result.equals("Đổi đối tượng bài viết thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
-    // Cập nhật bài viết
+    // Cập nhật bài viết -- Checked
     @PostMapping(value = "/update-post/{postId}", produces = MediaType.ALL_VALUE)
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> updatePost(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long postId, @ModelAttribute CreateNewPostRequest createNewPostRequest){
@@ -53,7 +53,7 @@ public class SocialMediaController {
         return result.equals("Chỉnh sửa bài viết thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
-    // Xem tất cả bài viết đã đăng
+    // Xem tất cả bài viết đã đăng -- Checked
     @GetMapping(value = "/get-all-info-post", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getAllInfoPost(@AuthenticationPrincipal UserPrincipal userPrincipal){

@@ -7,14 +7,18 @@ import lombok.NoArgsConstructor;
 import java.util.Date;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class InfoUser {
-
+@NoArgsConstructor
+public class DetailInfoUser {
     private String userName;
 
     private String imageAvatar;
 
+    private String imageCoverAvatar;
+
     private String phoneNumber;
 
+    private String gender;
+
+    private Date birthDay;
 }

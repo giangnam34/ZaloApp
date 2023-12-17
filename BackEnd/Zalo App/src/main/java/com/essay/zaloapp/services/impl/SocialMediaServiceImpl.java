@@ -4,6 +4,7 @@ import com.essay.zaloapp.domain.enums.Audience;
 import com.essay.zaloapp.domain.enums.PostUserType;
 import com.essay.zaloapp.domain.enums.ResourceType;
 import com.essay.zaloapp.domain.models.*;
+import com.essay.zaloapp.domain.models.Composite.FriendsId;
 import com.essay.zaloapp.domain.payload.request.SocialMedia.CreateNewPostRequest;
 import com.essay.zaloapp.domain.payload.response.Authorize.InfoUser;
 import com.essay.zaloapp.domain.payload.response.SocialMedia.Comment.InfoComment;
@@ -42,8 +43,12 @@ public class SocialMediaServiceImpl implements SocialMediaService {
 
     @Autowired
     private CommentRepository commentRepository;
+
     @Autowired
     private CommentUserRepository commentUserRepository;
+
+    @Autowired
+    private FriendsRepository friendsRepository;
 
     @Override
     public String validateCreateNewPostRequest(User user, CreateNewPostRequest createNewPostRequest){
@@ -69,6 +74,10 @@ public class SocialMediaServiceImpl implements SocialMediaService {
             }
             Post post = new Post(new Date(new Date().getTime() + 7 * 60 * 60*1000), new Date(new Date().getTime() + 7 * 60 * 60*1000), createNewPostRequest.getContent(),createNewPostRequest.getAudience() != null ? Audience.findByName(createNewPostRequest.getAudience()) : Audience.AllFriend,user, resourceList);
             if (createNewPostRequest.getUserTagIDList() != null && !createNewPostRequest.getUserTagIDList().isEmpty()) {
+                for (String userPhoneNumber : createNewPostRequest.getUserTagIDList()){
+                    if (!userRepository.existsUserByPhoneNumber(userPhoneNumber))
+                        return "Gắn thẻ người dùng không hợp lệ";
+                }
                 List<PostUser> postUserList = createNewPostRequest.getUserTagIDList().stream().map(p -> new PostUser(post, userRepository.findByPhoneNumber(p), PostUserType.TagUser)).collect(Collectors.toList());
                 post.setPostUserList(postUserList);
             }
@@ -100,7 +109,6 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     @Override
     public String updatePost(Long userId, Long postId, CreateNewPostRequest createNewPostRequest){
         try{
-            System.out.println(createNewPostRequest.toString());
             String validate = validateCreateNewPostRequest(userRepository.findById(userId),createNewPostRequest);
             if (!validate.equals("Hợp lệ!"))
                 return validate;
@@ -118,8 +126,11 @@ public class SocialMediaServiceImpl implements SocialMediaService {
             }
             post.setUpdatedAt(new Date(new Date().getTime() + 7*60*60*1000));
             if (createNewPostRequest.getFiles() != null) {
-                List<Resource> resourceList = Arrays.stream(createNewPostRequest.getFiles()).map(p -> new Resource(fileStorageService.storeFile(p), p.getContentType().contains("video") ? ResourceType.Video : ResourceType.Image)).collect(Collectors.toList());
-                post.setResourceList(resourceList);
+                if (createNewPostRequest.getFiles()[0].isEmpty()) post.setResourceList(new ArrayList<>());
+                else {
+                    List<Resource> resourceList = Arrays.stream(createNewPostRequest.getFiles()).map(p -> new Resource(fileStorageService.storeFile(p), p.getContentType().contains("video") ? ResourceType.Video : ResourceType.Image)).collect(Collectors.toList());
+                    post.setResourceList(resourceList);
+                }
             }
             postRepository.save(post);
             return "Chỉnh sửa bài viết thành công!";
@@ -136,8 +147,18 @@ public class SocialMediaServiceImpl implements SocialMediaService {
                 GetInfoPostResponse getInfoPostResponse = modelMapper.map(p, GetInfoPostResponse.class);
                 System.out.println(getInfoPostResponse.toString());
                 getInfoPostResponse.setPostFather( p.getPostTop() != null ? modelMapper.map(p.getPostTop(), GetInfoPostResponse.class) : null);
-                getInfoPostResponse.setUserLikeList(p.getPostUserList().stream().filter(postUser -> postUser.getPostUserType().equals(PostUserType.UserLike)).map(postUser -> new InfoUser(postUser.getUser().getFullName(), (postUser.getUser().getImageAvatarUrl() != null && !postUser.getUser().getImageAvatarUrl().isEmpty()) ? "http://localhost:8181/media/getImage/".concat(postUser.getUser().getImageAvatarUrl()) : null, postUser.getUser().getPhoneNumber())).collect(Collectors.toList()));
-                getInfoPostResponse.setUserTagList(p.getPostUserList().stream().filter(postUser -> postUser.getPostUserType().equals(PostUserType.TagUser)).map(postUser -> new InfoUser(postUser.getUser().getFullName(), (postUser.getUser().getImageAvatarUrl() != null && !postUser.getUser().getImageAvatarUrl().isEmpty()) ? "http://localhost:8181/media/getImage/".concat(postUser.getUser().getImageAvatarUrl()) : null, postUser.getUser().getPhoneNumber())).collect(Collectors.toList()));
+                List <User> userLikeList = new ArrayList<>();
+                List <User> userTagList = new ArrayList<>();
+                Map<User, PostUserType> postUserTypeMap = new HashMap<>();
+                for(PostUser postUser : p.getPostUserList()){
+                    postUserTypeMap.put(postUser.getUser(),postUser.getPostUserType());
+                }
+                for (Map.Entry<User,PostUserType> key: postUserTypeMap.entrySet()){
+                    if(key.getValue().equals(PostUserType.UserLike)) userLikeList.add(key.getKey());
+                    else if (key.getValue().equals(PostUserType.TagUser)) userTagList.add(key.getKey());
+                }
+                getInfoPostResponse.setUserLikeList(userLikeList.stream().map(user -> new InfoUser(user.getFullName(), (user.getImageAvatarUrl() != null && !user.getImageAvatarUrl().isEmpty()) ? "http://localhost:8181/media/getImage/".concat(user.getImageAvatarUrl()) : null, user.getPhoneNumber())).collect(Collectors.toList()));
+                getInfoPostResponse.setUserTagList(userTagList.stream().map(user -> new InfoUser(user.getFullName(), (user.getImageAvatarUrl() != null && !user.getImageAvatarUrl().isEmpty()) ? "http://localhost:8181/media/getImage/".concat(user.getImageAvatarUrl()) : null, user.getPhoneNumber())).collect(Collectors.toList()));
                 getInfoPostResponse.setUserShareList(p.getPostTopList().stream().map(postUser -> new InfoUser(postUser.getUser().getFullName(),postUser.getUser().getImageAvatarUrl(), postUser.getUser().getPhoneNumber())).collect(Collectors.toList()));
                 getInfoPostResponse.setFiles(p.getResourceList().stream().map(file -> "http://localhost:8181/media/" + (file.getResourceType().equals(ResourceType.Video) ? "getVideo/" : "getImage/")  + file.getResourceValue()).collect(Collectors.toList()));
                 getInfoPostResponse.setCreatedAt(p.getCreatedAt());
@@ -159,19 +180,21 @@ public class SocialMediaServiceImpl implements SocialMediaService {
             else return "Bài viết không tồn tại!";
             User user = userRepository.findById(userId);
             if (user == null) return "Người dùng hoặc bài viết không tồn tại!";
+            if (!isUserAuthorizeInteractPost(post,user)) return "Người dùng không có quyền thực hiện hành động này!";
+            Map<User, PostUserType> postUserTypeMap = new HashMap<>();
+            for(PostUser postUser : post.getPostUserList()){
+                postUserTypeMap.put(postUser.getUser(),postUser.getPostUserType());
+            }
             PostUser postUser = new PostUser();
-            if (!postUserRepository.existsByPostAndUserAndPostUserType(post,user,PostUserType.UserLike)){
+            if (!postUserTypeMap.containsKey(user) || (postUserTypeMap.get(user).equals(PostUserType.UserDisLike))){
                 postUser = new PostUser(post,user, PostUserType.UserLike);
                 postUserRepository.save(postUser);
                 return "Thích bài viết thành công!";
             }
             else {
-                if (postUserRepository.findFirstByPostAndUserAndPostUserTypeOrderByCreatedAtDesc(post,user,PostUserType.UserLike).getPostUserType() == PostUserType.UserLike)
-                    postUser = new PostUser(post,user,PostUserType.UserDisLike);
-                else
-                    postUser = new PostUser(post,user,PostUserType.UserLike);
+                postUser = new PostUser(post,user,PostUserType.UserDisLike);
                 postUserRepository.save(postUser);
-                return "Cập nhật trạng thái thành công!";
+                return "Hủy thích bài viết thành công!";
             }
 
         } catch (Exception e){
@@ -194,7 +217,7 @@ public class SocialMediaServiceImpl implements SocialMediaService {
             if (user == null) return "Người dùng không tồn tại!";
             Comment commentTop = commentRepository.findById(topComment).isPresent() ? commentRepository.findById(topComment).get() : null;
             if (topComment != null && commentTop == null) return "Bình luận không còn tồn tại hoặc người dùng không có quyền này!";
-            if (isUserAuthorizeInteractPost(postId,userId)) {
+            if (isUserAuthorizeInteractPost(post,user)) {
                 Comment comment = new Comment(content, post, commentTop, user, null, (file != null && !file.isEmpty()) ? new Resource(fileStorageService.storeFile(file), file.getContentType().contains("video") ? ResourceType.Video : ResourceType.Image) : null);
                 commentRepository.save(comment);
             }
@@ -210,9 +233,11 @@ public class SocialMediaServiceImpl implements SocialMediaService {
         try{
             Comment comment = commentRepository.findById(commentId).isPresent() ? commentRepository.findById(commentId).get() : null;
             if (comment == null) return "Bình luận không còn tồn tại hoặc người dùng không có quyền này!";
+            User user = userRepository.findById(userId);
+            if (user == null) return "Người dùng không tồn tại!";
             if ( (content == null || content.isEmpty()) && (file == null || file.isEmpty()) )
                 return "Bài viết không được để trống!";
-            if (isUserAuthorizeInteractPost(comment.getPost().getId(),userId)){
+            if (isUserAuthorizeInteractPost(comment.getPost(),user)){
                 if (content != null){
                     comment.setContentComment(content);
                 }
@@ -314,9 +339,18 @@ public class SocialMediaServiceImpl implements SocialMediaService {
         }
     }
     // Chưa viết
-    public Boolean isUserAuthorizeInteractPost(Long postId, Long userId){
-        if (postRepository.findByIdAndUser_Id(postId, userId) == null) return false;
-
+    public Boolean isUserAuthorizeInteractPost(Post post, User user){
+        if (!user.getIsConfirmed() || user.getIsLocked()) return false;
+        if (!post.getUser().equals(user)) {
+            if (!friendsRepository.existsFriendsByFriendsId(new FriendsId(Math.min(post.getUser().getId(), user.getId()), Math.max(post.getUser().getId(), user.getId()))))
+                return false;
+            if (friendsRepository.findByFriendsId(new FriendsId(Math.min(post.getUser().getId(), user.getId()), Math.max(post.getUser().getId(), user.getId()))).getIsBlock() > 0 ||
+                    friendsRepository.findByFriendsId(new FriendsId(Math.min(post.getUser().getId(), user.getId()), Math.max(post.getUser().getId(), user.getId()))).getIsDelete() > 0)
+                return false;
+        }
+        if (post.getAudienceValue().equals(Audience.OnlyMe) && !post.getUser().equals(user)) return false;
+        if (post.getAudienceValue().equals(Audience.AllExceptSomeOne) && !post.getPostUserList().stream().filter(postUser -> (postUser.getUser().equals(user) && postUser.getPostUserType().equals(PostUserType.TagUser))).collect(Collectors.toList()).isEmpty()) return false;
+        if (post.getAudienceValue().equals(Audience.SomeOneCanSee) && post.getPostUserList().stream().filter(postUser -> (postUser.getUser().equals(user) && postUser.getPostUserType().equals(PostUserType.TagUser))).collect(Collectors.toList()).isEmpty()) return false;
         return true;
     }
 
