@@ -1,9 +1,9 @@
 package com.essay.zaloapp.controller;
 
 import com.essay.zaloapp.domain.enums.Audience;
-import com.essay.zaloapp.domain.payload.request.CreateNewPostRequest;
 import com.essay.zaloapp.domain.payload.request.SocialMedia.Comment.AddNewCommentRequest;
 import com.essay.zaloapp.domain.payload.request.SocialMedia.Comment.UpdateCommentRequest;
+import com.essay.zaloapp.domain.payload.request.SocialMedia.CreateNewPostRequest;
 import com.essay.zaloapp.domain.payload.request.SocialMedia.Post.UpdateAudiencePostRequest;
 import com.essay.zaloapp.domain.payload.response.SocialMedia.Comment.InfoComment;
 import com.essay.zaloapp.secruity.UserPrincipal;
@@ -17,7 +17,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @RestController
@@ -31,6 +30,8 @@ public class SocialMediaController {
     @PostMapping(value = "/create-new-post", produces = MediaType.ALL_VALUE)
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> createNewPost(@AuthenticationPrincipal UserPrincipal userPrincipal,@ModelAttribute CreateNewPostRequest createNewPostRequest){
+        System.out.println("Vo roi ne");
+        System.out.println(createNewPostRequest.toString());
         String result = socialMediaService.createNewPost(userPrincipal.getId(),createNewPostRequest);
         return result.equals("Đăng bài viết thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }

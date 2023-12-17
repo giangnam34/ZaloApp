@@ -1,6 +1,5 @@
 package com.essay.zaloapp.domain.models;
 
-import com.essay.zaloapp.domain.enums.PostUserType;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

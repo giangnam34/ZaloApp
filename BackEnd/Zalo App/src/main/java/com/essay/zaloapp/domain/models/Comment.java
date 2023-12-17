@@ -2,7 +2,6 @@ package com.essay.zaloapp.domain.models;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.mapping.ToOne;
 
 import javax.persistence.*;
 import java.util.Date;

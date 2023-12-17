@@ -106,8 +106,8 @@
                 </div>
                 <div class="file-list-container" :style="{ height: fileListHeight }">
                     <div class="pl-4 pr-4">
-                        <textarea class="p-4 w-full bg-gray-100 rounded-lg border"
-                            placeholder="Bạn đang nghĩ gì?"></textarea>
+                        <textarea class="p-4 w-full bg-gray-100 rounded-lg border" placeholder="Bạn đang nghĩ gì?"
+                            v-model="newFeed.content"></textarea>
                     </div>
                     <div class="pl-4 pr-4">
                         <div v-for="(file, index) in newFeed.files" :key="index">
@@ -156,7 +156,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="profile-action">
+                <div class="profile-action" @click="createPost">
                     <div class="mx-4 flex items-center justify-center cursor-pointer bg-blue-400 rounded-lg h-8">
                         Đăng
                     </div>
@@ -243,7 +243,7 @@
                     </div>
                 </div>
                 <div class="mt-4"></div>
-                <div class="profile-action">
+                <div class="profile-action" @click="closeChooseTagDialog">
                     <div class="items-center text-center cursor-pointer bg-blue-400 rounded-lg h-10 mx-4 px-4 py-2">
                         Xong
                     </div>
@@ -256,11 +256,17 @@
 <script>
 import axios from 'axios';
 import { format } from 'date-fns';
+import { useToast } from "vue-toastification";
 
 export default {
     name: 'FeedView',
 
     components: {
+    },
+    setup() {
+        // Get toast interface
+        const toast = useToast();
+        return { toast }
     },
     created() {
         const userString = localStorage.getItem('user');
@@ -299,9 +305,9 @@ export default {
                 { id: 3, name: "Kẻ Áo Đen", user_id: 3, content: "Ehehehehehehehe", created_date: new Date("2002-12-17T19:50:00"), updated_date: new Date("2002-12-17T19:50:00"), image: 'https://i.imgur.com/gEKsypv.jpg', avatar: 'https://i.imgur.com/z9fdzMv.jpg', audience: 'SomeOneCanSee' },
             ],
             friends: [
-                { phoneNumber: '0965556651', name: "Võ Giang Nam", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
+                { phoneNumber: '0968322444', name: "Võ Giang Nam", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
                 { phoneNumber: '0965556652', name: "Từ Thanh Thoại", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
-                { phoneNumber: '0965556653', name: "Kẻ Áo Đen", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
+                { phoneNumber: '0968322666', name: "Kẻ Áo Đen", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
                 { phoneNumber: '0965556654', name: "Kẻ Áo Vàng", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
                 { phoneNumber: '0965556655', name: "Kẻ Áo Xanh", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
                 { phoneNumber: '0965556656', name: "Kẻ Áo Đỏ", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
@@ -411,6 +417,75 @@ export default {
                 this.friends.push(friend);
             }
         },
+        async createPost() {
+            try {
+
+                if (this.privateSetting === 'Bạn bè') {
+                    this.newFeed.audience = 'AllFriend'
+                } else if (this.privateSetting === 'Chỉ mình tôi') {
+                    this.newFeed.audience = 'OnlyMe'
+                } else if (this.privateSetting === 'Một số bạn bè') {
+                    this.newFeed.audience = 'SomeOneCanSee'
+                } else {
+                    this.newFeed.audience = 'AllExceptSomeOne'
+                }
+
+                const listFriendTag = [];
+
+                for (let friendTagKey in this.newFeed.friendTag) {
+                    if (Object.prototype.hasOwnProperty.call(this.newFeed.friendTag, friendTagKey)) {
+                        const friendTagValue = this.newFeed.friendTag[friendTagKey];
+                        listFriendTag.push(friendTagValue.phoneNumber);
+                    }
+                }
+
+                console.log(listFriendTag)
+
+                console.log(typeof(listFriendTag))
+
+                const formData = new FormData();
+
+                formData.append('content', this.newFeed.content);
+                formData.append('audience', this.newFeed.audience);
+                formData.append('userTagIDList', listFriendTag);
+
+                console.log(this.newFeed.files)
+
+                for (let i = 0; i < this.newFeed.files.length; i++) {
+                    formData.append('files', this.newFeed.files[i]);
+                }
+
+                console.log(formData);
+
+                console.log(localStorage.getItem("token"))
+
+                const response = await axios.post(`social-media/create-new-post`, formData, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token"),
+                        'Content-Type': 'multipart/form-data',
+                    }
+                });
+
+                if (response.status === 200) {
+                    this.showPostVisible = false;
+                    this.toast.success(response.data, { timeout: 3000 });
+                } else {
+                    this.toast.error(response.data, { timeout: 3000 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 3000 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 3000 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 3000 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 3000 });
+                }
+            }
+        }
     }
 }
 </script>

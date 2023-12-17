@@ -1,6 +1,5 @@
 package com.essay.zaloapp.domain.payload.request.Authorize;
 
-import jdk.jfr.Name;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
