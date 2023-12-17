@@ -398,7 +398,8 @@ export default {
         background-color: #f4f4f4;
         flex: 1 1 auto;
         height: 1200px;
-        overflow: scroll;
+        overflow-y: scroll;
+        overflow-x: hidden;
 
         ::-webkit-scrollbar {
             width: 8px;

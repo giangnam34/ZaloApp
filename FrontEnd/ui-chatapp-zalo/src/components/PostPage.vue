@@ -244,7 +244,7 @@
                 </div>
                 <div class="mt-4"></div>
                 <div class="profile-action">
-                    <div class="items-center text-center cursor-pointer bg-blue-400 rounded-lg h-10 mx-4">
+                    <div class="items-center text-center cursor-pointer bg-blue-400 rounded-lg h-10 mx-4 px-4 py-2">
                         Xong
                     </div>
                 </div>
@@ -544,6 +544,7 @@ export default {
 
     .friend-container {
         transition: box-shadow 0.3s, transform 0.3s;
+        overflow-x: hidden;
         cursor: pointer;
     }
 
@@ -560,6 +561,7 @@ export default {
     }
 
     .friend-list-container {
+        overflow-x: hidden;
         height: 250px;
         overflow-y: auto;
         border: 1px solid #ccc;
@@ -568,6 +570,7 @@ export default {
 
     .update-file-container {
         height: 400px;
+        overflow-x: hidden;
         overflow-y: scroll;
         border: 1px solid #ccc;
         border-radius: 8px;
@@ -575,6 +578,7 @@ export default {
 
     .file-list-container {
         overflow-y: auto;
+        overflow-x: hidden;
     }
 
     .color-blue {
