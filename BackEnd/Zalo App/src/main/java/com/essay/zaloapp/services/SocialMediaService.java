@@ -1,6 +1,7 @@
 package com.essay.zaloapp.services;
 
 import com.essay.zaloapp.domain.enums.Audience;
+import com.essay.zaloapp.domain.models.User;
 import com.essay.zaloapp.domain.payload.request.CreateNewPostRequest;
 import com.essay.zaloapp.domain.payload.response.SocialMedia.Comment.InfoComment;
 import com.essay.zaloapp.services.impl.SocialMediaServiceImpl;
@@ -10,6 +11,8 @@ import java.util.List;
 
 public interface SocialMediaService {
     String createNewPost(Long userId, CreateNewPostRequest createNewPostRequest);
+
+    String validateCreateNewPostRequest(User user, CreateNewPostRequest createNewPostRequest);
 
     String updateAudiencePost(Long userId, Long postId, Audience audience);
 
@@ -27,9 +30,9 @@ public interface SocialMediaService {
 
     String likeComment(Long userId, Long commentId);
 
-    Long getAmountComment(Long postId) throws Exception;
+    Long getAmountComment(Long postId, Long userId) throws Exception;
 
-    List<InfoComment> getAllInfoComment(Long postId) throws Exception;
+    List<InfoComment> getAllInfoComment(Long postId, Long userId) throws Exception;
 
     InfoComment getInfoComment(Long commentId) throws Exception;
 }

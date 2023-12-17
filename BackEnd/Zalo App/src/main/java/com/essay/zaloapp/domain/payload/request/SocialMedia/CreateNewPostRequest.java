@@ -19,7 +19,7 @@ public class CreateNewPostRequest {
     private String content;
 
     // Đối tượng bài viết: Tất cả bạn bè, Chỉ mình tôi, Tất Cả trừ một số người, Chỉ một số người được coi
-    private Audience audience;
+    private String audience;
 
     // Danh sách bạn bè được gắn thẻ hoặc được chỉ định nhìn thầy/không thấy bài viết
     private List<String> userTagIDList;

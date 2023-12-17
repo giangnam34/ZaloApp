@@ -12,5 +12,13 @@ public enum Audience {
     SomeOneCanSee,
 
     // Tất cả ngoại trừ một số người
-    AllExceptSomeOne
+    AllExceptSomeOne;
+
+    public static Audience findByName(String name){
+        for(Audience audience: values()){
+            if (audience.name().equalsIgnoreCase(name))
+                return audience;
+        }
+        return null;
+    }
 }

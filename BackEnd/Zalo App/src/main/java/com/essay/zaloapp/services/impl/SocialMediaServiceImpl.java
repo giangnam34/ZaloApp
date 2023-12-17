@@ -46,17 +46,28 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     private CommentUserRepository commentUserRepository;
 
     @Override
+    public String validateCreateNewPostRequest(User user, CreateNewPostRequest createNewPostRequest){
+        if ( (createNewPostRequest.getFiles() == null || (createNewPostRequest.getFiles() != null && createNewPostRequest.getFiles()[0].isEmpty())) && (createNewPostRequest.getContent() == null || createNewPostRequest.getContent().isEmpty()) && ( createNewPostRequest.getUserTagIDList() == null || createNewPostRequest.getUserTagIDList().isEmpty())) {
+            return "Bài đăng phải có nội dung hoặc hình ảnh hoặc gắn thẻ người dùng!";
+        }
+        if (createNewPostRequest.getUserTagIDList() != null && createNewPostRequest.getUserTagIDList().contains(user.getPhoneNumber()))
+            return "Không thể gắn thẻ chính bản thân vào bài viết!";
+        if (createNewPostRequest.getAudience() != null && Audience.findByName(createNewPostRequest.getAudience()) == null)
+            return "Quyền riêng tư bài viết không hợp lệ!";
+        return "Hợp lệ!";
+    }
+    @Override
     public String createNewPost(Long userId, CreateNewPostRequest createNewPostRequest){
         try{
             User user = userRepository.findById(userId);
-            if ( (createNewPostRequest.getFiles() == null || (createNewPostRequest.getFiles() != null && createNewPostRequest.getFiles()[0].isEmpty())) && (createNewPostRequest.getContent() == null || createNewPostRequest.getContent().isEmpty()) && ( createNewPostRequest.getUserTagIDList() == null || createNewPostRequest.getUserTagIDList().isEmpty())) {
-                return "Bài đăng phải có nội dung hoặc hình ảnh hoặc gắn thẻ người dùng!";
-            }
+            String validate = validateCreateNewPostRequest(user,createNewPostRequest);
+            if (!validate.equals("Hợp lệ!"))
+                return validate;
             List<Resource> resourceList = new ArrayList<>();
             if (createNewPostRequest.getFiles() != null && !createNewPostRequest.getFiles()[0].isEmpty()) {
                 resourceList = Arrays.stream(createNewPostRequest.getFiles()).map(p -> new Resource(fileStorageService.storeFile(p), p.getContentType().contains("video") ? ResourceType.Video : ResourceType.Image )).collect(Collectors.toList());
             }
-            Post post = new Post(new Date(new Date().getTime() + 7 * 60 * 60*1000), new Date(new Date().getTime() + 7 * 60 * 60*1000), createNewPostRequest.getContent(),createNewPostRequest.getAudience() != null ? createNewPostRequest.getAudience() : Audience.AllFriend,user, resourceList);
+            Post post = new Post(new Date(new Date().getTime() + 7 * 60 * 60*1000), new Date(new Date().getTime() + 7 * 60 * 60*1000), createNewPostRequest.getContent(),createNewPostRequest.getAudience() != null ? Audience.findByName(createNewPostRequest.getAudience()) : Audience.AllFriend,user, resourceList);
             if (createNewPostRequest.getUserTagIDList() != null && !createNewPostRequest.getUserTagIDList().isEmpty()) {
                 List<PostUser> postUserList = createNewPostRequest.getUserTagIDList().stream().map(p -> new PostUser(post, userRepository.findByPhoneNumber(p), PostUserType.TagUser)).collect(Collectors.toList());
                 post.setPostUserList(postUserList);
@@ -89,15 +100,23 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     @Override
     public String updatePost(Long userId, Long postId, CreateNewPostRequest createNewPostRequest){
         try{
+            System.out.println(createNewPostRequest.toString());
+            String validate = validateCreateNewPostRequest(userRepository.findById(userId),createNewPostRequest);
+            if (!validate.equals("Hợp lệ!"))
+                return validate;
             Post post = postRepository.findByIdAndUser_Id(postId, userId);
-            if (post == null) throw new Exception("Bạn không có quyền chỉnh sửa bài viết này hoặc bài viết không còn tồn tại nữa!");
+            if (post == null || post.getUser().getId() != userId) throw new Exception("Bạn không có quyền chỉnh sửa bài viết này hoặc bài viết không còn tồn tại nữa!");
             if (createNewPostRequest.getContent() != null) post.setContentPost(createNewPostRequest.getContent());
-            if (createNewPostRequest.getAudience() != null) post.setAudienceValue(createNewPostRequest.getAudience());
+            if (createNewPostRequest.getAudience() != null) post.setAudienceValue(Audience.findByName(createNewPostRequest.getAudience()));
             if (createNewPostRequest.getUserTagIDList() != null) {
-                List<PostUser> postUserList = createNewPostRequest.getUserTagIDList().stream().map(p -> new PostUser(post, userRepository.findByPhoneNumber(p), PostUserType.TagUser)).collect(Collectors.toList());
+                for (PostUser postUser : post.getPostUserList().stream().filter(postUser -> postUser.getPostUserType().equals(PostUserType.TagUser)).collect(Collectors.toList())){
+                    post.getPostUserList().remove(postUser);
+                }
+                List<PostUser> postUserList = post.getPostUserList();
+                postUserList.addAll(createNewPostRequest.getUserTagIDList().stream().map(p -> new PostUser(post, userRepository.findByPhoneNumber(p), PostUserType.TagUser)).collect(Collectors.toList()));
                 post.setPostUserList(postUserList);
             }
-            post.setUpdateAt(new Date(new Date().getTime() + 7*60*60*1000));
+            post.setUpdatedAt(new Date(new Date().getTime() + 7*60*60*1000));
             if (createNewPostRequest.getFiles() != null) {
                 List<Resource> resourceList = Arrays.stream(createNewPostRequest.getFiles()).map(p -> new Resource(fileStorageService.storeFile(p), p.getContentType().contains("video") ? ResourceType.Video : ResourceType.Image)).collect(Collectors.toList());
                 post.setResourceList(resourceList);
@@ -115,10 +134,14 @@ public class SocialMediaServiceImpl implements SocialMediaService {
         try{
             return new GetAllInfoPostUser("Thành công!",postRepository.findByUser_Id(userId).stream().map(p -> {
                 GetInfoPostResponse getInfoPostResponse = modelMapper.map(p, GetInfoPostResponse.class);
-                getInfoPostResponse.setPostFather(modelMapper.map(p.getPostTop(), GetInfoPostResponse.class));
-                getInfoPostResponse.setUserLikeList(p.getPostUserList().stream().filter(postUser -> postUser.getPostUserType().equals(PostUserType.UserLike)).map(postUser -> new InfoUser(postUser.getUser().getFullName(),postUser.getUser().getImageAvatarUrl(), postUser.getUser().getPhoneNumber())).collect(Collectors.toList()));
-                getInfoPostResponse.setUserTagList(p.getPostUserList().stream().filter(postUser -> postUser.getPostUserType().equals(PostUserType.TagUser)).map(postUser -> new InfoUser(postUser.getUser().getFullName(),postUser.getUser().getImageAvatarUrl(), postUser.getUser().getPhoneNumber())).collect(Collectors.toList()));
+                System.out.println(getInfoPostResponse.toString());
+                getInfoPostResponse.setPostFather( p.getPostTop() != null ? modelMapper.map(p.getPostTop(), GetInfoPostResponse.class) : null);
+                getInfoPostResponse.setUserLikeList(p.getPostUserList().stream().filter(postUser -> postUser.getPostUserType().equals(PostUserType.UserLike)).map(postUser -> new InfoUser(postUser.getUser().getFullName(), (postUser.getUser().getImageAvatarUrl() != null && !postUser.getUser().getImageAvatarUrl().isEmpty()) ? "http://localhost:8181/media/getImage/".concat(postUser.getUser().getImageAvatarUrl()) : null, postUser.getUser().getPhoneNumber())).collect(Collectors.toList()));
+                getInfoPostResponse.setUserTagList(p.getPostUserList().stream().filter(postUser -> postUser.getPostUserType().equals(PostUserType.TagUser)).map(postUser -> new InfoUser(postUser.getUser().getFullName(), (postUser.getUser().getImageAvatarUrl() != null && !postUser.getUser().getImageAvatarUrl().isEmpty()) ? "http://localhost:8181/media/getImage/".concat(postUser.getUser().getImageAvatarUrl()) : null, postUser.getUser().getPhoneNumber())).collect(Collectors.toList()));
                 getInfoPostResponse.setUserShareList(p.getPostTopList().stream().map(postUser -> new InfoUser(postUser.getUser().getFullName(),postUser.getUser().getImageAvatarUrl(), postUser.getUser().getPhoneNumber())).collect(Collectors.toList()));
+                getInfoPostResponse.setFiles(p.getResourceList().stream().map(file -> "http://localhost:8181/media/" + (file.getResourceType().equals(ResourceType.Video) ? "getVideo/" : "getImage/")  + file.getResourceValue()).collect(Collectors.toList()));
+                getInfoPostResponse.setCreatedAt(p.getCreatedAt());
+                getInfoPostResponse.setUpdatedAt(p.getUpdatedAt());
                 return getInfoPostResponse;
             }).collect(Collectors.toList()));
         } catch(Exception e){
@@ -242,13 +265,16 @@ public class SocialMediaServiceImpl implements SocialMediaService {
         }
     }
 
+    // Thiếu kiểm tra quyền user
     @Override
-    public Long getAmountComment(Long postId) throws Exception{
+    public Long getAmountComment(Long postId, Long userId) throws Exception{
         if (!postRepository.existsById(postId)) throw new Exception("Bài viết này không tồn tại hoặc người dùng không có quyền xem bài viết này!");
         return (long) postRepository.findById(postId).get().getCommentList().size();
     }
+
+    // Thiếu kiểm tra quyền user
     @Override
-    public List<InfoComment> getAllInfoComment(Long postId) throws Exception{
+    public List<InfoComment> getAllInfoComment(Long postId, Long userId) throws Exception{
         if (!postRepository.existsById(postId)) throw new Exception("Bài viết này không tồn tại hoặc người dùng không có quyền xem bài viết này!");
         return postRepository.findById(postId).get().getCommentList().stream().map(comment -> {
             try {
@@ -287,9 +313,10 @@ public class SocialMediaServiceImpl implements SocialMediaService {
             throw new Exception(e.getMessage());
         }
     }
-
     // Chưa viết
     public Boolean isUserAuthorizeInteractPost(Long postId, Long userId){
+        if (postRepository.findByIdAndUser_Id(postId, userId) == null) return false;
+
         return true;
     }
 

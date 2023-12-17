@@ -12,20 +12,15 @@ import java.util.Date;
 @NoArgsConstructor
 public class PostUser {
 
-//    @EmbeddedId
-//    private PostUserId postUserId = new PostUserId();
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    //@MapsId("post_id")
     @JoinColumn(name = "post_id")
     private Post post;
 
     @ManyToOne
-    //@MapsId("user_id")
     @JoinColumn(name = "user_id")
     private User user;
 

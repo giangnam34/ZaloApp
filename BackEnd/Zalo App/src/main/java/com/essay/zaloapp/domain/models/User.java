@@ -98,4 +98,9 @@ public class User {
         this.isConfirmed = false;
         this.roles = roleList;
     }
+
+    @PreUpdate
+    public void updateTime(){
+        this.updatedAt = new Date(new Date().getTime() + 7*60*60*1000);
+    }
 }

@@ -74,6 +74,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(
                         "/test",
+                        "/swagger-ui/index.html",
+                        "/media/",
                         "/login",
                         "/signup",
                         "forget-password",
