@@ -25,6 +25,8 @@ public interface UserService {
 
     Resource getImageCoverAvatar(Long userId) throws Exception;
 
+    Resource getImageCoverAvatar(String phoneNumber) throws Exception;
+
     Resource getImageCoverAvatar(User user) throws Exception;
 
     ResponseEntity<?> updatePhoneNumberUser(Long userId, ChangePhoneNumberUserRequest changePhoneNumberUserRequest) throws Exception;

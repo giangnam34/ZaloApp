@@ -7,6 +7,7 @@ import com.essay.zaloapp.domain.models.User;
 import com.essay.zaloapp.domain.payload.request.ChangeInfoUserRequest;
 import com.essay.zaloapp.domain.payload.request.ChangePhoneNumberUserRequest;
 import com.essay.zaloapp.domain.payload.request.FriendRequest;
+import com.essay.zaloapp.domain.payload.response.Authorize.DetailInfoUser;
 import com.essay.zaloapp.domain.payload.response.Authorize.InfoUser;
 import com.essay.zaloapp.domain.payload.response.GetAllInviteFriendResponse;
 import com.essay.zaloapp.domain.payload.response.GetUserResponse;
@@ -131,6 +132,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Resource getImageCoverAvatar(String phoneNumber) throws Exception {
+        try{
+            User user = userRepository.findByPhoneNumber(phoneNumber);
+            return fileStorageService.loadFileAsResource(user.getImageCoverPhotoUrl());
+        } catch(Exception e){
+            throw new Exception("Có lỗi xảy ra. Vui lòng thử lại!!!");
+        }
+    }
+
+    @Override
     public Resource getImageCoverAvatar(User user) throws Exception {
         try{
             return fileStorageService.loadFileAsResource(user.getImageCoverPhotoUrl());
@@ -171,8 +182,8 @@ public class UserServiceImpl implements UserService {
         try {
             User user = userRepository.findByPhoneNumber(phoneNumber);
             if (user == null || !user.getIsConfirmed() || user.getIsLocked()) return ResponseEntity.badRequest().body(" Số điện thoại chưa đăng ký tài khoản hoặc không cho phép tìm kiếm!");
-            InfoUser InfoUser = new InfoUser(user.getFullName(), "http://localhost:8181/v1/users/imageAvatarAnotherUser/" + phoneNumber,phoneNumber);
-            return ResponseEntity.ok(InfoUser);
+            DetailInfoUser detailInfoUser = new DetailInfoUser(user.getFullName(), "http://localhost:8181/v1/users/imageAvatarAnotherUser/" + phoneNumber, "http://localhost:8181/v1/users/imageCoverAvatarAnotherUser/" + phoneNumber, phoneNumber, user.getSex().name(),user.getBirthDay());
+            return ResponseEntity.ok(detailInfoUser);
         } catch (Exception e){
             throw new Exception("Có lỗi xảy ra. Vui lòng thử lại!!!");
         }

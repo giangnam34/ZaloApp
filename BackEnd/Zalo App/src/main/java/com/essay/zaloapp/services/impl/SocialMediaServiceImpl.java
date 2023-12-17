@@ -100,7 +100,6 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     @Override
     public String updatePost(Long userId, Long postId, CreateNewPostRequest createNewPostRequest){
         try{
-            System.out.println(createNewPostRequest.toString());
             String validate = validateCreateNewPostRequest(userRepository.findById(userId),createNewPostRequest);
             if (!validate.equals("Hợp lệ!"))
                 return validate;
@@ -118,8 +117,11 @@ public class SocialMediaServiceImpl implements SocialMediaService {
             }
             post.setUpdatedAt(new Date(new Date().getTime() + 7*60*60*1000));
             if (createNewPostRequest.getFiles() != null) {
-                List<Resource> resourceList = Arrays.stream(createNewPostRequest.getFiles()).map(p -> new Resource(fileStorageService.storeFile(p), p.getContentType().contains("video") ? ResourceType.Video : ResourceType.Image)).collect(Collectors.toList());
-                post.setResourceList(resourceList);
+                if (createNewPostRequest.getFiles()[0].isEmpty()) post.setResourceList(new ArrayList<>());
+                else {
+                    List<Resource> resourceList = Arrays.stream(createNewPostRequest.getFiles()).map(p -> new Resource(fileStorageService.storeFile(p), p.getContentType().contains("video") ? ResourceType.Video : ResourceType.Image)).collect(Collectors.toList());
+                    post.setResourceList(resourceList);
+                }
             }
             postRepository.save(post);
             return "Chỉnh sửa bài viết thành công!";
