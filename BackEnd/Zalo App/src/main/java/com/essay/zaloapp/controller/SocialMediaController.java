@@ -17,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -31,6 +32,7 @@ public class SocialMediaController {
     @PostMapping(value = "/create-new-post", produces = MediaType.ALL_VALUE)
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> createNewPost(@AuthenticationPrincipal UserPrincipal userPrincipal,@ModelAttribute CreateNewPostRequest createNewPostRequest){
+        System.out.println(createNewPostRequest.toString());
         String result = socialMediaService.createNewPost(userPrincipal.getId(),createNewPostRequest);
         return result.equals("Đăng bài viết thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
@@ -60,53 +62,57 @@ public class SocialMediaController {
         return result.getMesage().equals("Thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
-    // Thích bài viết
+    // Thích bài viết -- Checked
     @PutMapping("/like-post/{postId}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> likePost(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long postId){
         String result = socialMediaService.likePost(postId, userPrincipal.getId());
         return result.equals("Thích bài viết thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
-    // Thêm bình luận mới
-    @PostMapping("/create-new-comment")
+    // Thêm bình luận mới -- Checked
+    @PostMapping(value = "/create-new-comment", produces = MediaType.ALL_VALUE)
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> createNewComment(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody AddNewCommentRequest addNewCommentRequest){
-        String result = socialMediaService.createNewComment(addNewCommentRequest.getPostId(),addNewCommentRequest.getUserId(),addNewCommentRequest.getTopComment(),addNewCommentRequest.getContent(),addNewCommentRequest.getFile());
+    public ResponseEntity<?> createNewComment(@AuthenticationPrincipal UserPrincipal userPrincipal, @ModelAttribute AddNewCommentRequest addNewCommentRequest){
+        if (addNewCommentRequest.getPostId() == null) return ResponseEntity.badRequest().body("Post id không được phép null");
+        if ( (addNewCommentRequest.getContent() == null || addNewCommentRequest.getContent().isEmpty()) && (addNewCommentRequest.getFile() == null || addNewCommentRequest.getFile().isEmpty())) return ResponseEntity.badRequest().body("Nội dung bình luận không được phép rỗng!");
+        String result = socialMediaService.createNewComment(addNewCommentRequest.getPostId(),userPrincipal.getId(),addNewCommentRequest.getTopComment(),addNewCommentRequest.getContent(),addNewCommentRequest.getFile());
         return result.equals("Đăng bình luận thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
-    // Cập nhật bình luận
-    @PutMapping("/update-comment")
+    // Cập nhật bình luận -- Checked
+    @PutMapping(value = "/update-comment", produces = MediaType.ALL_VALUE)
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> updateComment(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody UpdateCommentRequest updateCommentRequest){
-        String result = socialMediaService.updateComment(updateCommentRequest.getUserId(), updateCommentRequest.getCommentId(),updateCommentRequest.getContent(), updateCommentRequest.getFile());
+    public ResponseEntity<?> updateComment(@AuthenticationPrincipal UserPrincipal userPrincipal, @ModelAttribute UpdateCommentRequest updateCommentRequest){
+        if (updateCommentRequest.getCommentId() == null) return ResponseEntity.badRequest().body("Comment id không được phép null");
+        String result = socialMediaService.updateComment(userPrincipal.getId(), updateCommentRequest.getCommentId(),updateCommentRequest.getContent(), updateCommentRequest.getFile());
         return result.equals("Cập nhật bình luận thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
-    // Xóa bình luận
+    // Xóa bình luận -- Checked
     @DeleteMapping("/delete-comment/{commentId}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> deleteComment(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long commentId){
         String result = socialMediaService.deleteComment(commentId, userPrincipal.getId());
         return result.equals("Xóa bình luận thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
-    // Thích bình luận
+    // Thích bình luận -- Checked
     @PostMapping("/like-comment/{commentId}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> likeComment(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long commentId){
         String result = socialMediaService.likeComment(userPrincipal.getId(),commentId);
-        return result.equals("Cập nhật trạng thái thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
+        return result.contains("thành công") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
-    // Số lượng bình luận
+    // Số lượng bình luận -- Checked
     @GetMapping("/amount-comment/{postId}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> amountComment(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long postId) throws Exception {
         Long result = socialMediaService.getAmountComment(postId,userPrincipal.getId());
         return ResponseEntity.ok(result);
     }
-    // Thông tin tất cả bình luận
+    // Thông tin tất cả bình luận -- checked
     @GetMapping("/get-all-info-comment/{postId}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getAllInfoComment(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long postId) throws Exception {
         List<InfoComment> result = socialMediaService.getAllInfoComment(postId,userPrincipal.getId());
+        System.out.println(result.size());
         return ResponseEntity.ok(result);
     }
 }
