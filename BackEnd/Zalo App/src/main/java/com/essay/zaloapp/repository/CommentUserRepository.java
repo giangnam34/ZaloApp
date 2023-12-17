@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface CommentUserRepository extends JpaRepository<CommentUser, Long> {
 
     CommentUser findFirstByUserAndCommentOrderByCreatedAtDesc(User user, Comment comment);
+
+    Boolean existsCommentUserByUserAndComment(User user, Comment comment);
 }

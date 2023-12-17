@@ -10,8 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
 @NoArgsConstructor
 public class UpdateCommentRequest {
 
-    private Long userId;
-
     private Long commentId;
 
     private String content;
