@@ -224,6 +224,8 @@ public class UserServiceImpl implements UserService {
                 }
             }
             Friends friend = new Friends(new FriendsId(user1.getId(),user2.getId()), null, 0L, 0L, user2.getFullName(), user1.getFullName(), !Objects.equals(user1.getId(), userId), FriendStatus.WaitingAccept);
+            friend.setUser1(user1);
+            friend.setUser2(user2);
             friendsRepository.save(friend);
             return ResponseEntity.ok("Gửi lời mời kết bạn thành công!!!");
         } catch (Exception e){
