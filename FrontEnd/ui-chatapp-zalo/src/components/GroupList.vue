@@ -284,7 +284,7 @@ export default {
 
     .header {
         flex: 0 0 auto;
-        height: 64px;
+        height: 8%;
         width: 100%;
         border-top: 1px solid rgb(160, 160, 160);
         border-left: 1px solid rgb(160, 160, 160);
@@ -310,7 +310,7 @@ export default {
     .wrapper {
         background-color: #f4f4f4;
         flex: 1 1 auto;
-        height: 1200px;
+        height: 92%;
         overflow: scroll;
 
         ::-webkit-scrollbar {

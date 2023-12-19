@@ -14,7 +14,7 @@
                     `(${receivedFriendList.length})` : '0' }}</div>
                 <div class="list">
                     <div v-for="friend in receivedFriendList" :key="friend.phoneNumber" class="item-list"
-                        :class="{ 'hovered': hoveredItem === '1' }" @mouseenter="(hoveredItem = '1')"
+                        :class="{ 'hovered': hoveredItem === friend.phoneNumber }" @mouseenter="(hoveredItem = friend.phoneNumber)"
                         @mouseleave="hoveredItem = ''">
                         <div class="friend-info">
                             <div class="avatar-container">
@@ -29,11 +29,11 @@
                             </div>
                         </div>
                         <div class="action">
-                            <button class="defuse">
+                            <button class="refuse" @click="acceptInvitation(friend, false)">
                                 <i class="fas fa-times"></i>
-                                <span>Bỏ qua</span>
+                                <span>Từ chối</span>
                             </button>
-                            <button class="accept">
+                            <button class="accept" @click="acceptInvitation(friend, true)">
                                 <i class="fas fa-check"></i>
                                 <span>Đồng ý</span>
                             </button>
@@ -47,7 +47,7 @@
                     `(${sendedFriendList.length})` : '0' }}</div>
                 <div class="list">
                     <div class="item-list" v-for="friend in sendedFriendList" :key="friend.phoneNumber"
-                        :class="{ 'hovered': hoveredItem === '3' }" @mouseenter="(hoveredItem = '3')"
+                        :class="{ 'hovered': hoveredItem === friend.phoneNumber }" @mouseenter="(hoveredItem = friend.phoneNumber)"
                         @mouseleave="hoveredItem = ''">
                         <div class="friend-info">
                             <div class="avatar-container">
@@ -62,7 +62,7 @@
                             </div>
                         </div>
                         <div class="action">
-                            <button class="accept">
+                            <button class="accept" @click="cancelInvitation(friend)">
                                 <i class="fas fa-check"></i>
                                 <span>Thu hồi lời mời</span>
                             </button>
@@ -154,11 +154,18 @@ export default {
     mounted() {
         this.getInviteFriend();
     },
+    created() {
+        const userString = localStorage.getItem('user');
+        if (userString) {
+            this.user = JSON.parse(userString);
+        }
+    },
     data() {
         return {
             hoveredItem: '',
             sendedFriendList: null,
             receivedFriendList: null,
+            user: null,
         };
     },
     methods: {
@@ -176,6 +183,76 @@ export default {
                     this.sendedFriendList = inviteFriendList.filter(user => user.isInviteFriendFromUser === true);
 
                     this.receivedFriendList = inviteFriendList.filter(user => user.isInviteFriendFromUser === false);
+                } else {
+                    this.toast.error(response.data, { timeout: 1500 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
+            }
+        },
+        async cancelInvitation(friend) {
+            try {
+
+                const cancelFriendRequest = {
+                    fromPhoneNumberUser: this.user.phoneNumber,
+                    toPhoneNumberUser: friend.phoneNumber,
+                    isAcceptingInvite: false
+                }
+
+                const response = await axios.post(`users/cancelInviteFriend`, cancelFriendRequest, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token")
+                    }
+                });
+
+                if (response.status === 200) {
+                    this.sendedFriendList = this.sendedFriendList.filter(user => user.phoneNumber !== friend.phoneNumber);
+                    this.toast.success(response.data, {timeout: 1500})
+                } else {
+                    this.toast.error(response.data, { timeout: 1500 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
+            }
+        },
+        async acceptInvitation(friend, isAccepting) {
+            try {
+
+                const acceptFriendRequest = {
+                    fromPhoneNumberUser: this.user.phoneNumber,
+                    toPhoneNumberUser: friend.phoneNumber,
+                    isAcceptingInvite: isAccepting
+                }
+
+                const response = await axios.post(`users/acceptingInviteFriend`, acceptFriendRequest, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token")
+                    }
+                });
+
+                if (response.status === 200) {
+                    this.receivedFriendList = this.receivedFriendList.filter(user => user.phoneNumber !== friend.phoneNumber);
+                    this.toast.success(response.data, {timeout: 1500})
                 } else {
                     this.toast.error(response.data, { timeout: 1500 });
                 }
@@ -230,7 +307,7 @@ export default {
     }
 
     .wrapper {
-        background-color: #f4f4f4; 
+        background-color: #f4f4f4;
         height: 92%;
     }
 
@@ -398,7 +475,7 @@ export default {
         margin-left: 10px;
     }
 
-    .action .defuse {
+    .action .refuse {
         background-color: #ffff;
         color: #42a9d5;
     }

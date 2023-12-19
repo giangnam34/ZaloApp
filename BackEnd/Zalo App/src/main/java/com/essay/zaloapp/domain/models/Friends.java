@@ -21,12 +21,12 @@ public class Friends {
 	@EmbeddedId
 	private FriendsId friendsId;
 
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne
 	@MapsId("user1")
 	@JoinColumn(name = "user_id_1")
 	private User user1;
 
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne
 	@MapsId("user2")
 	@JoinColumn(name = "user_id_2")
 	private User user2;

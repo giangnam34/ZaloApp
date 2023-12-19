@@ -122,16 +122,17 @@
                 <v-card-text class="dialog-content-user">
                     <div class="profile-photo-user">
                         <div class="cover-avatar-user">
-                            <img class="cover-image-user" :src="user.imageCoverAvatar" alt="None" crossorigin="anonymous">
+                            <img class="cover-image-user" :src="userFound.imageCoverAvatar" alt="None"
+                                crossorigin="anonymous">
                         </div>
                         <div class="ava-name-container-user">
                             <div class="avatar-profile-user">
                                 <div class="avatar-user">
-                                    <img class="avatar-image-user" :src="user.imageAvatar">
+                                    <img class="avatar-image-user" :src="userFound.imageAvatar">
                                 </div>
                             </div>
                             <div class="fullname-profile-user">
-                                <div class="fullname-user">{{ user.userName }}</div>
+                                <div class="fullname-user">{{ userFound.userName }}</div>
                             </div>
                         </div>
                     </div>
@@ -144,11 +145,11 @@
                             <div class="user-profile-details-user">
                                 <div class="user-profile-item-user">
                                     <span class="title-user">Điện thoại</span>
-                                    <span class="content-user">{{ user.phoneNumber }}</span>
+                                    <span class="content-user">{{ userFound.phoneNumber }}</span>
                                 </div>
                                 <div class="user-profile-item-user">
                                     <span class="title-user">Giới tính</span>
-                                    <span class="content-user">{{ user.gender === 'Male' ? 'Nam' : 'Nữ' }}</span>
+                                    <span class="content-user">{{ userFound.gender === 'Male' ? 'Nam' : 'Nữ' }}</span>
                                 </div>
                                 <div class="user-profile-item-user">
                                     <span class="title-user">Ngày sinh</span>
@@ -157,16 +158,26 @@
                             </div>
                         </div>
                     </div>
-                    <hr style="border: none; border-bottom: 1px solid #ccc;">
+                    <hr v-if="user.phoneNumber !== userFound.phoneNumber"
+                        style="border: none; border-bottom: 1px solid #ccc;">
                     <div class="mt-2"></div>
-                    <div class="profile-action-user">
+                    <div class="profile-action-user" v-if="user.phoneNumber !== userFound.phoneNumber">
                         <div
-                            class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/2">
+                            class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/2 text-sm">
                             Chặn
                         </div>
-                        <div class="add-friend-button text-center cursor-pointer bg-blue-500 text-white rounded-lg h-10 ml-2 w-1/2"
+                        <div v-if="!sended && !isFriend"
+                            class="add-friend-button text-center cursor-pointer bg-blue-500 text-white rounded-lg h-10 ml-2 w-1/2 text-sm"
                             @click="addFriend">
                             Kết bạn
+                        </div>
+                        <div v-else-if="sended"
+                            class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm">
+                            Chờ xác nhận...
+                        </div>
+                        <div v-else
+                            class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm w-1/2">
+                            Đã là bạn bè
                         </div>
                     </div>
                     <div class="mb-2"></div>
@@ -190,6 +201,13 @@ export default {
         GroupList,
         InvitationFriendManage
     },
+    created() {
+        const userString = localStorage.getItem('user');
+        if (userString) {
+            this.user = JSON.parse(userString);
+        }
+        this.getListOfFriends();
+    },
     setup() {
         // Get toast interface
         const toast = useToast();
@@ -211,9 +229,14 @@ export default {
                 { phoneNumber: '0965556657', userName: "Kẻ Áo Tím", imageAvatar: 'blob:http://localhost:8080/7af160ed-a5d4-43b8-92dd-e1bc512fb7ee', imageCoverAvatar: 'blob:http://localhost:8080/7af160ed-a5d4-43b8-92dd-e1bc512fb7ee', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
                 { phoneNumber: '0965556658', userName: "Kẻ Áo Cam", imageAvatar: 'blob:http://localhost:8080/7af160ed-a5d4-43b8-92dd-e1bc512fb7ee', imageCoverAvatar: 'blob:http://localhost:8080/7af160ed-a5d4-43b8-92dd-e1bc512fb7ee', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' }
             ],
+            listOfFriends: [],
             searchPhoneNumber: '',
+            userFound: null,
             user: null,
             displayedDate: '',
+            sended: false,
+            isFriend: false,
+            inviteList: null,
         };
     },
     methods: {
@@ -224,19 +247,20 @@ export default {
             return this.selectedMenuItem === item;
         },
         formattedBirthday() {
-            if (this.user && this.user.birthDay) {
-                const parsedDate = parseISO(this.user.birthDay);
+            if (this.userFound && this.userFound.birthDay) {
+                const parsedDate = parseISO(this.userFound.birthDay);
                 this.displayedDate = format(parsedDate, "dd 'tháng' MM, yyyy", { locale: viLocale });
             }
         },
         showFindFriendDialog() {
+            this.searchPhoneNumber = '';
             this.showVisibleFindFriendDialog = true;
         },
         closeFindFriendDialog() {
             this.showVisibleFindFriendDialog = false;
         },
         showUserInfoDialog(friend) {
-            this.user = friend;
+            this.userFound = friend;
 
             this.formattedBirthday();
 
@@ -245,6 +269,7 @@ export default {
         },
         closeUserInfoDialog() {
             this.showVisibleUserInfo = false;
+            this.sended = false;
             this.showVisibleFindFriendDialog = true;
         },
         async showFoundUserDialog() {
@@ -257,8 +282,9 @@ export default {
 
                 if (responseUser.status === 200) {
                     const userTemp = responseUser.data;
-
-                    this.showUserInfoDialog(userTemp)
+                    await this.getInviteFriend();
+                    this.checkUser();
+                    this.showUserInfoDialog(userTemp);
                 } else {
                     console.error(responseUser.body);
                     this.toast.error(responseUser.body || 'Đã xảy ra lỗi!', { timeout: 1500 });
@@ -286,7 +312,7 @@ export default {
 
                     const addFriendRequest = {
                         fromPhoneNumberUser: sender.phoneNumber,
-                        toPhoneNumberUser: this.user.phoneNumber,
+                        toPhoneNumberUser: this.userFound.phoneNumber,
                         isAcceptingInvite: false
                     }
 
@@ -301,10 +327,87 @@ export default {
                     if (responseUser.status === 200) {
                         this.toast.success(responseUser.data)
                         this.showVisibleUserInfo = false;
+                        this.searchPhoneNumber = '';
+                        this.showVisibleFindFriendDialog = true;
                     } else {
                         console.error(responseUser.data);
                         this.toast.error(responseUser.data || 'Đã xảy ra lỗi!', { timeout: 1500 });
                     }
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
+            }
+        },
+        async getInviteFriend() {
+            try {
+
+                const response = await axios.get(`users/getAllInviteFriend`, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token")
+                    }
+                });
+
+                if (response.status === 200) {
+                    this.inviteList = response.data;
+                } else {
+                    this.toast.error(response.data, { timeout: 1500 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
+            }
+        },
+        checkUser() {
+            if (this.listOfFriends.length === 0) {
+                this.isFriend = false;
+                if (this.inviteList.length === 0) {
+                    this.sended = false;
+                } else {
+                    const temp = this.inviteList.find(friend => friend.phoneNumber === this.searchPhoneNumber);
+                    if (temp?.phoneNumber.length !== undefined) {
+                        this.sended = true;
+                    } else {
+                        this.sended = false;
+                    }
+                }
+            }else{
+                this.sended = false;
+                this.isFriend = true;
+            }
+        },
+        async getListOfFriends() {
+            try {
+                const response = await axios.get(`users/getAllFriendUser`, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token")
+                    }
+                });
+
+                if (response.status === 200) {
+
+                    this.listOfFriends = response.data;
+                } else {
+                    console.error(response.body);
+                    this.toast.error(response.body, { timeout: 1500 });
                 }
             } catch (error) {
                 if (error.response) {
