@@ -49,7 +49,7 @@ export default {
   data() {
     return {
       loading: true,
-      chosenPage: 1,
+      chosenPage: 2,
       userIsValid: false,
       jwt: '',
     }

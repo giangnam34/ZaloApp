@@ -292,7 +292,7 @@ public class UserServiceImpl implements UserService {
                 user2 = userTMP;
             }
             Friends friends = friendsRepository.findByFriendsId(new FriendsId(user1.getId(),user2.getId()));
-            if ( friends == null || (!friends.getSendInviteBy() && Objects.equals(user1.getId(), userId)) || (friends.getSendInviteBy() && Objects.equals(user2.getId(), userId)) )
+            if ( friends == null || (friends.getSendInviteBy() && Objects.equals(user1.getId(), userId)) || (!friends.getSendInviteBy() && Objects.equals(user2.getId(), userId)) )
                 return ResponseEntity.status(401).body("Bạn không có quyền để thực hiện hành động này!");
             if (friends.getFriendStatus().equals(FriendStatus.WaitingAccept)) {
                 friendsRepository.delete(friends);
@@ -300,6 +300,7 @@ public class UserServiceImpl implements UserService {
             }
             return ResponseEntity.badRequest().body("Không thể hủy lời mời kết bạn!!!");
         } catch (Exception e){
+            System.out.println("Message: " + e.getMessage());
             throw new Exception("Có lỗi xảy ra. Vui lòng thử lại!!!");
         }
     }
@@ -326,8 +327,18 @@ public class UserServiceImpl implements UserService {
                 friends.setFriendStatus(FriendStatus.IsUnFriend);
                 friends.setIsDelete(Objects.equals(userId, user1.getId()) ? 1L : 2L);
                 friendsRepository.save(friends);
+                return ResponseEntity.ok("Hủy kết bạn thành công!");
             }
-            return ResponseEntity.badRequest().body("Có lỗi xảy ra. Vui lòng thử lại!!!");
+            else{
+                String message = "";
+                if (friends.getFriendStatus().equals(FriendStatus.WaitingAccept))
+                    message = "Bạn chưa kết bạn với người này! Hehe";
+                else if (friends.getFriendStatus().equals(FriendStatus.ISBlock))
+                    message = "Lêu lêu, người ta block m rồi! Ehe";
+                else if (friends.getFriendStatus().equals(FriendStatus.IsUnFriend))
+                    message = "Hai người từ lâu đã không đi chung đường!";
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(message);
+            }
         } catch (Exception e){
             throw new Exception("Có lỗi xảy ra. Vui lòng thử lại!!!");
         }

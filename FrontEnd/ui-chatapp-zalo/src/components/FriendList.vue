@@ -106,31 +106,31 @@
                     </div>
                 </div>
                 <div class="list">
-                    <span style="font-weight: bold; margin-left: 20px;" class="contact-item">T</span>
-                    <div class="loop" v-for="friend in friends" :key="friend.id">
+                    <div class="loop" v-for="friend in friends" :key="friend.phoneNumber">
                         <div style="display: flex; align-items: center; justify-content: space-between;"
-                            :class="{ 'hovered': hoveredItem === friend.id }" @mouseenter="(hoveredItem = friend.id)"
-                            @mouseleave="hoveredItem = ''">
+                            :class="{ 'hovered': hoveredItem === friend.phoneNumber }"
+                            @mouseenter="(hoveredItem = friend.phoneNumber)" @mouseleave="hoveredItem = ''">
                             <div class="friend-info">
                                 <div class="avatar-container">
                                     <div class="avatar-wrapper">
-                                        <img :src="friend.img" class="avatar">
+                                        <img :src="friend.imageAvatar" class="avatar">
                                     </div>
                                 </div>
                                 <div class="detail">
-                                    <span>{{ friend.name }}</span>
+                                    <span>{{ friend.userName }}</span>
                                 </div>
                             </div>
                             <div class="action">
                                 <div class="popover-action-container" @blur="hidePopover" tabindex="0">
-                                    <a id="ellipsis-icon" @click="(event) => handleClickAction(friend.id, event)">
+                                    <a id="ellipsis-icon" @click="(event) => handleClickAction(friend.phoneNumber, event)">
                                         <font-awesome-icon icon="fa-solid fa-ellipsis" />
                                     </a>
-                                    <div class="popoverAction" v-show="friend.id === selectedItem"
+                                    <div class="popoverAction" v-show="friend.phoneNumber === selectedItem"
                                         :style="{ right: popoverRight, top: popoverTop }">
                                         <div class="popover-body">
                                             <div class="popover-item" :class="{ 'hoveredFilter': hoveredItem === 'info' }"
-                                                @mouseenter="(hoveredItem = 'info')" @mouseleave="hoveredItem = ''">
+                                                @mouseenter="(hoveredItem = 'info')" @mouseleave="hoveredItem = ''"
+                                                @click="showFoundUserDialog(friend.phoneNumber)">
                                                 <div>
                                                     Xem thông tin
                                                 </div>
@@ -174,11 +174,65 @@
             </div>
         </div>
     </div>
+    <v-dialog class="dialog-container-user" v-model="showVisibleUserInfo" max-width="352px"
+        @click:outside="closeUserInfoDialog">
+        <v-card class="dialog-component-user">
+            <v-card-title class="dialog-title-user">
+                <h2 class="title-user">Thông tin tài khoản
+                    <div class="icon-close-user" @click="closeUserInfoDialog"><font-awesome-icon icon="fa-solid fa-x" />
+                    </div>
+                </h2>
+            </v-card-title>
+            <hr style="border: none; border-bottom: 1px solid #ccc;">
+            <v-card-text class="dialog-content-user">
+                <div class="profile-photo-user">
+                    <div class="cover-avatar-user">
+                        <img class="cover-image-user" :src="userFound.imageCoverAvatar" alt="None" crossorigin="anonymous">
+                    </div>
+                    <div class="ava-name-container-user">
+                        <div class="avatar-profile-user">
+                            <div class="avatar-user">
+                                <img class="avatar-image-user" :src="userFound.imageAvatar">
+                            </div>
+                        </div>
+                        <div class="fullname-profile-user">
+                            <div class="fullname-user">{{ userFound.userName }}</div>
+                        </div>
+                    </div>
+                </div>
+                <hr style="border: none; border-bottom: 1px solid #ccc;">
+                <div class="profile-information-user">
+                    <div class="profile-header-user">
+                        <strong>Thông tin cá nhân</strong>
+                    </div>
+                    <div>
+                        <div class="user-profile-details-user">
+                            <div class="user-profile-item-user">
+                                <span class="title-user">Điện thoại</span>
+                                <span class="content-user">{{ userFound.phoneNumber }}</span>
+                            </div>
+                            <div class="user-profile-item-user">
+                                <span class="title-user">Giới tính</span>
+                                <span class="content-user">{{ userFound.gender === 'Male' ? 'Nam' : 'Nữ' }}</span>
+                            </div>
+                            <div class="user-profile-item-user">
+                                <span class="title-user">Ngày sinh</span>
+                                <span class="content-user">{{ displayedDate }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-2"></div>
+            </v-card-text>
+        </v-card>
+    </v-dialog>
 </template>
   
 <script>
 import axios from 'axios';
 import { useToast } from "vue-toastification";
+import { format, parseISO } from 'date-fns';
+import viLocale from 'date-fns/locale/vi';
 export default {
     data() {
         return {
@@ -186,22 +240,15 @@ export default {
             typeOfSort: 'Tên (A-Z)',
             typeOfFilter: 'Tất cả',
             hoveredItem: '',
+            showVisibleUserInfo: false,
             chosenFilter: 'all',
             chosenType: 'ascending',
             popoverRight: 0,
             popoverTop: 0,
-            friends: [
-                { id: 1, name: "Friend 1", img: "https://i.imgur.com/gEKsypv.jpg", phoneNumber: "0965556651" },
-                { id: 2, name: "Friend 2", img: "https://i.imgur.com/gEKsypv.jpg", phoneNumber: "0965556653" },
-                { id: 3, name: "Friend 3", img: "https://i.imgur.com/gEKsypv.jpg", phoneNumber: "0965556654" },
-                { id: 4, name: "Friend 4", img: "https://i.imgur.com/gEKsypv.jpg", phoneNumber: "0965556655" },
-                { id: 5, name: "Friend 5", img: "https://i.imgur.com/gEKsypv.jpg", phoneNumber: "0965556656" },
-                { id: 6, name: "Friend 6", img: "https://i.imgur.com/gEKsypv.jpg", phoneNumber: "0965556657" },
-                { id: 7, name: "Friend 7", img: "https://i.imgur.com/gEKsypv.jpg", phoneNumber: "0965556658" },
-                { id: 8, name: "Friend 8", img: "https://i.imgur.com/gEKsypv.jpg", phoneNumber: "0965556659" },
-                { id: 9, name: "Friend 9", img: "https://i.imgur.com/gEKsypv.jpg", phoneNumber: "0965556660" }
-            ],
+            displayedDate: '',
+            friends: [],
             user: null,
+            userFound: null,
         };
     },
     setup() {
@@ -219,6 +266,12 @@ export default {
     methods: {
         selectItem(item) {
             this.selectedItem = item;
+        },
+        formattedBirthday() {
+            if (this.userFound && this.userFound.birthDay) {
+                const parsedDate = parseISO(this.userFound.birthDay);
+                this.displayedDate = format(parsedDate, "dd 'tháng' MM, yyyy", { locale: viLocale });
+            }
         },
         clearSelectedItem() {
             this.selectedItem = '';
@@ -267,12 +320,10 @@ export default {
 
                 if (response.status === 200) {
 
-                    const friends = response.data;
-                    console.log(friends);
-
+                    this.friends = response.data;
                 } else {
-                    console.error(response.body);
-                    this.toast.error(response.body, { timeout: 1500 });
+                    console.error(response.data);
+                    this.toast.error(response.data, { timeout: 1500 });
                 }
             } catch (error) {
                 if (error.response) {
@@ -303,10 +354,10 @@ export default {
 
                 if (response.status === 200) {
                     this.friends = this.friends.filter(friend => friend.phoneNumber !== phoneNumber);
-                    this.toast.success(response.body, { timeout: 1500 });
+                    this.toast.success(response.data, { timeout: 1500 });
                 } else {
-                    console.error(response.body);
-                    this.toast.error(response.body, { timeout: 1500 });
+                    console.error(response.data);
+                    this.toast.error(response.data, { timeout: 1500 });
                 }
             } catch (error) {
                 if (error.response) {
@@ -357,6 +408,47 @@ export default {
                 }
             }
         },
+        showUserInfoDialog(friend) {
+            this.userFound = friend;
+
+            this.formattedBirthday();
+
+            this.selectedItem = '';
+
+            this.showVisibleUserInfo = true;
+        },
+        closeUserInfoDialog() {
+            this.showVisibleUserInfo = false;
+        },
+        async showFoundUserDialog(phoneNumber) {
+            try {
+                const responseUser = await axios.get(`users/findUserByPhoneNumber/${phoneNumber}`, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token")
+                    }
+                });
+
+                if (responseUser.status === 200) {
+                    const userTemp = responseUser.data;
+                    this.showUserInfoDialog(userTemp);
+                } else {
+                    console.error(responseUser.body);
+                    this.toast.error(responseUser.body || 'Đã xảy ra lỗi!', { timeout: 1500 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
+            }
+        }
     },
     name: 'FriendList'
 }
@@ -371,7 +463,7 @@ export default {
 
     .header {
         flex: 0 0 auto;
-        height: 64px;
+        height: 8%;
         width: 100%;
         border-top: 1px solid rgb(160, 160, 160);
         border-left: 1px solid rgb(160, 160, 160);
@@ -397,7 +489,7 @@ export default {
     .wrapper {
         background-color: #f4f4f4;
         flex: 1 1 auto;
-        height: 1200px;
+        height: 92%;
         overflow-y: scroll;
         overflow-x: hidden;
 
@@ -640,5 +732,158 @@ export default {
         border: #e5efff;
     }
 
+}
+
+.dialog-container-user {
+    .dialog-component-user {
+        .dialog-title-user {
+            .title-user {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+
+                .icon-close-user {
+                    cursor: pointer;
+                }
+            }
+        }
+
+        .dialog-content-user {
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            height: auto;
+
+            .profile-photo-user {
+                position: relative;
+                display: block;
+
+                .cover-avatar-user {
+                    position: relative;
+                    display: table;
+                    margin: auto;
+
+                    .cover-image-user {
+                        cursor: pointer;
+                        width: 352px;
+                        height: 152px;
+                        object-fit: cover;
+                    }
+                }
+
+                .ava-name-container-user {
+                    text-align: center;
+                    left: 0;
+                    width: 100%;
+                    color: #fff;
+                    position: relative;
+                    display: flex;
+                    background: transparent;
+                    margin-top: -48px;
+                    flex-direction: column;
+
+                    .avatar-profile-user {
+                        cursor: pointer;
+                        align-self: center;
+                        display: block;
+
+                        .avatar-user {
+                            width: 80px;
+                            height: 80px;
+                            min-width: 80px;
+                            min-height: 80px;
+                            position: relative;
+                            color: #fff;
+                            overflow: hidden;
+                            box-sizing: border-box;
+
+                            .avatar-image-user {
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                background: #e6e8ea;
+                                color: #7589a3;
+                                overflow: hidden;
+                                object-fit: cover;
+                                font-size: 1.25rem;
+                                font-weight: 500;
+                                line-height: 1.5;
+                                border-width: 2px;
+                                box-sizing: border-box;
+                                border-radius: 50%;
+                                border: 2px solid #fff;
+                                width: 80px;
+                                height: 80px;
+                                min-width: 80px;
+                                min-height: 80px;
+                                overflow-clip-margin: content-box;
+                            }
+                        }
+                    }
+
+                    .fullname-profile-user {
+                        width: 100%;
+                        color: #081c36;
+                        font-size: 1.125rem; // Thay đổi font-size thành 1.125rem
+                        font-weight: 500; // Thay đổi font-weight thành 500
+                        line-height: 1.5;
+                        display: flex;
+                        flex-direction: column;
+                        z-index: 1;
+                        margin-top: 10px;
+
+                        .fullname-user {
+                            position: relative;
+                            width: fit-content;
+                            margin: auto;
+                            max-width: 271px;
+                            text-overflow: ellipsis;
+                        }
+                    }
+                }
+            }
+
+            .profile-information-user {
+
+                .profile-header-user {
+                    margin-top: 5px;
+                    margin-bottom: 10px;
+                    margin-left: 3px;
+                }
+
+                .user-profile-details-user {
+                    display: flex;
+                    flex-direction: column;
+
+                    .user-profile-item-user {
+                        display: flex;
+                        justify-content: space-between;
+                        margin-bottom: 10px;
+
+                        .title-user {
+                            flex-basis: 40%;
+                            margin-left: 3px;
+                        }
+
+                        .content-user {
+                            flex-basis: 60%;
+                        }
+                    }
+                }
+            }
+
+            .profile-action-user {
+                height: 40px;
+                display: flex;
+            }
+        }
+
+    }
+
+    .block-button,
+    .add-friend-button {
+        padding: 8px 16px;
+    }
 }
 </style>
