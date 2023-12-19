@@ -11,9 +11,9 @@
                                 <div class="icon-phone">
                                     <font-awesome-icon icon="fa-solid fa-phone" />
                                 </div>
-                                <input class="input" type="text" v-model="phoneNumber" name="phone"
+                                <input class="input" type="text" pattern="[0-9]*" v-model="phoneNumber" name="phone"
                                     placeholder="Nhập số điện thoại" @blur="validatePhoneNumber" ref="phoneInput" required
-                                    @keyup.enter="signIn">
+                                    @keypress="isNumber($event)" @keyup.enter="signIn">
                             </div>
                             <hr style="border: none; border-bottom: 2px solid #d9d9d9; margin-left: 8px;">
                             <em class="error" v-if="isError === true">{{ validationErrorPhoneNumber }}</em>
@@ -57,10 +57,10 @@
             </div>
         </div>
     </div>
-    <div v-if="showingPage === 'signUp'" style="width: 100%;">
+    <div v-else-if="showingPage === 'signUp'" style="width: 100%;">
         <SignUp v-model="showingPage" @update:showingPage="updateShowingPage"></SignUp>
     </div>
-    <div v-if="showingPage === 'forgotPassword'" style="width: 100%;">
+    <div v-else-if="showingPage === 'forgotPassword'" style="width: 100%;">
         <ForgotPassword v-model="showingPage" @update:showingPage="updateShowingPage"></ForgotPassword>
     </div>
 </template>
@@ -126,6 +126,15 @@ export default {
             }
             else this.flag2 = true;
             if (!this.flag1 && !this.flag2) this.isError = false;
+        },
+        isNumber(evt) {
+            evt = (evt) ? evt : window.event;
+            var charCode = (evt.which) ? evt.which : evt.keyCode;
+            if ((charCode > 31 && (charCode < 48 || charCode > 57)) && charCode !== 46) {
+                evt.preventDefault();
+            } else {
+                return true;
+            }
         },
         showSignUp() {
             this.showingPage = 'signUp';

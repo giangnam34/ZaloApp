@@ -36,7 +36,7 @@ public class GetInfoPostResponse {
     // Hình ảnh hoặc video kèm theo
     private List<String> files;
 
-    private Date createdAt;
+    private String createdAt;
 
-    private Date updatedAt;
+    private String updatedAt;
 }

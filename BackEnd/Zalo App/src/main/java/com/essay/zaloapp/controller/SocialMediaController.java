@@ -115,4 +115,12 @@ public class SocialMediaController {
         System.out.println(result.size());
         return ResponseEntity.ok(result);
     }
+
+    // Hiển thị bản tin
+    @GetMapping("/get-post")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> getPostUser(@AuthenticationPrincipal UserPrincipal userPrincipal){
+        SocialMediaServiceImpl.GetAllInfoPostUser result = socialMediaService.getAllPostUser(userPrincipal.getId());
+        return result.getMesage().equals("Thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
+    }
 }

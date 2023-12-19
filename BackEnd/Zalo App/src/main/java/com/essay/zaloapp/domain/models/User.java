@@ -1,10 +1,7 @@
 package com.essay.zaloapp.domain.models;
 
 import com.essay.zaloapp.domain.enums.Sex;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -100,6 +97,8 @@ public class User {
         this.createdAt = new Date();
         this.isConfirmed = false;
         this.roles = roleList;
+        this.imageAvatarUrl = "DefaultAvatar.jpg";
+        this.imageCoverPhotoUrl = "DefaultCoverAvatar.jpg";
     }
 
     @PreUpdate

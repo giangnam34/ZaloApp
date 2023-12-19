@@ -1,5 +1,5 @@
 <template>
-    <div class="px-8 py-6 bg-gray-100 overflow-y-auto max-h-[737.5px]">
+    <div class="container px-8 py-6 bg-gray-100 overflow-y-auto">
         <div class="max-w-none w-auto mx-auto grid grid-cols-4 gap-4">
             <div class="main-left col-span-1">
                 <div class="p-4 bg-white border border-gray-200 text-center rounded-lg">
@@ -51,7 +51,7 @@
                             </div>
                         </div>
 
-                        <p class="text-gray-600">{{ formatDate(feed.updated_date) }}</p>
+                        <p class="text-gray-600">{{ formatDate(new Date(feed.updatedAt)) }}</p>
                     </div>
 
                     <p class="mb-3">{{ feed.content }}</p>
@@ -105,8 +105,8 @@
                             luận</button>
                         <button class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
                             @mouseover="handleMouseOver" @mouseout="handleMouseOut"><font-awesome-icon
-                                icon="fa-solid fa-gear" class="mr-2" />Thiết lập bài
-                            viết</button>
+                                icon="fa-solid fa-share" class="mr-2" /> Chia sẻ
+                        </button>
                     </div>
                     <hr style="border: none; border-bottom: 1px solid #ccc;">
                 </div>
@@ -378,9 +378,8 @@
                                 icon="fa-regular fa-comment" class="mr-2" />Bình
                             luận</button>
                         <button class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
-                            @mouseover="handleMouseOver" @mouseout="handleMouseOut"><font-awesome-icon
-                                icon="fa-solid fa-gear" class="mr-2" />Thiết lập bài
-                            viết</button>
+                            @mouseover="handleMouseOver" @mouseout="handleMouseOut"><font-awesome-icon icon="fa-solid fa-share" /> Chia sẻ
+                        </button>
                     </div>
                     <hr style="border: none; border-bottom: 1px solid #ccc;">
                 </div>
@@ -489,23 +488,7 @@ export default {
                 'Một số bạn bè',
                 'Chỉ mình tôi'
             ],
-            feeds: [
-                {
-                    id: 1, name: "Từ Thanh Thoại", phoneNumber: "0968322444", content: "Ảnh đẹp dữ", created_date: new Date("2002-12-17T17:50:00"), updated_date: new Date("2002-12-17T17:50:00"),
-                    files: ['https://i.imgur.com/gEKsypv.jpg', 'https://i.imgur.com/gEKsypv.jpg', 'https://i.imgur.com/gEKsypv.jpg'], avatar: 'https://i.imgur.com/z9fdzMv.jpg', audience: 'AllFriend'
-                    , likeCount: 2, liked: ["0968322555", "0968322666"], tagCount: 1, tagged: ["0968322555"], commentCount: 4, isLike: false
-                },
-                {
-                    id: 2, name: "Võ Giang Nam", phoneNumber: "0968322555", content: "Ảnh đẹp ghê ha", created_date: new Date("2002-12-17T18:50:00"), updated_date: new Date("2002-12-17T18:50:00"),
-                    files: ['https://i.imgur.com/gEKsypv.jpg', 'https://i.imgur.com/gEKsypv.jpg'], avatar: 'https://i.imgur.com/z9fdzMv.jpg', audience: 'OnlyMe'
-                    , likeCount: 1, liked: ["0968322666"], tagCount: 2, tagged: ["0968322444", "0968322666"], commentCount: 4, isLike: false
-                },
-                {
-                    id: 3, name: "Kẻ Áo Đen", phoneNumber: "0968322666", content: "Ehehehehehehehe", created_date: new Date("2002-12-17T19:50:00"), updated_date: new Date("2002-12-17T19:50:00"),
-                    files: ['https://i.imgur.com/gEKsypv.jpg', 'https://i.imgur.com/gEKsypv.jpg'], avatar: 'https://i.imgur.com/z9fdzMv.jpg', audience: 'SomeOneCanSee'
-                    , likeCount: 2, liked: ["0968322555", "0968322444"], tagCount: 0, tagged: [], commentCount: 4, isLike: false
-                },
-            ],
+            feeds : [],
             comments: [
                 {
                     id: 1, fullName: "Từ Thanh Thoại", content: "Ảnh đẹp vờ lờ", avatar: "https://i.imgur.com/gEKsypv.jpg",
@@ -556,11 +539,11 @@ export default {
         },
         getFeed() {
             axios
-                .get('/api/posts/')
+                .get('/social-media/get-post')
                 .then(response => {
-                    console.log('data', response.data)
-
-                    this.posts = response.data
+                    console.log("Response status: " + response.status)
+                    response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))   
+                    this.feeds = response.data.getInfoPostResponse
                 })
                 .catch(error => {
                     console.log('error', error)
@@ -576,6 +559,8 @@ export default {
             this.showPostVisible = false;
         },
         formatDate(date) {
+            console.log("Giá trị của ngày: " + date)
+            console.log("Kiểu ngày: " + typeof(date))
             return format(date, 'HH:mm dd/MM/yyyy');
         },
         onFileSelected(event) {
@@ -700,6 +685,7 @@ export default {
 
                 if (response.status === 200) {
                     this.showPostVisible = false;
+                    this.newFeed.content = '';
                     this.toast.success(response.data, { timeout: 3000 });
                 } else {
                     this.toast.error(response.data, { timeout: 3000 });
@@ -781,6 +767,11 @@ export default {
 </script>
 
 <style scoped lang = "scss">
+
+.container{
+    height: 100%;
+}
+
 .dialog-container {
 
     width: 500px;
