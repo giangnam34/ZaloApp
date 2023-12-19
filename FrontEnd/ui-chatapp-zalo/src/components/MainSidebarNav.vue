@@ -1,7 +1,7 @@
 <template>
   <div id="sidebarNav" @mousemove="getMousePosition">
     <div id="main-tab">
-      <div class="nav__tabs__zalo web" title="Giang Nam" ref="avatar" @click="isClickAvatar('avatar')">
+      <div class="nav__tabs__zalo web" :title="user.fullName" ref="avatar" @click="isClickAvatar('avatar')">
         <div class="avatar-container">
           <img :src="user.imageAvatarUrl" class="a-child avatar-wrapper" />
         </div>
@@ -9,7 +9,7 @@
           <div id="userName">{{ user.fullName }}</div>
           <hr>
           <div id="yourProfile" @mouseover="onHover('yourProfile')" @mouseleave="outHover()"
-            :class="{ hoverProfile: isHover && name === 'yourProfile' }">Hồ sơ của bạn</div>
+            :class="{ hoverProfile: isHover && name === 'yourProfile' }" @click="emitOpenDialogEvent">Hồ sơ của bạn</div>
           <div id="setting" @mouseover="onHover('settingProfile')" @mouseleave="outHover()"
             :class="{ hoverProfile: isHover && name === 'settingProfile' }">Cài đặt</div>
           <hr>
@@ -34,6 +34,12 @@
           @click="onClick(3)" :class="{ hover: isHover && name === 'toDo', isChoose: index === 3 }">
           <a id="to-do-icon">
             <font-awesome-icon icon="fa-regular fa-square-check" style="color: #ffffff" />
+          </a>
+        </div>
+        <div class="nav__tabs_posts" title="Bài đăng" @mouseover="onHover('posts')" @mouseleave="outHover()"
+          @click="onClick(10)" :class="{ hover: isHover && name === 'posts', isChoose: index === 10 }">
+          <a id="post-icon">
+            <font-awesome-icon icon="fa-solid fa-newspaper" style="color: #ffffff" />
           </a>
         </div>
       </div>
@@ -143,13 +149,19 @@
             </div>
           </div>
         </div>
+        <UserInfo v-model:showPopup="showPopup" v-model="user" @update="handleUserUpdate"></UserInfo>
       </div>
     </div>
   </div>
 </template>
   
 <script>
+import UserInfo from './UserInfo.vue';
+import axios from 'axios';
 export default {
+  components: {
+    UserInfo
+  },
   name: "SidebarNav",
   data() {
     return {
@@ -164,6 +176,7 @@ export default {
       isShowWhenClickSetting: false,
       isShowWhenHoverData: false,
       user: null,
+      showPopup: false,
     };
   },
   emits: ['userLoggedIn'],
@@ -176,10 +189,23 @@ export default {
       this.user = JSON.parse(userString);
     }
   },
+  // watch: {
+  //   'user.imageAvatarUrl': {
+  //     handler: 'fetchAvatar',
+  //   },
+  // },
   mounted() {
     document.addEventListener("click", this.handleClickOutSide);
+    this.fetchAvatar();
   },
   methods: {
+    handleUserUpdate() {
+      // Xử lý khi thông tin user thay đổi từ UserInfo
+      this.fetchAvatar();
+    },
+    emitOpenDialogEvent() {
+      this.showPopup = true;
+    },
     onHover(name) {
       this.isHover = true;
       this.name = name;
@@ -246,7 +272,23 @@ export default {
       this.$emit("userLoggedIn", '');
       event.preventDefault();
       event.stopPropagation();
-    }
+    },
+    fetchAvatar() {
+      axios.get(`users/imageAvatar`, {
+        headers: {
+          'Authorization': localStorage.getItem("token"),
+        },
+        responseType: 'blob',
+      }).then(response => {
+        if (this.user.imageAvatarUrl) {
+          URL.revokeObjectURL(this.user.imageAvatarUrl);
+        }
+        this.user.imageAvatarUrl = URL.createObjectURL(response.data);
+      }).catch(error => {
+        console.error('Error fetching avatar:', error);
+      });
+      console.log('user.imageAvatarUrl changed:', this.user.imageAvatarUrl);
+    },
   },
   beforeUnmount() {
     document.removeEventListener("click", this.handleClickOutside);
@@ -281,7 +323,7 @@ export default {
 }
 
 #sidebarNav {
-  height: 99.2vh;
+  height: 100vh;
   width: 64px;
   //border-right: 1px solid rgb(160, 160, 160);
   display: inline-block;
@@ -379,14 +421,16 @@ export default {
 
       .nav__tabs_message,
       .nav__tabs_contacts,
-      .nav__tabs_to-do {
+      .nav__tabs_to-do,
+      .nav__tabs_posts {
         height: 64px;
         width: 100%;
         display: table;
 
         #chat-message-icon,
         #address-icon,
-        #to-do-icon {
+        #to-do-icon,
+        #post-icon {
           color: #fff;
           display: table-cell;
           font-size: 28px;
@@ -429,7 +473,7 @@ export default {
     }
 
     .nav__tabs_middle {
-      height: 270px;
+      height: 188px;
     }
 
     .nav__tabs_bottom {

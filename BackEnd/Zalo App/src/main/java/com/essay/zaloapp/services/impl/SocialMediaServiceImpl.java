@@ -5,7 +5,7 @@ import com.essay.zaloapp.domain.enums.PostUserType;
 import com.essay.zaloapp.domain.enums.ResourceType;
 import com.essay.zaloapp.domain.models.*;
 import com.essay.zaloapp.domain.models.Composite.FriendsId;
-import com.essay.zaloapp.domain.payload.request.CreateNewPostRequest;
+import com.essay.zaloapp.domain.payload.request.SocialMedia.CreateNewPostRequest;
 import com.essay.zaloapp.domain.payload.response.Authorize.InfoUser;
 import com.essay.zaloapp.domain.payload.response.SocialMedia.Comment.InfoComment;
 import com.essay.zaloapp.domain.payload.response.SocialMedia.GetInfoPostResponse;

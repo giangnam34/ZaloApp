@@ -2,7 +2,7 @@ package com.essay.zaloapp.services;
 
 import com.essay.zaloapp.domain.enums.Audience;
 import com.essay.zaloapp.domain.models.User;
-import com.essay.zaloapp.domain.payload.request.CreateNewPostRequest;
+import com.essay.zaloapp.domain.payload.request.SocialMedia.CreateNewPostRequest;
 import com.essay.zaloapp.domain.payload.response.SocialMedia.Comment.InfoComment;
 import com.essay.zaloapp.services.impl.SocialMediaServiceImpl;
 import org.springframework.web.multipart.MultipartFile;

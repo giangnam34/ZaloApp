@@ -150,7 +150,8 @@
                                             </div>
                                             <div class="separator"></div>
                                             <div class="popover-item" :class="{ 'hoveredFilter': hoveredItem === 'block' }"
-                                                @mouseenter="(hoveredItem = 'block')" @mouseleave="hoveredItem = ''">
+                                                @mouseenter="(hoveredItem = 'block')" @mouseleave="hoveredItem = ''"
+                                                @click="blockUser(friend.phoneNumber)">
                                                 <div>
                                                     Chặn
                                                 </div>
@@ -159,7 +160,7 @@
                                             <div class="popover-item" style="color: red"
                                                 :class="{ 'hoveredFilter': hoveredItem === 'delete' }"
                                                 @mouseenter="(hoveredItem = 'delete')" @mouseleave="hoveredItem = ''"
-                                                @click="deleteFriend(friend.id)">
+                                                @click="deleteFriend(friend.phoneNumber)">
                                                 Xóa bạn
                                             </div>
                                         </div>
@@ -176,6 +177,8 @@
 </template>
   
 <script>
+import axios from 'axios';
+import { useToast } from "vue-toastification";
 export default {
     data() {
         return {
@@ -188,17 +191,30 @@ export default {
             popoverRight: 0,
             popoverTop: 0,
             friends: [
-                { id: 1, name: "Friend 1", img: "https://i.imgur.com/gEKsypv.jpg" },
-                { id: 2, name: "Friend 2", img: "https://i.imgur.com/gEKsypv.jpg" },
-                { id: 3, name: "Friend 3", img: "https://i.imgur.com/gEKsypv.jpg" },
-                { id: 4, name: "Friend 4", img: "https://i.imgur.com/gEKsypv.jpg" },
-                { id: 5, name: "Friend 5", img: "https://i.imgur.com/gEKsypv.jpg" },
-                { id: 6, name: "Friend 6", img: "https://i.imgur.com/gEKsypv.jpg" },
-                { id: 7, name: "Friend 7", img: "https://i.imgur.com/gEKsypv.jpg" },
-                { id: 8, name: "Friend 8", img: "https://i.imgur.com/gEKsypv.jpg" },
-                { id: 9, name: "Friend 9", img: "https://i.imgur.com/gEKsypv.jpg" }
-            ]
+                { id: 1, name: "Friend 1", img: "https://i.imgur.com/gEKsypv.jpg", phoneNumber: "0965556651" },
+                { id: 2, name: "Friend 2", img: "https://i.imgur.com/gEKsypv.jpg", phoneNumber: "0965556653" },
+                { id: 3, name: "Friend 3", img: "https://i.imgur.com/gEKsypv.jpg", phoneNumber: "0965556654" },
+                { id: 4, name: "Friend 4", img: "https://i.imgur.com/gEKsypv.jpg", phoneNumber: "0965556655" },
+                { id: 5, name: "Friend 5", img: "https://i.imgur.com/gEKsypv.jpg", phoneNumber: "0965556656" },
+                { id: 6, name: "Friend 6", img: "https://i.imgur.com/gEKsypv.jpg", phoneNumber: "0965556657" },
+                { id: 7, name: "Friend 7", img: "https://i.imgur.com/gEKsypv.jpg", phoneNumber: "0965556658" },
+                { id: 8, name: "Friend 8", img: "https://i.imgur.com/gEKsypv.jpg", phoneNumber: "0965556659" },
+                { id: 9, name: "Friend 9", img: "https://i.imgur.com/gEKsypv.jpg", phoneNumber: "0965556660" }
+            ],
+            user: null,
         };
+    },
+    setup() {
+        // Get toast interface
+        const toast = useToast();
+        return { toast }
+    },
+    created() {
+        this.getListOfFriends();
+        const userString = localStorage.getItem('user');
+        if (userString) {
+            this.user = JSON.parse(userString);
+        }
     },
     methods: {
         selectItem(item) {
@@ -241,11 +257,104 @@ export default {
             this.popoverTop = y - 210 + 'px';
             event.stopPropagation();
         },
-        deleteFriend(id) {
-            console.log(id);
-            const index = this.friends.findIndex(friend => friend.id === id);
-            if (index !== -1) {
-                this.friends.splice(index, 1);
+        async getListOfFriends() {
+            try {
+                const response = await axios.get(`users/getAllFriendUser`, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token")
+                    }
+                });
+
+                if (response.status === 200) {
+
+                    const friends = response.data;
+                    console.log(friends);
+
+                } else {
+                    console.error(response.body);
+                    this.toast.error(response.body, { timeout: 1500 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
+            }
+        },
+        async deleteFriend(phoneNumber) {
+            try {
+                const friendRequest = {
+                    fromPhoneNumberUser: this.user.phoneNumber,
+                    toPhoneNumberUser: phoneNumber,
+                }
+
+                const response = await axios.post(`users/unFriendUser`, friendRequest, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token")
+                    }
+                });
+
+                if (response.status === 200) {
+                    this.friends = this.friends.filter(friend => friend.phoneNumber !== phoneNumber);
+                    this.toast.success(response.body, { timeout: 1500 });
+                } else {
+                    console.error(response.body);
+                    this.toast.error(response.body, { timeout: 1500 });
+                }
+            } catch (error) {
+                if (error.response) {
+
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
+            }
+        },
+        async blockUser(phoneNumber) {
+            try {
+                const friendRequest = {
+                    fromPhoneNumberUser: this.user.phoneNumber,
+                    toPhoneNumberUser: phoneNumber,
+                }
+
+                const response = await axios.post(`users/blockFriendUser`, friendRequest, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token")
+                    }
+                });
+
+                if (response.status === 200) {
+                    this.friends = this.friends.filter(friend => friend.phoneNumber !== phoneNumber);
+                    this.toast.success(response.body, { timeout: 1500 });
+                } else {
+                    console.error(response.body);
+                    this.toast.error(response.body || 'Đã xảy ra lỗi!', { timeout: 1500 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
             }
         },
     },
@@ -289,7 +398,8 @@ export default {
         background-color: #f4f4f4;
         flex: 1 1 auto;
         height: 1200px;
-        overflow: scroll;
+        overflow-y: scroll;
+        overflow-x: hidden;
 
         ::-webkit-scrollbar {
             width: 8px;

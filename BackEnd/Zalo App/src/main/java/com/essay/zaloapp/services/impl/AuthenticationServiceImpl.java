@@ -4,16 +4,11 @@ import com.essay.zaloapp.domain.enums.RoleName;
 import com.essay.zaloapp.domain.models.OTPCode;
 import com.essay.zaloapp.domain.models.Role;
 import com.essay.zaloapp.domain.models.User;
-import com.essay.zaloapp.domain.payload.request.*;
-import com.essay.zaloapp.domain.payload.request.AuthorizeOTPRequest;
-import com.essay.zaloapp.domain.payload.request.ChangePasswordRequest;
-import com.essay.zaloapp.domain.payload.request.ForgetPasswordRequest;
-import com.essay.zaloapp.domain.payload.request.LoginRequest;
-import com.essay.zaloapp.domain.payload.request.SignUpRequest;
-import com.essay.zaloapp.domain.payload.response.LoginResponse;
-import com.essay.zaloapp.domain.payload.response.ResultSMSResponse;
-import com.essay.zaloapp.domain.payload.response.ResultSendSMSResponse;
-import com.essay.zaloapp.domain.payload.response.SignUpResponse;
+import com.essay.zaloapp.domain.payload.request.Authorize.*;
+import com.essay.zaloapp.domain.payload.response.Authorize.LoginResponse;
+import com.essay.zaloapp.domain.payload.response.Authorize.ResultSMSResponse;
+import com.essay.zaloapp.domain.payload.response.Authorize.ResultSendSMSResponse;
+import com.essay.zaloapp.domain.payload.response.Authorize.SignUpResponse;
 import com.essay.zaloapp.repository.RoleRepository;
 import com.essay.zaloapp.repository.UserRepository;
 import com.essay.zaloapp.secruity.CustomUserDetailsService;
@@ -45,19 +40,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
-
     @Autowired
     private AuthenticationManager authenticationManager;
-
     @Autowired
     private TokenProvider tokenProvider;
-
     @Autowired
     private PasswordEncoder passwordEncoder;
-
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     protected RoleRepository roleRepository;
 

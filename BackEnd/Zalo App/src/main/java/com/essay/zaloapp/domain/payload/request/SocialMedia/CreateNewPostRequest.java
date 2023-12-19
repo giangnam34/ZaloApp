@@ -1,6 +1,5 @@
-package com.essay.zaloapp.domain.payload.request;
+package com.essay.zaloapp.domain.payload.request.SocialMedia;
 
-import com.essay.zaloapp.domain.enums.Audience;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -17,6 +17,7 @@
                         <em class="error" v-if="isError === true">{{ validationErrorPhoneNumber }}</em>
                         <hr style="border: none; border-bottom: 2px solid #d9d9d9; margin-left: 8px;">
                     </div>
+                    <em class="error" v-if="isError === true">{{ validationError }}</em>
                     <div class="container-forgotPassword-button">
                         <div class="wrap-forgotPassword-button">
                             <div class="forgotPassword-bgbutton"></div>
@@ -30,8 +31,10 @@
                     </div>
                 </div>
             </div>
+
             <div class="wrap-otp" v-if="showOTP">
-                <OTP style="width: 100%;" @update:showOTP="updateShowOTP" :phoneNumber="phoneNumber"></OTP>
+                <OTPForgotPassword style="width: 100%;" @update:showingPage="showSignIn" @update:showOTP="updateShowOTP" :phoneNumber="phoneNumber">
+                </OTPForgotPassword>
             </div>
         </div>
     </div>
@@ -40,7 +43,7 @@
 <script>
 
 // import axios from 'axios';
-import OTP from './OTP.vue';
+import OTPForgotPassword from './OTPForgotPassword.vue';
 
 export default {
     data() {
@@ -56,7 +59,7 @@ export default {
         };
     },
     components: {
-        OTP
+        OTPForgotPassword
     },
     methods: {
         togglePasswordVisibility() {
@@ -95,10 +98,7 @@ export default {
         updateShowOTP(value) {
             this.showOTP = value;
         },
-        confirm(){
-            this.showOTP = true;
-        },
-        async signUp() {
+        async confirm() {
 
             if (this.phoneNumber == '') {
                 this.isError = true;

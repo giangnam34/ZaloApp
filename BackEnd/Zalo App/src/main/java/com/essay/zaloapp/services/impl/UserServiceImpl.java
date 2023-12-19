@@ -4,13 +4,14 @@ import com.essay.zaloapp.domain.enums.FriendStatus;
 import com.essay.zaloapp.domain.models.Composite.FriendsId;
 import com.essay.zaloapp.domain.models.Friends;
 import com.essay.zaloapp.domain.models.User;
-import com.essay.zaloapp.domain.payload.request.ChangeInfoUserRequest;
-import com.essay.zaloapp.domain.payload.request.ChangePhoneNumberUserRequest;
-import com.essay.zaloapp.domain.payload.request.FriendRequest;
+
+import com.essay.zaloapp.domain.payload.request.Authorize.ChangeInfoUserRequest;
+import com.essay.zaloapp.domain.payload.request.Authorize.ChangePhoneNumberUserRequest;
+import com.essay.zaloapp.domain.payload.request.Friend.FriendRequest;
 import com.essay.zaloapp.domain.payload.response.Authorize.DetailInfoUser;
+import com.essay.zaloapp.domain.payload.response.Authorize.GetUserResponse;
 import com.essay.zaloapp.domain.payload.response.Authorize.InfoUser;
-import com.essay.zaloapp.domain.payload.response.GetAllInviteFriendResponse;
-import com.essay.zaloapp.domain.payload.response.GetUserResponse;
+import com.essay.zaloapp.domain.payload.response.Friend.GetAllInviteFriendResponse;
 import com.essay.zaloapp.repository.FriendsRepository;
 import com.essay.zaloapp.repository.UserRepository;
 import com.essay.zaloapp.services.FileStorageService;
@@ -229,6 +230,7 @@ public class UserServiceImpl implements UserService {
             friendsRepository.save(friend);
             return ResponseEntity.ok("Gửi lời mời kết bạn thành công!!!");
         } catch (Exception e){
+            System.out.println("message: " + e.getMessage());
             throw new Exception("Có lỗi xảy ra. Vui lòng thử lại!!!");
         }
     }

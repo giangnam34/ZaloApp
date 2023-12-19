@@ -1,10 +1,10 @@
 package com.essay.zaloapp.controller;
 
 import com.essay.zaloapp.Constant.Message;
-import com.essay.zaloapp.domain.payload.request.ChangeInfoUserRequest;
-import com.essay.zaloapp.domain.payload.request.ChangePasswordRequest;
-import com.essay.zaloapp.domain.payload.request.ChangePhoneNumberUserRequest;
-import com.essay.zaloapp.domain.payload.request.FriendRequest;
+import com.essay.zaloapp.domain.payload.request.Authorize.ChangeInfoUserRequest;
+import com.essay.zaloapp.domain.payload.request.Authorize.ChangePasswordRequest;
+import com.essay.zaloapp.domain.payload.request.Authorize.ChangePhoneNumberUserRequest;
+import com.essay.zaloapp.domain.payload.request.Friend.FriendRequest;
 import com.essay.zaloapp.secruity.UserPrincipal;
 import com.essay.zaloapp.services.AuthenticationService;
 import com.essay.zaloapp.services.UserService;
@@ -17,7 +17,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 
 @RestController
@@ -70,14 +69,12 @@ public class UserController {
     }
 
     @GetMapping(value = "/imageAvatarAnotherUser/{phoneNumber}", produces = MediaType.IMAGE_JPEG_VALUE)
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Resource> getAnotherUserImageAvatar(@PathVariable String phoneNumber,@AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+    public ResponseEntity<Resource> getAnotherUserImageAvatar(@PathVariable String phoneNumber) throws Exception {
         return ResponseEntity.ok(userService.getImageAvatar(phoneNumber));
     }
 
     @GetMapping(value = "/imageCoverAvatarAnotherUser/{phoneNumber}", produces = MediaType.IMAGE_JPEG_VALUE)
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Resource> getAnotherUserImageCoverAvatar(@PathVariable String phoneNumber,@AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+    public ResponseEntity<Resource> getAnotherUserImageCoverAvatar(@PathVariable String phoneNumber) throws Exception {
         return ResponseEntity.ok(userService.getImageCoverAvatar(phoneNumber));
     }
 

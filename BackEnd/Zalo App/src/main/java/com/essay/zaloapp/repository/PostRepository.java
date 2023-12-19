@@ -3,7 +3,6 @@ package com.essay.zaloapp.repository;
 import com.essay.zaloapp.domain.models.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Collection;
 import java.util.List;
 
 public interface PostRepository extends JpaRepository<Post, Long> {

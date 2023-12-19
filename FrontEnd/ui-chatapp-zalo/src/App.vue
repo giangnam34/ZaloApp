@@ -28,6 +28,9 @@
       <ChatSidebarNav></ChatSidebarNav>
       <HomeChat></HomeChat>
     </div>
+    <div v-if="chosenPage === 10" class="width-100 height-100">
+      <PostPage></PostPage>
+    </div>
   </div>
 </template>
 
@@ -38,6 +41,7 @@ import ChatSidebarNav from './components/ChatSidebarNav.vue';
 import ContactNav from './components/ContactNav.vue';
 import ToDo from './components/ToDo.vue';
 import SignIn from './components/SignIn.vue';
+import PostPage from './components/PostPage.vue';
 import VueJwtDecode from 'vue-jwt-decode';
 import axios from 'axios';
 export default {
@@ -56,7 +60,8 @@ export default {
     ChatSidebarNav,
     SignIn,
     ContactNav,
-    ToDo
+    ToDo, 
+    PostPage
   },
   async mounted() {
     await this.checkToken();
@@ -132,7 +137,7 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
   display: flex;
-  height: 100vh;
+  min-height: 100vh;
 }
 
 * {
@@ -144,5 +149,9 @@ export default {
 
 .width-100 {
   width: 100%;
+}
+
+.height-100 {
+  height: 100%;
 }
 </style>

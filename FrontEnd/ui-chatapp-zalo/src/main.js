@@ -16,6 +16,11 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 // /* import font awesome icon component */
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
+import 'vuetify/styles'
+import { createVuetify } from 'vuetify'
+import * as components from 'vuetify/components'
+import * as directives from 'vuetify/directives'
+
 // import { createRouter, createWebHistory } from 'vue-router';
 
 // /* import specific icons */
@@ -25,10 +30,11 @@ import {
     faUserPlus, faUsers, faCaretDown, faUserGroup, faUsersLine, faEnvelopeOpen, faSort, faFilter,
     faChevronDown, faPlus, faChartSimple, faCheck, faPhone, faKey, faEye, faEyeSlash, faPencil, faTag,
     faVideo, faInfo, faPaperclip, faCameraRetro, faFont, faExclamation, faAt, faBullhorn, faWrench, faGlobe,
-    faDatabase, faChevronRight, faUser, faUnlockKeyhole
+    faDatabase, faChevronRight, faUser, faUnlockKeyhole, faX, faNewspaper, faEllipsisVertical, faPenToSquare,
+    faUserTag, faLock, faUserMinus
 } from '@fortawesome/free-solid-svg-icons'
 
-import { faAddressBook, faSquareCheck, faNoteSticky, faImage, faAddressCard, faClock, faFaceLaugh, faThumbsUp, faStar } from '@fortawesome/free-regular-svg-icons'
+import { faAddressBook, faSquareCheck, faNoteSticky, faImage, faAddressCard, faClock, faFaceLaugh, faThumbsUp, faStar, faHeart, faComment, faImages } from '@fortawesome/free-regular-svg-icons'
 
 import { faRocketchat } from '@fortawesome/free-brands-svg-icons'
 
@@ -37,7 +43,14 @@ library.add(faUserSecret, faCommentDots, faAddressBook, faToolbox, faGear, faClo
     faUsers, faCaretDown, faEllipsis, faPencil, faTag, faVideo, faInfo, faNoteSticky, faImage, faPaperclip, faCameraRetro,
     faAddressCard, faClock, faFont, faExclamation, faRocketchat, faFaceLaugh, faAt, faThumbsUp, faStar, faBullhorn,
     faWrench, faGlobe, faDatabase, faChevronRight, faUserGroup, faUsersLine, faEnvelopeOpen, faSort, faFilter, faChevronDown,
-    faPlus, faChartSimple, faCheck, faPhone, faKey, faEye, faEyeSlash, faUser, faUnlockKeyhole)
+    faPlus, faChartSimple, faCheck, faPhone, faKey, faEye, faEyeSlash, faUser, faUnlockKeyhole, faX, faNewspaper, faHeart, faComment,
+    faEllipsisVertical, faPenToSquare, faImages, faUserTag, faLock, faUserMinus
+)
+
+const vuetify = createVuetify({
+    components,
+    directives,
+})
 
 const options = {
     position: 'top-right',
@@ -51,6 +64,8 @@ const options = {
 };
 
 const app = createApp(App);
+
+app.use(vuetify)
 
 app.use(Toast, options);
 

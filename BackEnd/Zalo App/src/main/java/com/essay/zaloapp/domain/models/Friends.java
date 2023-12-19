@@ -2,7 +2,10 @@ package com.essay.zaloapp.domain.models;
 
 import com.essay.zaloapp.domain.enums.FriendStatus;
 import com.essay.zaloapp.domain.models.Composite.FriendsId;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Date;
