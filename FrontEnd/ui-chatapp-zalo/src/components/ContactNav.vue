@@ -164,8 +164,8 @@
                             class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/2">
                             Chặn
                         </div>
-                        <div
-                            class="add-friend-button text-center cursor-pointer bg-blue-500 text-white rounded-lg h-10 ml-2 w-1/2">
+                        <div class="add-friend-button text-center cursor-pointer bg-blue-500 text-white rounded-lg h-10 ml-2 w-1/2"
+                            @click="addFriend">
                             Kết bạn
                         </div>
                     </div>
@@ -236,45 +236,12 @@ export default {
             this.showVisibleFindFriendDialog = false;
         },
         showUserInfoDialog(friend) {
-            // try {
-            //     const response = await axios.get(`users/findUserByPhoneNumber/${friend.phoneNumber}`, {
-            //         headers: {
-            //             'Authorization': localStorage.getItem("token")
-            //         }
-            //     });
-
-            //     if (response.status === 200) {
-
-            //         const userInfo = response.data;
-
-            //         this.user = userInfo;
-
-            console.log(friend)
-
             this.user = friend;
 
             this.formattedBirthday();
 
             this.showVisibleUserInfo = true;
             this.showVisibleFindFriendDialog = false;
-
-            //     } else {
-            //         console.error(response.body);
-            //         this.toast.error(response.body, { timeout: 3000 });
-            //     }
-            // } catch (error) {
-            //     if (error.response) {
-            //         if (error.response.status === 400) {
-            //             this.toast.error(error.response.data, { timeout: 3000 });
-            //         } else {
-            //             this.toast.error(error.response.data, { timeout: 3000 });
-            //         }
-            //     } else if (error.request) {
-            //         this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 3000 });
-            //     } else {
-            //         this.toast.error('Error setting up the request:' + error.message, { timeout: 3000 });
-            //     }
-            // }
         },
         closeUserInfoDialog() {
             this.showVisibleUserInfo = false;
@@ -295,6 +262,49 @@ export default {
                 } else {
                     console.error(responseUser.body);
                     this.toast.error(responseUser.body || 'Đã xảy ra lỗi!', { timeout: 1500 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
+            }
+        },
+        async addFriend() {
+            try {
+
+                const userString = localStorage.getItem('user');
+                if (userString) {
+                    const sender = JSON.parse(userString);
+
+                    const addFriendRequest = {
+                        fromPhoneNumberUser: sender.phoneNumber,
+                        toPhoneNumberUser: this.user.phoneNumber,
+                        isAcceptingInvite: false
+                    }
+
+                    console.log(addFriendRequest)
+
+                    const responseUser = await axios.post(`users/sendInviteFriend`, addFriendRequest, {
+                        headers: {
+                            'Authorization': localStorage.getItem("token")
+                        }
+                    });
+
+                    if (responseUser.status === 200) {
+                        this.toast.success(responseUser.body)
+                        this.showVisibleUserInfo = false;
+                    } else {
+                        console.error(responseUser.body);
+                        this.toast.error(responseUser.body || 'Đã xảy ra lỗi!', { timeout: 1500 });
+                    }
                 }
             } catch (error) {
                 if (error.response) {

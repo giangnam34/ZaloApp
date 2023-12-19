@@ -228,6 +228,7 @@ public class UserServiceImpl implements UserService {
             friendsRepository.save(friend);
             return ResponseEntity.ok("Gửi lời mời kết bạn thành công!!!");
         } catch (Exception e){
+            System.out.println("message: " + e.getMessage());
             throw new Exception("Có lỗi xảy ra. Vui lòng thử lại!!!");
         }
     }
