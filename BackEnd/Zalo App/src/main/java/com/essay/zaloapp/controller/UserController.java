@@ -151,7 +151,7 @@ public class UserController {
 
     @GetMapping("/getAllInviteFriend")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> getAllInviteFriendUser(@RequestBody FriendRequest friendRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+    public ResponseEntity<?> getAllInviteFriendUser(@AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
         return userService.listAllInviteFriend(userPrincipal.getId());
     }
 

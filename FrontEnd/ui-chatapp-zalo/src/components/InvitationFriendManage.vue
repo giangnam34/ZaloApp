@@ -10,22 +10,21 @@
         </div>
         <div class="wrapper">
             <div class="cart-list">
-                <div class="title" style="height: 64px; width: 100%;">Lời mời kết bạn (2)</div>
+                <div class="title" style="height: 64px; width: 100%;">Lời mời kết bạn {{ receivedFriendList ?
+                    `(${receivedFriendList.length})` : '0' }}</div>
                 <div class="list">
-                    <div class="item-list" :class="{ 'hovered': hoveredItem === '1' }" @mouseenter="(hoveredItem = '1')"
+                    <div v-for="friend in receivedFriendList" :key="friend.phoneNumber" class="item-list"
+                        :class="{ 'hovered': hoveredItem === '1' }" @mouseenter="(hoveredItem = '1')"
                         @mouseleave="hoveredItem = ''">
                         <div class="friend-info">
                             <div class="avatar-container">
                                 <div class="avatar-wrapper">
-                                    <img src="https://i.imgur.com/gEKsypv.jpg" class="avatar">
+                                    <img :src="friend.imageAvatar" class="avatar">
                                 </div>
                             </div>
                             <div class="detail">
                                 <div class="name-wrapper">
-                                    <span>Thanh Thoại</span>
-                                </div>
-                                <div class="label">
-                                    <span>Lời nhắn</span>
+                                    <span>{{ friend.userName }}</span>
                                 </div>
                             </div>
                         </div>
@@ -41,53 +40,24 @@
                         </div>
                     </div>
                     <hr style="border: none; border-bottom: 1px solid #ccc; margin-left: 78px;">
-                    <div class="item-list" :class="{ 'hovered': hoveredItem === '2' }" @mouseenter="(hoveredItem = '2')"
-                        @mouseleave="hoveredItem = ''">
-                        <div class="friend-info">
-                            <div class="avatar-container">
-                                <div class="avatar-wrapper">
-                                    <img src="https://i.imgur.com/gEKsypv.jpg" class="avatar">
-                                </div>
-                            </div>
-                            <div class="detail">
-                                <div class="name-wrapper">
-                                    <span>Thanh Thoại</span>
-                                </div>
-                                <div class="label">
-                                    <span>Lời nhắn</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="action">
-                            <button class="defuse">
-                                <i class="fas fa-times"></i>
-                                <span>Bỏ qua</span>
-                            </button>
-                            <button class="accept">
-                                <i class="fas fa-check"></i>
-                                <span>Đồng ý</span>
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
             <div class="cart-list">
-                <div class="title" style="height: 64px; width: 100%;">Lời mời đã gửi (2)</div>
+                <div class="title" style="height: 64px; width: 100%;">Lời mời đã gửi {{ sendedFriendList ?
+                    `(${sendedFriendList.length})` : '0' }}</div>
                 <div class="list">
-                    <div class="item-list" :class="{ 'hovered': hoveredItem === '3' }" @mouseenter="(hoveredItem = '3')"
+                    <div class="item-list" v-for="friend in sendedFriendList" :key="friend.phoneNumber"
+                        :class="{ 'hovered': hoveredItem === '3' }" @mouseenter="(hoveredItem = '3')"
                         @mouseleave="hoveredItem = ''">
                         <div class="friend-info">
                             <div class="avatar-container">
                                 <div class="avatar-wrapper">
-                                    <img src="https://i.imgur.com/gEKsypv.jpg" class="avatar">
+                                    <img :src="friend.imageAvatar" class="avatar">
                                 </div>
                             </div>
                             <div class="detail">
                                 <div class="name-wrapper">
-                                    <span>Thanh Thoại</span>
-                                </div>
-                                <div class="label">
-                                    <span>Lời nhắn</span>
+                                    <span>{{ friend.userName }}</span>
                                 </div>
                             </div>
                         </div>
@@ -99,33 +69,9 @@
                         </div>
                     </div>
                     <hr style="border: none; border-bottom: 1px solid #ccc; margin-left: 78px;">
-                    <div class="item-list" :class="{ 'hovered': hoveredItem === '4' }" @mouseenter="(hoveredItem = '4')"
-                        @mouseleave="hoveredItem = ''">
-                        <div class="friend-info">
-                            <div class="avatar-container">
-                                <div class="avatar-wrapper">
-                                    <img src="https://i.imgur.com/gEKsypv.jpg" class="avatar">
-                                </div>
-                            </div>
-                            <div class="detail">
-                                <div class="name-wrapper">
-                                    <span>Thanh Thoại</span>
-                                </div>
-                                <div class="label">
-                                    <span>Lời nhắn</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="action">
-                            <button class="accept">
-                                <i class="fas fa-check"></i>
-                                <span>Thu hồi lời mời</span>
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
-            <div class="cart-list">
+            <!-- <div class="cart-list">
                 <div class="title-recommend" style="height: 64px; width: 100%;">
                     <span>Gợi ý kết bạn (2)</span>
                     <a class="down-icon">
@@ -191,17 +137,62 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
     </div>
 </template>
   
 <script>
+import axios from 'axios';
+import { useToast } from "vue-toastification";
 export default {
+    setup() {
+        // Get toast interface
+        const toast = useToast();
+        return { toast }
+    },
+    mounted() {
+        this.getInviteFriend();
+    },
     data() {
         return {
             hoveredItem: '',
+            sendedFriendList: null,
+            receivedFriendList: null,
         };
+    },
+    methods: {
+        async getInviteFriend() {
+            try {
+
+                const response = await axios.get(`users/getAllInviteFriend`, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token")
+                    }
+                });
+
+                if (response.status === 200) {
+                    const inviteFriendList = response.data
+                    this.sendedFriendList = inviteFriendList.filter(user => user.isInviteFriendFromUser === true);
+
+                    this.receivedFriendList = inviteFriendList.filter(user => user.isInviteFriendFromUser === false);
+                } else {
+                    this.toast.error(response.data, { timeout: 1500 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
+            }
+        },
     },
     name: 'InvitationFriendManage'
 }
@@ -215,7 +206,7 @@ export default {
     width: 100%;
 
     .header {
-        height: 64px;
+        height: 8%;
         width: 100%;
         border-top: 1px solid rgb(160, 160, 160);
         border-left: 1px solid rgb(160, 160, 160);
@@ -239,7 +230,8 @@ export default {
     }
 
     .wrapper {
-        background-color: #f4f4f4;
+        background-color: #f4f4f4; 
+        height: 92%;
     }
 
     .cart-list {

@@ -299,11 +299,11 @@ export default {
                     });
 
                     if (responseUser.status === 200) {
-                        this.toast.success(responseUser.body)
+                        this.toast.success(responseUser.data)
                         this.showVisibleUserInfo = false;
                     } else {
-                        console.error(responseUser.body);
-                        this.toast.error(responseUser.body || 'Đã xảy ra lỗi!', { timeout: 1500 });
+                        console.error(responseUser.data);
+                        this.toast.error(responseUser.data || 'Đã xảy ra lỗi!', { timeout: 1500 });
                     }
                 }
             } catch (error) {
