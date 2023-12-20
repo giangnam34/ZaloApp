@@ -11,6 +11,7 @@ import com.essay.zaloapp.domain.payload.response.SocialMedia.Comment.InfoComment
 import com.essay.zaloapp.domain.payload.response.SocialMedia.GetInfoPostResponse;
 import com.essay.zaloapp.repository.*;
 import com.essay.zaloapp.services.FileStorageService;
+import com.essay.zaloapp.services.FormatDate;
 import com.essay.zaloapp.services.SocialMediaService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,6 +36,9 @@ public class SocialMediaServiceImpl implements SocialMediaService {
 
     @Autowired
     private FileStorageService fileStorageService;
+
+    @Autowired
+    private FormatDate formatDate;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -163,8 +168,8 @@ public class SocialMediaServiceImpl implements SocialMediaService {
                 getInfoPostResponse.setUserTagList(userTagList.stream().map(user -> new InfoUser(user.getFullName(), (user.getImageAvatarUrl() != null && !user.getImageAvatarUrl().isEmpty()) ? "http://localhost:8181/media/getImage/".concat(user.getImageAvatarUrl()) : null, user.getPhoneNumber())).collect(Collectors.toList()));
                 getInfoPostResponse.setUserShareList(p.getPostTopList().stream().map(postUser -> new InfoUser(postUser.getUser().getFullName(),postUser.getUser().getImageAvatarUrl(), postUser.getUser().getPhoneNumber())).collect(Collectors.toList()));
                 getInfoPostResponse.setFiles(p.getResourceList().stream().map(file -> "http://localhost:8181/media/" + (file.getResourceType().equals(ResourceType.Video) ? "getVideo/" : "getImage/")  + file.getResourceValue()).collect(Collectors.toList()));
-                getInfoPostResponse.setCreatedAt(p.getCreatedAt());
-                getInfoPostResponse.setUpdatedAt(p.getUpdatedAt());
+                getInfoPostResponse.setCreatedAt(formatDate.formatDate(p.getCreatedAt()));
+                getInfoPostResponse.setUpdatedAt(formatDate.formatDate(p.getUpdatedAt()));
                 return getInfoPostResponse;
             }).collect(Collectors.toList()));
         } catch(Exception e){
