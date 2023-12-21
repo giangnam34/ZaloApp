@@ -217,8 +217,8 @@ export default {
       this.name = "";
     },
     isOutDiv(coordinates, subCoordinates) {
-      console.log(coordinates.top, coordinates.bottom, this.coordinatesY);
-      console.log(coordinates.left, coordinates.right, this.coordinatesX);
+      // console.log(coordinates.top, coordinates.bottom, this.coordinatesY);
+      // console.log(coordinates.left, coordinates.right, this.coordinatesX);
       if (coordinates.top <= this.coordinatesY && coordinates.bottom >= this.coordinatesY
         && coordinates.left <= this.coordinatesX && subCoordinates.right >= this.coordinatesX) return false;
       return true;
@@ -287,7 +287,7 @@ export default {
       }).catch(error => {
         console.error('Error fetching avatar:', error);
       });
-      console.log('user.imageAvatarUrl changed:', this.user.imageAvatarUrl);
+      //console.log('user.imageAvatarUrl changed:', this.user.imageAvatarUrl);
     },
   },
   beforeUnmount() {

@@ -26,10 +26,10 @@
                 <div v-for="feed in feeds" v-bind:key="feed.user_id" class="p-4 bg-white border border-gray-200 rounded-lg">
                     <div class="mb-6 flex items-center justify-between">
                         <div class="flex items-center space-x-6">
-                            <img :src="feed.avatar"
+                            <img :src="feed.userPost.imageAvatar"
                                 class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4">
                             <div class="wrap-title">
-                                <p><strong>{{ feed.name }}</strong></p>
+                                <p><strong>{{ feed.userPost.userName }}</strong></p>
                                 <div class="wrap-icon">
                                     <div v-if="feed.audience === 'AllFriend'">
                                         <font-awesome-icon icon="fa-solid fa-user-group" />
@@ -323,7 +323,7 @@
                             </div>
                         </div>
 
-                        <p class="text-gray-600">{{ formatDate(showingFeed.updated_date) }}</p>
+                        <p class="text-gray-600">{{ formatDate(new Date(showingFeed.updatedAt)) }}</p>
                     </div>
 
                     <p class="mb-3">{{ showingFeed.content }}</p>
@@ -408,7 +408,7 @@
                                         Your browser does not support the video tag.
                                     </video> -->
                                 </div>
-                                <p class="text-gray-600">{{ formatDate(comment.updatedDate) }}</p>
+                                <p class="text-gray-600">{{ formatDate(comment.updatedAt) }}</p>
                             </div>
                         </div>
                     </div>
@@ -471,7 +471,7 @@ export default {
     data() {
         return {
             posts: [],
-            newComment: { senderPhoneNumber: '', file: null, content: '' },
+            newComment: { /**senderPhoneNumber: '',**/ file: null, content: '' },
             user: null,
             fileListHeight: "100px",
             body: '',
@@ -489,29 +489,7 @@ export default {
                 'Chỉ mình tôi'
             ],
             feeds : [],
-            comments: [
-                {
-                    id: 1, fullName: "Từ Thanh Thoại", content: "Ảnh đẹp vờ lờ", avatar: "https://i.imgur.com/gEKsypv.jpg",
-                    file: "https://i.imgur.com/gEKsypv.jpg", createdDate: new Date("2002-12-17T18:50:00"), updatedDate: new Date("2002-12-17T18:50:00")
-                },
-                {
-                    id: 2, fullName: "Võ Giang Nam", content: "Ảnh đẹp qtqd", avatar: "https://i.imgur.com/gEKsypv.jpg",
-                    file: "https://i.imgur.com/gEKsypv.jpg", createdDate: new Date("2002-12-17T18:50:00"), updatedDate: new Date("2002-12-17T18:50:00")
-                },
-                {
-                    id: 3, fullName: "Chú bé đần", content: "Ảnh của tui đẹp hơn", avatar: "https://i.imgur.com/gEKsypv.jpg",
-                    file: "https://i.imgur.com/gEKsypv.jpg", createdDate: new Date("2002-12-17T18:50:00"), updatedDate: new Date("2002-12-17T18:50:00")
-                },
-                {
-                    id: 4, fullName: "Thợ săn ảnh đẹp", content: "Ảnh này mới đẹp nè", avatar: "https://i.imgur.com/gEKsypv.jpg",
-                    file: "https://i.imgur.com/gEKsypv.jpg", createdDate: new Date("2002-12-17T18:50:00"), updatedDate: new Date("2002-12-17T18:50:00")
-                },
-                {
-                    id: 5, fullName: "Kaito Kid nè", content: "ảnh của m xấu điên", avatar: "https://i.imgur.com/gEKsypv.jpg",
-                    file: "https://i.imgur.com/gEKsypv.jpg", createdDate: new Date("2002-12-17T18:50:00"), updatedDate: new Date("2002-12-17T18:50:00")
-                },
-            ]
-            ,
+            comments: [],
             friends: [
                 { phoneNumber: '0968322444', name: "Võ Giang Nam", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
                 { phoneNumber: '0965556652', name: "Từ Thanh Thoại", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
@@ -539,9 +517,14 @@ export default {
         },
         getFeed() {
             axios
-                .get('/social-media/get-post')
+                .get('/social-media/get-post',/**{
+                    headers: {
+                        'Authorization': localStorage.getItem("token"),
+                        'Content-Type': 'multipart/form-data',
+                    }
+                }**/)
                 .then(response => {
-                    console.log("Response status: " + response.status)
+                    //console.log("Response status: " + response.status)
                     response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))   
                     this.feeds = response.data.getInfoPostResponse
                 })
@@ -559,8 +542,8 @@ export default {
             this.showPostVisible = false;
         },
         formatDate(date) {
-            console.log("Giá trị của ngày: " + date)
-            console.log("Kiểu ngày: " + typeof(date))
+            // console.log("Giá trị của ngày: " + date)
+            // console.log("Kiểu ngày: " + typeof(date))
             return format(date, 'HH:mm dd/MM/yyyy');
         },
         onFileSelected(event) {
@@ -647,7 +630,7 @@ export default {
                     this.newFeed.audience = 'AllExceptSomeOne'
                 }
 
-                const listFriendTag = [];
+                const listFriendTag = [];   
 
                 for (let friendTagKey in this.newFeed.friendTag) {
                     if (Object.prototype.hasOwnProperty.call(this.newFeed.friendTag, friendTagKey)) {
@@ -656,9 +639,9 @@ export default {
                     }
                 }
 
-                console.log(listFriendTag)
+                // console.log(listFriendTag)
 
-                console.log(typeof (listFriendTag))
+                // console.log(typeof (listFriendTag))
 
                 const formData = new FormData();
 
@@ -672,16 +655,16 @@ export default {
                     formData.append('files', this.newFeed.files[i]);
                 }
 
-                console.log(formData);
+                // console.log(formData);
 
-                console.log(localStorage.getItem("token"))
+                // console.log(localStorage.getItem("token"))
 
-                const response = await axios.post(`social-media/create-new-post`, formData, {
+                const response = await axios.post(`social-media/create-new-post`, formData, /**{
                     headers: {
                         'Authorization': localStorage.getItem("token"),
                         'Content-Type': 'multipart/form-data',
                     }
-                });
+                }**/);
 
                 if (response.status === 200) {
                     this.showPostVisible = false;
@@ -714,40 +697,51 @@ export default {
                 if (this.user.imageAvatarUrl) {
                     URL.revokeObjectURL(this.user.imageAvatarUrl);
                 }
+                //console.log("Type of response: " + typeof(response));
                 this.user.imageAvatarUrl = URL.createObjectURL(response.data);
             }).catch(error => {
                 console.error('Error fetching avatar:', error);
             });
-            console.log('user.imageAvatarUrl changed:', this.user.imageAvatarUrl);
+            console.log("Image Avatar Url: " + this.user.imageAvatarUrl);
+            //console.log('user.imageAvatarUrl changed:', this.user.imageAvatarUrl);
         },
         likePost(feed) {
+            console.log("Gọi hàm like post")
             const foundFeed = this.feeds.find(f => f.id === feed.id);
 
             if (foundFeed) {
+                console.log("Tìm thấy bài viết")
                 const updatedFeed = Object.assign({}, foundFeed, { isLike: !foundFeed.isLike });
 
                 const index = this.feeds.findIndex(f => f.id === feed.id);
 
                 if (this.showVisibleInfoFeed) {
+                    if (updatedFeed.isLike)
+                        console.log("Đã like bài viết")
+                    else 
+                        console.log("Đã hủy like bài viết")
                     this.showingFeed.isLike = updatedFeed.isLike;
                 }
 
                 if (index !== -1) {
+                    //console.log("Vô index !== -1")
                     this.feeds.splice(index, 1, updatedFeed);
                 }
+
             }
         },
         openFeedInfo(feed) {
             this.showVisibleInfoFeed = true;
             this.showingFeed = feed;
-            this.newComment.senderPhoneNumber = this.user.phoneNumber;
+            //this.newComment.senderPhoneNumber = this.user.phoneNumber;
+            //console.log("Ngày showing feed: " + this.showingFeed.updatedAt)
         },
         closeFeedInfo() {
             this.showVisibleInfoFeed = false;
         },
         handleFileChange(event) {
             const selectedFile = event.target.files[0];
-            console.log(selectedFile);
+            //console.log(selectedFile);
             this.newComment.file = selectedFile;
         },
         openFilePicker() {
@@ -760,7 +754,15 @@ export default {
             this.$refs.comment.focus();
         },
         postComment() {
-
+            // console.log("Đăng bình luận mới: " + this.newComment.file)
+            // console.log(localStorage.getItem("token"))
+            axios
+                .post('/social-media/create-new-comment', /**{
+                    headers: {
+                    'Authorization': localStorage.getItem("token"),
+                    }
+                },**/ this.newComment)
+                .then(response => console.log(response.status))
         }
     }
 }
