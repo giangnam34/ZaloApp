@@ -379,7 +379,6 @@ export default {
         checkUser() {
             if (this.listOfFriends.length === 0) {
                 this.isFriend = false;
-
                 if (this.inviteList.length === 0) {
                     this.sended = false;
                 } else {

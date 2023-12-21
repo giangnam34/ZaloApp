@@ -39,4 +39,6 @@ public class GetInfoPostResponse {
     private String createdAt;
 
     private String updatedAt;
+
+    private InfoUser userPost;
 }
