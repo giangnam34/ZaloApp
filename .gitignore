@@ -33,7 +33,5 @@ build/
 .vscode/
 
 ### Folder save image, video ###
-/user/data/photographer/upload/
-/user/data/photographer/tmp/
 /user/setup/libreoffice/opt/libreoffice6.4/program/
 /src/main/resources/application.properties
