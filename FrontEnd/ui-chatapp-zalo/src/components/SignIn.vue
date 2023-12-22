@@ -177,6 +177,10 @@ export default {
 
                             this.$emit("userLoggedIn", jwtToken);
 
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+
                         } else {
                             console.error('Đăng nhập không thành công:', response.statusText);
                             this.isError = true;

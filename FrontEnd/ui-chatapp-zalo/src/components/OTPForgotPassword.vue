@@ -62,8 +62,8 @@
 
 <script>
 
-// import axios from 'axios';
-// import { useToast } from "vue-toastification";
+import axios from 'axios';
+import { useToast } from "vue-toastification";
 
 export default {
     data() {
@@ -83,11 +83,11 @@ export default {
             flag4: true
         };
     },
-    // setup() {
-    //     // Get toast interface
-    //     const toast = useToast();
-    //     return { toast }
-    // },
+    setup() {
+        // Get toast interface
+        const toast = useToast();
+        return { toast }
+    },
     props: ['phoneNumber'],
     methods: {
         validatePassword() {
@@ -190,94 +190,96 @@ export default {
                 this.validatePassword();
                 this.validateConfirmPassword();
                 if (!this.isError) {
-                    // try {
+                    try {
 
-                    // const OTPResponse = {
-                    //     phoneNumber: this.phoneNumber,
-                    //     otpCode: this.otp
-                    // }
+                        const OTPResponse = {
+                            phoneNumber: this.phoneNumber,
+                            otpCode: this.otp,
+                            newPassword: this.password,
+                            reEnterPassword: this.confirmPassword,
+                        }
 
-                    // console.log(OTPResponse);
+                        console.log(OTPResponse);
 
-                    // const response = await axios.post('auth/OTP', OTPResponse);
+                        const response = await axios.put('auth/forgetPassword', OTPResponse);
 
-                    // console.log(response);
+                        console.log(response);
 
-                    // // Kiểm tra trạng thái phản hồi
-                    // if (response.status === 200) {
+                        // Kiểm tra trạng thái phản hồi
+                        if (response.status === 200) {
 
-                    //     this.toast.success(response.data, { timeout: 3000 });
+                            this.toast.success(response.data, { timeout: 3000 });
 
-                    this.showSignIn();
+                            this.showSignIn();
 
-                    // } else {
-                    //     console.error('Xác thực không thành công:', response.statusText);
-                    //     this.isError = true;
-                    //     this.validationError = response.data;
-                    // }
-                    // } catch (error) {
-                    //     if (error.response) {
-                    //         console.error('Server responded with an error status:', error.response.status);
+                        } else {
+                            console.error('Xác thực không thành công:', response.statusText);
+                            this.isError = true;
+                            this.validationError = response.data;
+                        }
+                    } catch (error) {
+                        if (error.response) {
+                            console.error('Server responded with an error status:', error.response.status);
 
-                    //         if (error.response.status === 400) {
-                    //             this.isError = true;
-                    //             this.validationError = error.response.data;
-                    //         } else {
-                    //             this.isError = true;
-                    //             this.validationError = error.response.data;
-                    //         }
-                    //     } else if (error.request) {
-                    //         console.error('No response received from the server:', error.request);
-                    //         this.isError = true;
-                    //         this.validationError = 'Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!';
-                    //     } else {
-                    //         console.error('Error setting up the request:', error.message);
-                    //         this.isError = true;
-                    //         this.validationError = 'Đã xảy ra lỗi khi xác thực. Vui lòng thử lại!';
-                    //     }
-                    // }
+                            if (error.response.status === 400) {
+                                this.isError = true;
+                                this.validationError = error.response.data;
+                            } else {
+                                this.isError = true;
+                                this.validationError = error.response.data;
+                            }
+                        } else if (error.request) {
+                            console.error('No response received from the server:', error.request);
+                            this.isError = true;
+                            this.validationError = 'Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!';
+                        } else {
+                            console.error('Error setting up the request:', error.message);
+                            this.isError = true;
+                            this.validationError = 'Đã xảy ra lỗi khi xác thực. Vui lòng thử lại!';
+                        }
+                    }
 
                 }
             }
         },
         async sendOtp() {
 
-            // try {
-            //     const response = await axios.post(`auth/send-OTP/${this.phoneNumber}`);
+            try {
+                const response = await axios.post(`auth/send-OTP/${this.phoneNumber}`);
 
-            //     console.log(response);
+                console.log(response);
 
-            //     // Kiểm tra trạng thái phản hồi
-            //     if (response.status === 200) {
+                // Kiểm tra trạng thái phản hồi
+                if (response.status === 200) {
 
-            //         this.toast.info(response.data.msg, { timeout: 3000 });
+                    this.toast.info(response.data.msg, { timeout: 3000 });
 
-            //     } else {
-            //         console.error('Xác thực không thành công:', response.statusText);
-            //         this.isError = true;
-            //         this.validationError = response.data.msg;
-            //     }
-            // } catch (error) {
-            //     if (error.response) {
-            //         console.error('Server responded with an error status:', error.response.status);
+                } else {
+                    console.error('Xác thực không thành công:', response.statusText);
+                    this.isError = true;
+                    this.validationError = response.data.msg;
+                }
+            } catch (error) {
+                if (error.response) {
+                    console.error('Server responded with an error status:', error.response.status);
 
-            //         if (error.response.status === 400) {
-            //             this.isError = true;
-            //             this.validationError = error.response.data.msg;
-            //         } else {
-            //             this.isError = true;
-            //             this.validationError = error.response.data.msg;
-            //         }
-            //     } else if (error.request) {
-            //         console.error('No response received from the server:', error.request);
-            //         this.isError = true;
-            //         this.validationError = 'Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!';
-            //     } else {
-            //         console.error('Error setting up the request:', error.message);
-            //         this.isError = true;
-            //         this.validationError = 'Đã xảy ra lỗi khi gửi lại OTP. Vui lòng thử lại!';
-            //     }
-            // }
+                    if (error.response.status === 400) {
+                        this.isError = true;
+                        this.validationError = error.response.data.msg;
+                    } else {
+                        this.isError = true;
+                        this.validationError = error.response.data.msg;
+                    }
+                } else if (error.request) {
+                    console.error('No response received from the server:', error.request);
+                    this.isError = true;
+                    this.validationError = 'Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!';
+                } else {
+                    console.error('Error setting up the request:', error.message);
+                    this.isError = true;
+                    this.validationError = 'Đã xảy ra lỗi khi gửi lại OTP. Vui lòng thử lại!';
+                }
+            }
         }
     }
 };

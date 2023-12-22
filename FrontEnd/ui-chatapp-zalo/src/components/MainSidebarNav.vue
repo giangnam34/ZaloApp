@@ -171,7 +171,7 @@ export default {
       name: "",
       isShowWhenClickAvatar: false,
       popUpName: "",
-      index: 2,
+      index: 10,
       isShowWhenClickTools: false,
       isShowWhenClickSetting: false,
       isShowWhenHoverData: false,
