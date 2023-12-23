@@ -1,0 +1,5 @@
+name: "Zalo App"
+appmap_dir: "tmp/appmap"
+packages:
+- path: "com.essay.zaloapp"
+- path: "Mapper"

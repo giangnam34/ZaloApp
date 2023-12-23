@@ -33,7 +33,8 @@
             </div>
 
             <div class="wrap-otp" v-if="showOTP">
-                <OTPForgotPassword style="width: 100%;" @update:showingPage="showSignIn" @update:showOTP="updateShowOTP" :phoneNumber="phoneNumber">
+                <OTPForgotPassword style="width: 100%;" @update:showingPage="showSignIn" @update:showOTP="updateShowOTP"
+                    :phoneNumber="phoneNumber">
                 </OTPForgotPassword>
             </div>
         </div>
@@ -42,7 +43,8 @@
 
 <script>
 
-// import axios from 'axios';
+import axios from 'axios';
+import { useToast } from "vue-toastification";
 import OTPForgotPassword from './OTPForgotPassword.vue';
 
 export default {
@@ -57,6 +59,11 @@ export default {
             showOTP: false,
             flag1: true,
         };
+    },
+    setup() {
+        // Get toast interface
+        const toast = useToast();
+        return { toast }
     },
     components: {
         OTPForgotPassword
@@ -108,55 +115,53 @@ export default {
                 this.validatePhoneNumber();
 
                 if (!this.isError) {
-                    // try {
-                    //     const response = await axios.post('auth/signup', {
-                    //         fullName: this.fullName,
-                    //         phoneNumber: this.phoneNumber,
-                    //         password: this.password,
-                    //         reEnterPassword: this.reEnterPassword
-                    //     });
 
-                    //     // Kiểm tra trạng thái phản hồi
-                    //     if (response.status === 200) {
-                    //         // Đăng nhập thành công
 
-                    //         const jwtToken = response.data.jwt;
+                    await this.sendOtp();
 
-                    //         localStorage.setItem('token', jwtToken);
+                    if (!this.isError) {
+                        this.showOTP = true;
+                    }
 
-                    //         this.toast.success("Đăng nhập thành công!", { timeout: 3000 });
+                }
+            }
+        },
+        async sendOtp() {
 
-                    //         this.$emit("userLoggedIn", jwtToken);
+            try {
+                const response = await axios.post(`auth/send-OTP/${this.phoneNumber}`);
 
-                    this.showOTP = true;
+                console.log(response);
 
-                    //     } else {
-                    //         console.error('Đăng nhập không thành công:', response.statusText);
-                    //         this.isError = true;
-                    //         this.validationError = 'Tên đăng nhập hoặc mật khẩu không đúng! Vui lòng nhập lại!';
-                    //     }
-                    // } catch (error) {
-                    //     if (error.response) {
-                    //         console.error('Server responded with an error status:', error.response.status);
+                // Kiểm tra trạng thái phản hồi
+                if (response.status === 200) {
 
-                    //         if (error.response.status === 400) {
-                    //             this.isError = true;
-                    //             this.validationError = 'Tên đăng nhập hoặc mật khẩu không đúng! Vui lòng nhập lại!';
-                    //         } else {
-                    //             this.isError = true;
-                    //             this.validationError = 'Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại!';
-                    //         }
-                    //     } else if (error.request) {
-                    //         console.error('No response received from the server:', error.request);
-                    //         this.isError = true;
-                    //         this.validationError = 'Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!';
-                    //     } else {
-                    //         console.error('Error setting up the request:', error.message);
-                    //         this.isError = true;
-                    //         this.validationError = 'Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại!';
-                    //     }
-                    // }
+                    this.toast.info(response.data.msg, { timeout: 3000 });
 
+                } else {
+                    console.error('Xác thực không thành công:', response.statusText);
+                    this.isError = true;
+                    this.validationError = response.data.msg;
+                }
+            } catch (error) {
+                if (error.response) {
+                    console.error('Server responded with an error status:', error.response.status);
+
+                    if (error.response.status === 400) {
+                        this.isError = true;
+                        this.validationError = error.response.data;
+                    } else {
+                        this.isError = true;
+                        this.validationError = error.response.data;
+                    }
+                } else if (error.request) {
+                    console.error('No response received from the server:', error.request);
+                    this.isError = true;
+                    this.validationError = 'Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!';
+                } else {
+                    console.error('Error setting up the request:', error.message);
+                    this.isError = true;
+                    this.validationError = 'Đã xảy ra lỗi khi gửi lại OTP. Vui lòng thử lại!';
                 }
             }
         },

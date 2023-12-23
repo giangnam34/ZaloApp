@@ -36,4 +36,9 @@ build/
 /user/data/photographer/upload/
 /user/data/photographer/tmp/
 /user/setup/libreoffice/opt/libreoffice6.4/program/
+<<<<<<< HEAD
 /src/main/resources/
+=======
+
+/tmp
+>>>>>>> 370d387a2c3f4e2a753a8239742e8c66d6120ab8

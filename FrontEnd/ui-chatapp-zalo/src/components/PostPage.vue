@@ -1,116 +1,124 @@
 <template>
-    <div class="container px-8 py-6 bg-gray-100 overflow-y-auto">
-        <div class="max-w-none w-auto mx-auto grid grid-cols-4 gap-4">
-            <div class="main-left col-span-1">
-                <div class="p-4 bg-white border border-gray-200 text-center rounded-lg">
-                    <img :src="user.imageAvatarUrl" class="w-[200px] h-[200px] rounded-full mx-auto mb-6">
+    <div class="post-container">
+        <div class="container px-8 py-6 bg-gray-100 overflow-y-auto">
+            <div class="max-w-none w-auto mx-auto grid grid-cols-4 gap-4">
+                <div class="main-left col-span-1">
+                    <div class="p-4 bg-white border border-gray-200 text-center rounded-lg">
+                        <img :src="user.imageAvatarUrl" class="w-[200px] h-[200px] rounded-full mx-auto mb-6">
 
-                    <p><strong>{{ user.fullName }}</strong></p>
+                        <p><strong>{{ user.fullName }}</strong></p>
 
-                    <div class="mt-6 flex space-x-8 justify-around">
-                        <p class="text-xs text-gray-500">182 friends</p>
-                        <p class="text-xs text-gray-500">120 posts</p>
-                    </div>
+                        <div class="mt-6 flex space-x-8 justify-around">
+                            <p class="text-xs text-gray-500">{{ listFriends.length }} friends</p>
+                            <p class="text-xs text-gray-500">{{ feeds.length }} posts</p>
+                        </div>
 
-                </div>
-            </div>
-
-            <div class="main-center col-span-2 space-y-4">
-                <div class="bg-white border border-gray-200 rounded-lg">
-                    <div class="p-4">
-                        <span class="p-4 bg-gray-100 rounded-lg cursor-pointer d-block w-100" @click="showPostOption">{{
-                            user.fullName }} ơi, bạn đang nghĩ gì thế?</span>
                     </div>
                 </div>
 
-                <div v-for="feed in feeds" v-bind:key="feed.user_id" class="p-4 bg-white border border-gray-200 rounded-lg">
-                    <div class="mb-6 flex items-center justify-between">
-                        <div class="flex items-center space-x-6">
-                            <img :src="feed.userPost.imageAvatar"
-                                class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4">
-                            <div class="wrap-title">
-                                <p><strong>{{ feed.userPost.userName }}</strong></p>
-                                <div class="wrap-icon">
-                                    <div v-if="feed.audience === 'AllFriend'">
-                                        <font-awesome-icon icon="fa-solid fa-user-group" />
-                                        Bạn bè
+                <div class="main-center col-span-2 space-y-4">
+                    <div class="bg-white border border-gray-200 rounded-lg">
+                        <div class="p-4">
+                            <span class="p-4 bg-gray-100 rounded-lg cursor-pointer d-block w-100" @click="showPostOption">{{
+                                user.fullName }} ơi, bạn đang nghĩ gì thế?</span>
+                        </div>
+                    </div>
+
+                    <div v-for="feed in feeds" v-bind:key="feed.user_id"
+                        class="p-4 bg-white border border-gray-200 rounded-lg">
+                        <div class="mb-6 flex items-center justify-between">
+                            <div class="flex items-center space-x-6">
+                                <img :src="user.imageAvatarUrl"
+                                    class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4">
+                                <div class="wrap-title">
+                                    <p><strong>{{ user.fullName }}</strong></p>
+                                    <div class="wrap-icon">
+                                        <div v-if="feed.audience === 'AllFriend'">
+                                            <font-awesome-icon icon="fa-solid fa-user-group" />
+                                            Bạn bè
+                                        </div>
+                                        <div v-if="feed.audience === 'OnlyMe'">
+                                            <font-awesome-icon icon="fa-solid fa-lock" />
+                                            Chỉ mình tôi
+                                        </div>
+                                        <div v-if="feed.audience === 'SomeOneCanSee'">
+                                            <font-awesome-icon icon="fa-solid fa-user" />
+                                            Một số bạn bè
+                                        </div>
+                                        <div v-if="feed.audience === 'AllExceptSomeOne'">
+                                            <font-awesome-icon icon="fa-solid fa-user-minus" />
+                                            Bạn bè ngoại trừ
+                                        </div>
                                     </div>
-                                    <div v-if="feed.audience === 'OnlyMe'">
-                                        <font-awesome-icon icon="fa-solid fa-lock" />
-                                        Chỉ mình tôi
-                                    </div>
-                                    <div v-if="feed.audience === 'SomeOneCanSee'">
-                                        <font-awesome-icon icon="fa-solid fa-user" />
-                                        Một số bạn bè
-                                    </div>
-                                    <div v-if="feed.audience === 'AllExceptSomeOne'">
-                                        <font-awesome-icon icon="fa-solid fa-user-minus" />
-                                        Bạn bè ngoại trừ
-                                    </div>
+                                </div>
+                            </div>
+
+                            <p class="text-gray-600">{{ formatDate(new Date(feed.updatedAt)) }}</p>
+                        </div>
+
+                        <p class="mb-3">{{ feed.content }}</p>
+
+                        <img :src="feed.files[0]" class="w-full h-[500px] rounded-lg cursor-pointer"
+                            v-if="feed.files.length > 0" @click="openFeedInfo(feed)" />
+
+                        <div v-if="feed.files.length > 1" class="image-container-feed cursor-pointer"
+                            @click="openFeedInfo(feed)">
+                            <img :src="feed.files[1]" class="w-full h-[500px] rounded-lg" />
+                            <div class="overlay-feed" v-if="feed.files.length !== 2">
+                                <div class="overlay-content-feed">
+                                    +{{ feed.files.length - 2 }}
                                 </div>
                             </div>
                         </div>
 
-                        <p class="text-gray-600">{{ formatDate(new Date(feed.updatedAt)) }}</p>
-                    </div>
-
-                    <p class="mb-3">{{ feed.content }}</p>
-
-                    <img :src="feed.files[0]" class="w-full h-[500px] rounded-lg cursor-pointer"
-                        v-if="feed.files.length > 0" @click="openFeedInfo(feed)" />
-
-                    <div v-if="feed.files.length > 1" class="image-container-feed cursor-pointer"
-                        @click="openFeedInfo(feed)">
-                        <img :src="feed.files[1]" class="w-full h-[500px] rounded-lg" />
-                        <div class="overlay-feed" v-if="feed.files.length !== 2">
-                            <div class="overlay-content-feed">
-                                +{{ feed.files.length - 2 }}
+                        <div class="my-3 flex">
+                            <div v-if="!feed.isLike" class="flex-1 flex items-center mr-2">
+                                <font-awesome-icon icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
+                                <span class="text-gray-500 text-lg hover:underline cursor-pointer">{{
+                                    feed.userLikeList.length
+                                }}</span>
+                            </div>
+                            <div v-else class="flex-1 flex items-center mr-2">
+                                <font-awesome-icon icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
+                                <span class="text-gray-500 text-lg hover:underline cursor-pointer">Bạn và {{
+                                    feed.userLikeList.length
+                                }}
+                                    người khác</span>
+                            </div>
+                            <div class="flex-1 flex items-center justify-end">
+                                <div class="flex items-center space-x-2 ml-auto hover:underline cursor-pointer"
+                                    @click="openFeedInfo(feed)">
+                                    <font-awesome-icon icon="fa-regular fa-comment" />
+                                    <span class="text-gray-500 text-lg">{{ feed.commentCount }} bình luận</span>
+                                </div>
                             </div>
                         </div>
+                        <hr style="border: none; border-bottom: 1px solid #ccc;">
+                        <div class="flex justify-between items-center">
+                            <button v-if="!feed.isLike"
+                                class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
+                                @mouseover="handleMouseOver" @mouseout="handleMouseOut"
+                                @click="likePost(feed)"><font-awesome-icon icon="fa-regular fa-thumbs-up"
+                                    class="mr-2" />Thích</button>
+                            <button v-else
+                                class="button p-2 text-black cursor-pointer flex-1 justify-between items-center text-blue"
+                                @mouseover="handleMouseOver" @mouseout="handleMouseOut"
+                                @click="likePost(feed)"><font-awesome-icon icon="fa-regular fa-thumbs-up"
+                                    class="mr-2" />Thích</button>
+                            <button class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
+                                @click="openFeedInfo(feed)" @mouseover="handleMouseOver"
+                                @mouseout="handleMouseOut"><font-awesome-icon icon="fa-regular fa-comment"
+                                    class="mr-2" />Bình
+                                luận</button>
+                            <button class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
+                                @mouseover="handleMouseOver" @mouseout="handleMouseOut"><font-awesome-icon
+                                    icon="fa-solid fa-share" class="mr-2" /> Chia sẻ
+                            </button>
+                        </div>
+                        <hr style="border: none; border-bottom: 1px solid #ccc;">
                     </div>
 
-                    <div class="my-3 flex">
-                        <div v-if="!feed.isLike" class="flex-1 flex items-center mr-2">
-                            <font-awesome-icon icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
-                            <span class="text-gray-500 text-lg hover:underline cursor-pointer">{{ feed.likeCount }}</span>
-                        </div>
-                        <div v-else class="flex-1 flex items-center mr-2">
-                            <font-awesome-icon icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
-                            <span class="text-gray-500 text-lg hover:underline cursor-pointer">Bạn và {{ feed.likeCount }}
-                                người khác</span>
-                        </div>
-                        <div class="flex-1 flex items-center justify-end">
-                            <div class="flex items-center space-x-2 ml-auto hover:underline cursor-pointer"
-                                @click="openFeedInfo(feed)">
-                                <font-awesome-icon icon="fa-regular fa-comment" />
-                                <span class="text-gray-500 text-lg">{{ feed.commentCount }} bình luận</span>
-                            </div>
-                        </div>
-                    </div>
-                    <hr style="border: none; border-bottom: 1px solid #ccc;">
-                    <div class="flex justify-between items-center">
-                        <button v-if="!feed.isLike"
-                            class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
-                            @mouseover="handleMouseOver" @mouseout="handleMouseOut"
-                            @click="likePost(feed)"><font-awesome-icon icon="fa-regular fa-thumbs-up"
-                                class="mr-2" />Thích</button>
-                        <button v-else
-                            class="button p-2 text-black cursor-pointer flex-1 justify-between items-center text-blue"
-                            @mouseover="handleMouseOver" @mouseout="handleMouseOut"
-                            @click="likePost(feed)"><font-awesome-icon icon="fa-regular fa-thumbs-up"
-                                class="mr-2" />Thích</button>
-                        <button class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
-                            @click="openFeedInfo(feed)" @mouseover="handleMouseOver"
-                            @mouseout="handleMouseOut"><font-awesome-icon icon="fa-regular fa-comment" class="mr-2" />Bình
-                            luận</button>
-                        <button class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
-                            @mouseover="handleMouseOver" @mouseout="handleMouseOut"><font-awesome-icon
-                                icon="fa-solid fa-share" class="mr-2" /> Chia sẻ
-                        </button>
-                    </div>
-                    <hr style="border: none; border-bottom: 1px solid #ccc;">
                 </div>
-
             </div>
         </div>
     </div>
@@ -127,7 +135,7 @@
                     <div class="friend-info">
                         <div class="avatar-container">
                             <div class="avatar-wrapper">
-                                <img src="https://i.imgur.com/gEKsypv.jpg" class="avatar">
+                                <img :src="user.imageAvatarUrl" class="avatar">
                             </div>
                         </div>
                         <div class="detail">
@@ -289,7 +297,7 @@
     <v-dialog class="dialog-container-feed" v-model="showVisibleInfoFeed" max-width="800px" @click:outside="closeFeedInfo">
         <v-card class="dialog-component-1">
             <v-card-title class="dialog-title">
-                <h2 class="title">Bài viết của Thoại
+                <h2 class="title">Bài viết của {{ user.fullName }}
                     <div class="icon-close" @click="closeFeedInfo"><font-awesome-icon icon="fa-solid fa-x" /></div>
                 </h2>
             </v-card-title>
@@ -298,10 +306,10 @@
                 <div class="bg-white p-4">
                     <div class="mb-6 flex items-center justify-between">
                         <div class="flex items-center space-x-6">
-                            <img :src="showingFeed.avatar"
+                            <img :src="user.imageAvatarUrl"
                                 class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4">
                             <div class="wrap-title">
-                                <p><strong>{{ showingFeed.name }}</strong></p>
+                                <p><strong>{{ user.fullName }}</strong></p>
                                 <div class="wrap-icon">
                                     <div v-if="showingFeed.audience === 'AllFriend'">
                                         <font-awesome-icon icon="fa-solid fa-user-group" />
@@ -344,7 +352,8 @@
                     <div class="my-3 flex">
                         <div v-if="!showingFeed.isLike" class="flex-1 flex items-center mr-2">
                             <font-awesome-icon icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
-                            <span class="text-gray-500 text-lg hover:underline cursor-pointer">{{ showingFeed.likeCount
+                            <span class="text-gray-500 text-lg hover:underline cursor-pointer">{{
+                                showingFeed.userLikeList.length
                             }}</span>
                         </div>
                         <div v-else class="flex-1 flex items-center mr-2">
@@ -378,7 +387,8 @@
                                 icon="fa-regular fa-comment" class="mr-2" />Bình
                             luận</button>
                         <button class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
-                            @mouseover="handleMouseOver" @mouseout="handleMouseOut"><font-awesome-icon icon="fa-solid fa-share" /> Chia sẻ
+                            @mouseover="handleMouseOver" @mouseout="handleMouseOut"><font-awesome-icon
+                                icon="fa-solid fa-share" /> Chia sẻ
                         </button>
                     </div>
                     <hr style="border: none; border-bottom: 1px solid #ccc;">
@@ -459,6 +469,7 @@ export default {
         if (userString) {
             this.user = JSON.parse(userString);
         }
+        this.getFeed();
     },
     computed: {
         filteredFriends() {
@@ -482,14 +493,37 @@ export default {
             showUpdateFile: false,
             showVisibleInfoFeed: false,
             showingFeed: null,
+            listFriends: [],
             allChosen: [
                 'Bạn bè',
                 'Bạn bè ngoại trừ',
                 'Một số bạn bè',
                 'Chỉ mình tôi'
             ],
-            feeds : [],
-            comments: [],
+            feeds: [],
+            comments: [
+                {
+                    id: 1, fullName: "Từ Thanh Thoại", content: "Ảnh đẹp quá luôn", avatar: "https://i.imgur.com/gEKsypv.jpg",
+                    file: "https://i.imgur.com/gEKsypv.jpg", createdDate: new Date("2002-12-17T18:50:00"), updatedDate: new Date("2002-12-17T18:50:00")
+                },
+                {
+                    id: 2, fullName: "Võ Giang Nam", content: "Ảnh đẹp qtqd", avatar: "https://i.imgur.com/gEKsypv.jpg",
+                    file: "https://i.imgur.com/gEKsypv.jpg", createdDate: new Date("2002-12-17T18:50:00"), updatedDate: new Date("2002-12-17T18:50:00")
+                },
+                {
+                    id: 3, fullName: "Chú bé đần", content: "Ảnh của tui đẹp hơn", avatar: "https://i.imgur.com/gEKsypv.jpg",
+                    file: "https://i.imgur.com/gEKsypv.jpg", createdDate: new Date("2002-12-17T18:50:00"), updatedDate: new Date("2002-12-17T18:50:00")
+                },
+                {
+                    id: 4, fullName: "Thợ săn ảnh đẹp", content: "Ảnh này mới đẹp nè", avatar: "https://i.imgur.com/gEKsypv.jpg",
+                    file: "https://i.imgur.com/gEKsypv.jpg", createdDate: new Date("2002-12-17T18:50:00"), updatedDate: new Date("2002-12-17T18:50:00")
+                },
+                {
+                    id: 5, fullName: "Kaito Kid nè", content: "ảnh của m xấu điên", avatar: "https://i.imgur.com/gEKsypv.jpg",
+                    file: "https://i.imgur.com/gEKsypv.jpg", createdDate: new Date("2002-12-17T18:50:00"), updatedDate: new Date("2002-12-17T18:50:00")
+                },
+            ]
+            ,
             friends: [
                 { phoneNumber: '0968322444', name: "Võ Giang Nam", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
                 { phoneNumber: '0965556652', name: "Từ Thanh Thoại", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
@@ -524,8 +558,8 @@ export default {
                     }
                 }**/)
                 .then(response => {
-                    //console.log("Response status: " + response.status)
-                    response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))   
+                    console.log("Response status: " + response.status)
+                    response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))
                     this.feeds = response.data.getInfoPostResponse
                 })
                 .catch(error => {
@@ -542,8 +576,8 @@ export default {
             this.showPostVisible = false;
         },
         formatDate(date) {
-            // console.log("Giá trị của ngày: " + date)
-            // console.log("Kiểu ngày: " + typeof(date))
+            console.log("Giá trị của ngày: " + date)
+            console.log("Kiểu ngày: " + typeof (date))
             return format(date, 'HH:mm dd/MM/yyyy');
         },
         onFileSelected(event) {
@@ -754,23 +788,49 @@ export default {
             this.$refs.comment.focus();
         },
         postComment() {
-            // console.log("Đăng bình luận mới: " + this.newComment.file)
-            // console.log(localStorage.getItem("token"))
-            axios
-                .post('/social-media/create-new-comment', /**{
+
+        },
+        async getListOfFriends() {
+            try {
+                const response = await axios.get(`users/getAllFriendUser`, {
                     headers: {
-                    'Authorization': localStorage.getItem("token"),
+                        'Authorization': localStorage.getItem("token")
                     }
-                },**/ this.newComment)
-                .then(response => console.log(response.status))
-        }
+                });
+
+                if (response.status === 200) {
+
+                    this.listFriends = response.data;
+                } else {
+                    console.error(response.data);
+                    this.toast.error(response.data, { timeout: 1500 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
+            }
+        },
     }
 }
 </script>
 
 <style scoped lang = "scss">
+.post-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
 
-.container{
+.container {
     height: 100%;
 }
 
