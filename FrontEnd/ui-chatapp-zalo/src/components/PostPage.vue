@@ -28,24 +28,28 @@
                         class="p-4 bg-white border border-gray-200 rounded-lg">
                         <div class="mb-6 flex items-center justify-between">
                             <div class="flex items-center space-x-6">
-                                <img :src="user.imageAvatarUrl"
+                                <img :src="feed.userPost.imageAvatar"
                                     class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4">
                                 <div class="wrap-title">
-                                    <p><strong>{{ user.fullName }}</strong></p>
+                                    <p><strong>{{ feed.userPost.userName }}</strong></p>
                                     <div class="wrap-icon">
+                                        <div v-if="feed.audience === 'Public'">
+                                            <font-awesome-icon icon="fa-solid fa-earth-americas" />
+                                            Công khai
+                                        </div>
                                         <div v-if="feed.audience === 'AllFriend'">
                                             <font-awesome-icon icon="fa-solid fa-user-group" />
                                             Bạn bè
                                         </div>
-                                        <div v-if="feed.audience === 'OnlyMe'">
+                                        <div v-else-if="feed.audience === 'OnlyMe'">
                                             <font-awesome-icon icon="fa-solid fa-lock" />
                                             Chỉ mình tôi
                                         </div>
-                                        <div v-if="feed.audience === 'SomeOneCanSee'">
+                                        <div v-else-if="feed.audience === 'SomeOneCanSee'">
                                             <font-awesome-icon icon="fa-solid fa-user" />
                                             Một số bạn bè
                                         </div>
-                                        <div v-if="feed.audience === 'AllExceptSomeOne'">
+                                        <div v-else-if="feed.audience === 'AllExceptSomeOne'">
                                             <font-awesome-icon icon="fa-solid fa-user-minus" />
                                             Bạn bè ngoại trừ
                                         </div>
@@ -73,18 +77,30 @@
 
                         <div class="my-3 flex">
                             <div v-if="!feed.isLike" class="flex-1 flex items-center mr-2">
-                                <font-awesome-icon icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
-                                <span class="text-gray-500 text-lg hover:underline cursor-pointer">{{
-                                    feed.userLikeList.length
-                                }}</span>
+                                <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
+                                    icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
+                                <span class="text-gray-500 text-lg hover:underline cursor-pointer">
+                                    <template v-if="feed.userLikeList == null || feed.userLikeList.length === 0">
+
+                                    </template>
+                                    <template v-else>
+                                        {{ feed.userLikeList.length }}
+                                    </template>
+                                </span>
                             </div>
                             <div v-else class="flex-1 flex items-center mr-2">
-                                <font-awesome-icon icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
-                                <span class="text-gray-500 text-lg hover:underline cursor-pointer">Bạn và {{
-                                    feed.userLikeList.length
-                                }}
-                                    người khác</span>
+                                <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
+                                    icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
+                                <span class="text-gray-500 text-lg hover:underline cursor-pointer">
+                                    <template v-if="feed.userLikeList.length === 1">
+                                        {{ user.fullName }}
+                                    </template>
+                                    <template v-else>
+                                        Bạn và {{ feed.userLikeList.length-1 }} người khác
+                                    </template>
+                                </span>
                             </div>
+
                             <div class="flex-1 flex items-center justify-end">
                                 <div class="flex items-center space-x-2 ml-auto hover:underline cursor-pointer"
                                     @click="openFeedInfo(feed)">
@@ -141,7 +157,9 @@
                         <div class="detail">
                             <p><strong>{{ user.fullName }}</strong></p>
                             <select v-model="privateSetting" name="privateSetting" class="form-control cursor-pointer">
-                                <option v-for="option in allChosen" :key="option" class="cursor-pointer">{{ option }}
+                                <option v-for="option in allChosen" :key="option" class="cursor-pointer">
+                                    <!-- <i :class="getIconClassPostOption(option)"></i> -->
+                                    {{ option }}
                                 </option>
                             </select>
                         </div>
@@ -330,7 +348,6 @@
                                 </div>
                             </div>
                         </div>
-
                         <p class="text-gray-600">{{ formatDate(new Date(showingFeed.updatedAt)) }}</p>
                     </div>
 
@@ -358,10 +375,16 @@
                         </div>
                         <div v-else class="flex-1 flex items-center mr-2">
                             <font-awesome-icon icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
-                            <span class="text-gray-500 text-lg hover:underline cursor-pointer">Bạn và {{
-                                showingFeed.likeCount }}
-                                người khác</span>
+                            <span class="text-gray-500 text-lg hover:underline cursor-pointer">
+                                <template v-if="showingFeed.userLikeList === null || showingFeed.userLikeList.length === 0">
+                                    {this.user.fullName}
+                                </template>
+                                <template v-else>
+                                    Bạn và {{ showingFeed.userLikeList.length }} người khác
+                                </template>
+                            </span>
                         </div>
+
                         <div class="flex-1 flex items-center justify-end">
                             <div class="flex items-center space-x-2 ml-auto hover:underline cursor-pointer"
                                 @click="openFeedInfo(showingFeed)">
@@ -469,7 +492,8 @@ export default {
         if (userString) {
             this.user = JSON.parse(userString);
         }
-        this.getFeed();
+        // console.log("User: " + this.user.phoneNumber);
+        this.fetchFeed();
     },
     computed: {
         filteredFriends() {
@@ -495,12 +519,50 @@ export default {
             showingFeed: null,
             listFriends: [],
             allChosen: [
+                'Công khai',
                 'Bạn bè',
                 'Bạn bè ngoại trừ',
                 'Một số bạn bè',
                 'Chỉ mình tôi'
             ],
-            feeds: [],
+            feeds: [
+                {
+                    id: null,
+                    content: "",
+                    audience: "",
+                    postFather: null,
+                    isLike: null,
+                    userTagList: [
+                        {
+                            userName: "",
+                            imageAvatar: "",
+                            phoneNumber: ""
+                        }
+                    ],
+                    userLikeList: [
+                        {
+                            userName: "",
+                            imageAvatar: "",
+                            phoneNumber: ""
+                        }
+                    ],
+                    userShareList: [
+                        {
+                            userName: "",
+                            imageAvatar: "",
+                            phoneNumber: ""
+                        }
+                    ],
+                    files: [],
+                    createdAt: "",
+                    updatedAt: "",
+                    userPost: {
+                        userName: "",
+                        imageAvatar: "",
+                        phoneNumber: ""
+                    }
+                }
+            ],
             comments: [
                 {
                     id: 1, fullName: "Từ Thanh Thoại", content: "Ảnh đẹp quá luôn", avatar: "https://i.imgur.com/gEKsypv.jpg",
@@ -538,18 +600,40 @@ export default {
         }
     },
     mounted() {
-        this.getFeed();
+        this.fetchFeed();
         this.fetchAvatar();
     },
 
     methods: {
         handleMouseOver(event) {
+            //console.log("Gọi hàm: handleMouseOver");
             event.target.classList.add("hovered");
         },
         handleMouseOut(event) {
+            //console.log("Gọi hàm: handleMouseOut");
             event.target.classList.remove("hovered");
         },
-        getFeed() {
+        // getIconClassPostOption(option){
+        //     console.log("Gọi hàm getIconClassPostOption(option)");
+        //     console.log(option);
+        //     switch (option) {
+        //     case ' Công khai':
+        //         return 'fa-solid fa-earth-americas';
+        //     case ' Bạn bè':
+        //         return 'fa-solid fa-user-group';
+        //     case ' Bạn bè ngoại trừ':
+        //         return 'fa-solid fa-lock';
+        //     case ' Một số bạn bè':
+        //         return 'fa-solid fa-user';
+        //     case ' Chỉ mình tôi':
+        //         return 'fa-solid fa-user-minus';
+        //     default:
+        //         return 'fa-solid fa-earth-americas'; 
+        // }
+        // },
+        fetchFeed() {
+            console.log("Gọi hàm: fetchFeed()");
+            // console.log("User đang đăng nhập: " + this.user);
             axios
                 .get('/social-media/get-post',/**{
                     headers: {
@@ -558,29 +642,49 @@ export default {
                     }
                 }**/)
                 .then(response => {
-                    console.log("Response status: " + response.status)
+                    //console.log("Response status: " + response.status)
                     response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))
-                    this.feeds = response.data.getInfoPostResponse
+                    this.feeds = response.data.getInfoPostResponse;
+                    this.feeds.forEach(feed => this.updateIsUserLikePost(feed));
+                    console.log("Danh sách bài viết: ", this.feeds);
                 })
                 .catch(error => {
                     console.log('error', error)
                 })
         },
         deletePost(id) {
+            console.log("Gọi hàm: deletePost");
             this.posts = this.posts.filter(post => post.id !== id)
         },
         showPostOption() {
+            console.log("Gọi hàm: showPostOption");
             this.showPostVisible = true;
         },
         closePostOption() {
+            console.log("Gọi hàm: closePostOption");
             this.showPostVisible = false;
         },
         formatDate(date) {
-            console.log("Giá trị của ngày: " + date)
-            console.log("Kiểu ngày: " + typeof (date))
-            return format(date, 'HH:mm dd/MM/yyyy');
+            try {
+                // console.log("Gọi hàm: formatDate(date)");
+                // console.log("Giá trị của ngày: " + date)
+                // console.log("Kiểu ngày: " + typeof (date))
+
+                // Kiểm tra nếu date không tồn tại hoặc rỗng
+                if (date == null || date.length === 0) {
+                    return null;
+                }
+
+                // Gọi hàm format trong một khối try
+                return format(date, 'HH:mm dd/MM/yyyy');
+            } catch (error) {
+                //console.error("Lỗi trong quá trình định dạng ngày:", error);
+                // Trả về giá trị mặc định hoặc xử lý theo ý muốn của bạn khi có lỗi
+                return null;
+            }
         },
         onFileSelected(event) {
+            console.log("Gọi hàm: onFileSelected");
             const files = event.target.files;
             if (files.length != 0) {
                 this.newFeed.files = [];
@@ -593,9 +697,11 @@ export default {
 
         },
         isImage(file) {
+            console.log("Gọi hàm: isImage");
             return file.type.startsWith('image/');
         },
         getUrl(file) {
+            console.log("Gọi hàm: getUrl");
             return URL.createObjectURL(file);
         },
         showUpdateFileDialog() {
@@ -603,10 +709,12 @@ export default {
             this.showPostVisible = false;
         },
         closeUpdateFileDialog() {
+            console.log("Gọi hàm: closeUpdateFileDialog");
             this.showUpdateFile = false;
             this.showPostVisible = true;
         },
         addFile(event) {
+            console.log("Gọi hàm: addFile");
             const files = event.target.files;
             if (files.length != 0) {
                 for (let i = 0; i < files.length; i++) {
@@ -616,31 +724,38 @@ export default {
             }
         },
         removeFiles() {
+            console.log("Gọi hàm: removeFiles");
             this.newFeed.files = [];
             this.fileListHeight = "100px";
         },
         removeFile(index) {
+            console.log("Gọi hàm: removeFile");
             this.newFeed.files.splice(index, 1);
             if (this.newFeed.files.length === 0) {
                 this.fileListHeight = "100px";
             }
         },
         showChooseTag() {
+            console.log("Gọi hàm: showChooseTag");
             this.hasTagFriend = true;
             this.showPostVisible = false;
         },
         closeChooseTagDialog() {
+            console.log("Gọi hàm: closeChooseTagDialog");
             this.hasTagFriend = false;
             this.showPostVisible = true;
         },
         deleteFriendByPhoneNumber(phoneNumber) {
+            console.log("Gọi hàm: deleteFriendByPhoneNumber");
             this.friends = this.friends.filter(friend => friend.phoneNumber !== phoneNumber);
         },
         addFriendTag(friend) {
+            console.log("Gọi hàm: addFriendTag");
             this.newFeed.friendTag.push(friend);
             this.deleteFriendByPhoneNumber(friend.phoneNumber);
         },
         deleteFriendTag(friend) {
+            console.log("Gọi hàm: deleteFriendTag");
             const indexInTag = this.newFeed.friendTag.findIndex(taggedFriend => taggedFriend.phoneNumber === friend.phoneNumber);
             if (indexInTag !== -1) {
                 this.newFeed.friendTag.splice(indexInTag, 1);
@@ -652,9 +767,13 @@ export default {
             }
         },
         async createPost() {
+            console.log("Gọi hàm: createPost");
             try {
-
-                if (this.privateSetting === 'Bạn bè') {
+                console.log("PrivateSetting: " , this.privateSetting);
+                if (this.privateSetting === 'Công khai'){
+                    this.newFeed.audience = 'Public'
+                }
+                else if (this.privateSetting === 'Bạn bè') {
                     this.newFeed.audience = 'AllFriend'
                 } else if (this.privateSetting === 'Chỉ mình tôi') {
                     this.newFeed.audience = 'OnlyMe'
@@ -664,7 +783,7 @@ export default {
                     this.newFeed.audience = 'AllExceptSomeOne'
                 }
 
-                const listFriendTag = [];   
+                const listFriendTag = [];
 
                 for (let friendTagKey in this.newFeed.friendTag) {
                     if (Object.prototype.hasOwnProperty.call(this.newFeed.friendTag, friendTagKey)) {
@@ -703,6 +822,7 @@ export default {
                 if (response.status === 200) {
                     this.showPostVisible = false;
                     this.newFeed.content = '';
+                    this.fetchFeed();
                     this.toast.success(response.data, { timeout: 3000 });
                 } else {
                     this.toast.error(response.data, { timeout: 3000 });
@@ -722,6 +842,7 @@ export default {
             }
         },
         fetchAvatar() {
+            console.log("Gọi hàm: fetchAvatar()");
             axios.get(`users/imageAvatar`, {
                 headers: {
                     'Authorization': localStorage.getItem("token"),
@@ -739,58 +860,117 @@ export default {
             console.log("Image Avatar Url: " + this.user.imageAvatarUrl);
             //console.log('user.imageAvatarUrl changed:', this.user.imageAvatarUrl);
         },
+        fetchUpdateLike(postId) {
+            console.log("Gọi hàm: fetchUpdateLike(postId)");
+            axios.put(`/social-media/like-post/${postId}`).then(response => {
+                // Xử lý kết quả nếu cần
+                if (response.status === 200) {
+                    const userLike = {
+                        "userName": this.user.fullName,
+                        "imageAvatar": this.user.imageAvatarUrl.substring(5),
+                        "phoneNumber": this.user.phoneNumber
+                    }
+                    // console.log("User like: " , userLike);
+                    //console.log("User like key: " , Object.keys(this.user));
+                    const post = this.feeds.find(f => f.id === postId);
+                    // console.log("Danh sách người thích bài viết trước chỉnh sửa: ", this.feeds.find(f => f.id === postId).userLikeList.length);
+                    // console.log(post);
+                    // console.log("Response body: " + response.data);
+                    if (response.data === "Thích bài viết thành công!") {
+                        // console.log("Vào thích");
+                        this.feeds.find(f => f.id === postId).userLikeList.push(userLike)
+                        this.feeds.userLike = true;
+                    }
+                    else {
+                        // console.log("Vào hủy thích");
+                        this.feeds.find(f => f.id === postId).userLikeList.splice(post.userLikeList.indexOf(userLike), 1);
+                        this.feeds.userLike = false;
+                    }
+                    // console.log(post);
+                    // console.log("Danh sách người thích bài viết sau chỉnh sửa: ", this.feeds.find(f => f.id === postId).userLikeList.length);
+                }
+            }).catch(error => {
+                console.error('Error updating post like:', error);
+            });
+        },
         likePost(feed) {
-            console.log("Gọi hàm like post")
+            console.log("Gọi hàm likePost(feed)");
+            //console.log("Id bài viết: " + feed.id);
             const foundFeed = this.feeds.find(f => f.id === feed.id);
 
             if (foundFeed) {
-                console.log("Tìm thấy bài viết")
+                //console.log("Tìm thấy bài viết")
                 const updatedFeed = Object.assign({}, foundFeed, { isLike: !foundFeed.isLike });
-
+                //console.log(updatedFeed);
                 const index = this.feeds.findIndex(f => f.id === feed.id);
-
                 if (this.showVisibleInfoFeed) {
-                    if (updatedFeed.isLike)
-                        console.log("Đã like bài viết")
-                    else 
-                        console.log("Đã hủy like bài viết")
+                    // if (updatedFeed.isLike)
+                    //     //console.log("Đã like bài viết")
+                    // else
+                    //     //console.log("Đã hủy like bài viết")
                     this.showingFeed.isLike = updatedFeed.isLike;
                 }
+                this.fetchUpdateLike(feed.id);
 
                 if (index !== -1) {
                     //console.log("Vô index !== -1")
                     this.feeds.splice(index, 1, updatedFeed);
                 }
+            }
+        },
+        updateIsUserLikePost(post) {
+            console.log("Gọi hàm: updateIsUserLikePost(post)");
+            const currentUserPhoneNumber = this.user.phoneNumber;
 
+            //console.log(Object.keys(this.user))
+            console.log(this.user.fullName);
+
+            // Kiểm tra xem có tồn tại user có phoneNumber trùng với currentUserPhoneNumber không
+            const isUserLiked = post.userLikeList.some(user => user.phoneNumber === currentUserPhoneNumber);
+
+            // Cập nhật trạng thái isLike của post
+            post.isLike = isUserLiked;
+
+            // Xuất thông báo kiểm tra
+            if (isUserLiked) {
+                console.log(`User with phoneNumber ${currentUserPhoneNumber} liked the post.`);
+            } else {
+                console.log(`User with phoneNumber ${currentUserPhoneNumber} unliked the post.`);
             }
         },
         openFeedInfo(feed) {
+            console.log("Gọi hàm: openFeedInfo");
             this.showVisibleInfoFeed = true;
             this.showingFeed = feed;
             //this.newComment.senderPhoneNumber = this.user.phoneNumber;
             //console.log("Ngày showing feed: " + this.showingFeed.updatedAt)
         },
         closeFeedInfo() {
+            console.log("Gọi hàm: closeFeedInfo");
             this.showVisibleInfoFeed = false;
         },
         handleFileChange(event) {
+            console.log("Gọi hàm: handleFileChange");
             const selectedFile = event.target.files[0];
             //console.log(selectedFile);
             this.newComment.file = selectedFile;
         },
         openFilePicker() {
+            console.log("Gọi hàm: openFilePicker");
             const fileInput = this.$refs.fileInputComment;
             if (fileInput) {
                 fileInput.click();
             }
         },
         focusComment() {
+            console.log("Gọi hàm: focusComment");
             this.$refs.comment.focus();
         },
         postComment() {
-
+            console.log("Gọi hàm: postComment");
         },
         async getListOfFriends() {
+            console.log("Gọi hàm: getListOfFriends");
             try {
                 const response = await axios.get(`users/getAllFriendUser`, {
                     headers: {

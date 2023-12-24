@@ -67,7 +67,7 @@ public class SocialMediaController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> likePost(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long postId){
         String result = socialMediaService.likePost(postId, userPrincipal.getId());
-        return result.equals("Thích bài viết thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
+        return result.contains("thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
     // Thêm bình luận mới -- Checked
     @PostMapping(value = "/create-new-comment", produces = MediaType.ALL_VALUE)
@@ -121,7 +121,7 @@ public class SocialMediaController {
     @GetMapping("/get-post")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getPostUser(@AuthenticationPrincipal UserPrincipal userPrincipal){
-        SocialMediaServiceImpl.GetAllInfoPostUser result = socialMediaService.getAllPostUser(userPrincipal.getId());
+        SocialMediaServiceImpl.GetAllInfoPostUser result = socialMediaService.getNewFeedUser(userPrincipal.getId());
         return result.getMesage().equals("Thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 }

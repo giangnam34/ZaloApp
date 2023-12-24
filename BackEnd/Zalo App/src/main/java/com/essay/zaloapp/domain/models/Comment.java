@@ -58,6 +58,7 @@ public class Comment {
         this.commentUserList = commentUserList;
         this.resource = resource;
         this.createdAt = new Date( new Date().getTime() + 7 * 60 * 60*1000);
+        this.updatedAt = new Date( new Date().getTime() + 7 * 60 * 60*1000);
         this.isDelete = false;
     }
 
