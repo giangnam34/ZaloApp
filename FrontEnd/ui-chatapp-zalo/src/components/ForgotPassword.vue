@@ -48,6 +48,11 @@ import { useToast } from "vue-toastification";
 import OTPForgotPassword from './OTPForgotPassword.vue';
 
 export default {
+    setup() {
+        // Get toast interface
+        const toast = useToast();
+        return { toast }
+    },
     data() {
         return {
             isError: true,
@@ -59,11 +64,6 @@ export default {
             showOTP: false,
             flag1: true,
         };
-    },
-    setup() {
-        // Get toast interface
-        const toast = useToast();
-        return { toast }
     },
     components: {
         OTPForgotPassword
@@ -119,9 +119,9 @@ export default {
 
                     await this.sendOtp();
 
-                    if (!this.isError) {
+                    if(!this.isError){
                         this.showOTP = true;
-                    }
+                    }  
 
                 }
             }

@@ -95,7 +95,9 @@ public class User {
         this.fullName = fullName;
         this.password = password;
         this.createdAt = new Date();
+        this.birthDay = new Date();
         this.isConfirmed = false;
+        this.isLocked = false;
         this.roles = roleList;
         this.imageAvatarUrl = "DefaultAvatar.jpg";
         this.imageCoverPhotoUrl = "DefaultCoverAvatar.jpg";

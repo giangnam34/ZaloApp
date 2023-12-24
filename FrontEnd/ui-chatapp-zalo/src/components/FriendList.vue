@@ -389,10 +389,10 @@ export default {
 
                 if (response.status === 200) {
                     this.friends = this.friends.filter(friend => friend.phoneNumber !== phoneNumber);
-                    this.toast.success(response.body, { timeout: 1500 });
+                    this.toast.success(response.data, { timeout: 1500 });
                 } else {
                     console.error(response.body);
-                    this.toast.error(response.body || 'Đã xảy ra lỗi!', { timeout: 1500 });
+                    this.toast.error(response.data || 'Đã xảy ra lỗi!', { timeout: 1500 });
                 }
             } catch (error) {
                 if (error.response) {

@@ -286,15 +286,15 @@ export default {
                     this.checkUser();
                     this.showUserInfoDialog(userTemp);
                 } else {
-                    console.error(responseUser.body);
-                    this.toast.error(responseUser.body || 'Đã xảy ra lỗi!', { timeout: 1500 });
+                    console.error(responseUser.data);
+                    this.toast.error(responseUser.data || 'Đã xảy ra lỗi!', { timeout: 1500 });
                 }
             } catch (error) {
                 if (error.response) {
                     if (error.response.status === 400) {
-                        this.toast.error(error.response.data, { timeout: 1500 });
+                        this.toast.error(error.response.body, { timeout: 1500 });
                     } else {
-                        this.toast.error(error.response.data, { timeout: 1500 });
+                        this.toast.error(error.response.body, { timeout: 1500 });
                     }
                 } else if (error.request) {
                     this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
@@ -383,15 +383,19 @@ export default {
                     this.sended = false;
                 } else {
                     const temp = this.inviteList.find(friend => friend.phoneNumber === this.searchPhoneNumber);
-                    if (temp?.phoneNumber.length !== undefined) {
-                        this.sended = true;
-                    } else {
-                        this.sended = false;
-                    }
+                    this.sended = temp !== undefined; 
                 }
-            }else{
-                this.sended = false;
-                this.isFriend = true;
+            } else {
+                const temp2 = this.listOfFriends.find(friend => friend.phoneNumber === this.searchPhoneNumber);
+                if (temp2 !== undefined) {
+                    this.isFriend = true;
+                    this.sended = false;
+                } else {
+                    this.isFriend = false;
+
+                    const temp = this.inviteList.find(friend => friend.phoneNumber === this.searchPhoneNumber);
+                    this.sended = temp !== undefined;
+                }
             }
         },
         async getListOfFriends() {
@@ -406,8 +410,8 @@ export default {
 
                     this.listOfFriends = response.data;
                 } else {
-                    console.error(response.body);
-                    this.toast.error(response.body, { timeout: 1500 });
+                    console.error(response.data);
+                    this.toast.error(response.data, { timeout: 1500 });
                 }
             } catch (error) {
                 if (error.response) {
