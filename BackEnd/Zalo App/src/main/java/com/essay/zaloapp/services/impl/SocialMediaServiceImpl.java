@@ -170,6 +170,7 @@ public class SocialMediaServiceImpl implements SocialMediaService {
                 getInfoPostResponse.setFiles(p.getResourceList().stream().map(file -> "http://localhost:8181/media/" + (file.getResourceType().equals(ResourceType.Video) ? "getVideo/" : "getImage/")  + file.getResourceValue()).collect(Collectors.toList()));
                 getInfoPostResponse.setCreatedAt(formatDate.formatDate(p.getCreatedAt()));
                 getInfoPostResponse.setUpdatedAt(formatDate.formatDate(p.getUpdatedAt()));
+                getInfoPostResponse.setUserPost(new InfoUser(p.getUser().getFullName(), "http://localhost:8181/media/getImage/" + p.getUser().getImageAvatarUrl(), p.getUser().getPhoneNumber()));
                 return getInfoPostResponse;
             }).collect(Collectors.toList()));
         } catch(Exception e){
@@ -208,10 +209,6 @@ public class SocialMediaServiceImpl implements SocialMediaService {
             return "Có lỗi xảy ra trong quá trình thực thi. Vui lòng thử lại!";
         }
     }
-
-    // Hiển thị bài đăng
-//    @Override
-//    public
 
     @Override
     public String createNewComment(Long postId, Long userId, Long topComment, String content, MultipartFile file){
@@ -327,7 +324,6 @@ public class SocialMediaServiceImpl implements SocialMediaService {
         if (!postRepository.existsById(postId) || !userRepository.existsUserById(userId) || !isUserAuthorizeInteractPost(postRepository.findById(postId).get(),userRepository.findById(userId))) throw new Exception("Bài viết này không tồn tại hoặc người dùng không có quyền xem bài viết này!");
         return (long) (int) postRepository.findById(postId).get().getCommentList().stream().filter(comment -> !comment.getIsDelete()).count();
     }
-
 
     @Override
     public List<InfoComment> getAllInfoComment(Long postId, Long userId) throws Exception{
