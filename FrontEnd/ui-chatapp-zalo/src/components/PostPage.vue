@@ -96,7 +96,7 @@
                                         {{ user.fullName }}
                                     </template>
                                     <template v-else>
-                                        Bạn và {{ feed.userLikeList.length-1 }} người khác
+                                        Bạn và {{ feed.userLikeList.length - 1 }} người khác
                                     </template>
                                 </span>
                             </div>
@@ -176,7 +176,7 @@
                                 <img class="upload-file" v-if="isImage(file)" :src="getUrl(file)" alt="Selected Image" />
                                 <video v-else controls width="300" class="upload-file">
                                     <source :src="getUrl(file)" type="video/mp4" />
-                                    Your browser does not support the video tag.
+                                    Trình duyệt không hỗ trợ định dạng này
                                 </video>
                             </div>
                             <div v-if="index === 1" class="cursor-pointer" @click="showUpdateFileDialog">
@@ -185,7 +185,7 @@
                                         alt="Selected Image" />
                                     <video v-else controls width="300" class="upload-file">
                                         <source :src="getUrl(file)" type="video/mp4" />
-                                        Your browser does not support the video tag.
+                                       Trình duyệt không hỗ trợ định dạng này
                                     </video>
                                     <div class="overlay" v-if="newFeed.files.length > 1 && newFeed.files.length !== 2">
                                         +{{ newFeed.files.length - 2 }}
@@ -217,7 +217,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="profile-action" @click="createPost">
+                <div class="profile-action" @click="createPost(showi)">
                     <div class="mx-4 flex items-center justify-center cursor-pointer bg-blue-400 rounded-lg h-8">
                         Đăng
                     </div>
@@ -240,7 +240,7 @@
                             <img class="upload-file" v-if="isImage(file)" :src="getUrl(file)" alt="Selected Image" />
                             <video v-else controls width="300" class="upload-file">
                                 <source :src="getUrl(file)" type="video/mp4" />
-                                Your browser does not support the video tag.
+                                Trình duyệt không hỗ trợ định dạng này
                             </video>
                             <div class="close-icon" @click="removeFile(index)"><font-awesome-icon icon="fa-solid fa-x" />
                             </div>
@@ -312,6 +312,7 @@
             </v-card-text>
         </v-card>
     </v-dialog>
+    <!-- Pop up bài viết người dùng -->
     <v-dialog class="dialog-container-feed" v-model="showVisibleInfoFeed" max-width="800px" @click:outside="closeFeedInfo">
         <v-card class="dialog-component-1">
             <v-card-title class="dialog-title">
@@ -353,7 +354,25 @@
 
                     <p class="mb-3">{{ showingFeed.content }}</p>
 
-                    <img :src="showingFeed.files[0]" class="w-full h-[500px] rounded-lg cursor-pointer"
+                    <!-- Hiển thị ảnh -->
+
+                    <div>
+                        <!-- Single Image -->
+                        <!-- <img v-if="showingFeed.files.length === 1" :src="showingFeed.files[0]"
+                            class="w-full h-[500px] rounded-lg cursor-pointer" @click="openFullImage(showingFeed.files)" /> -->
+
+                        <!-- Multiple Images -->
+                        <swiper class="swiper" :modules="modules" navigation>
+                            <swiper-slide v-for="(image, index) in showingFeed.files" :key="index">
+                                <div class="image-container-feed cursor-pointer"
+                                    @click="openFullImage(showingFeed.files, index)">
+                                    <img :src="image" class="w-full h-[500px] rounded-lg" />
+                                </div>
+                            </swiper-slide>
+                        </swiper>
+                    </div>
+
+                    <!-- <img :src="showingFeed.files[0]" class="w-full h-[500px] rounded-lg cursor-pointer"
                         v-if="showingFeed.files.length > 0" @click="openFeedInfo(showingFeed)" />
 
                     <div v-if="showingFeed.files.length > 1" class="image-container-feed cursor-pointer"
@@ -364,7 +383,7 @@
                                 +{{ showingFeed.files.length - 2 }}
                             </div>
                         </div>
-                    </div>
+                    </div> -->
 
                     <div class="my-3 flex">
                         <div v-if="!showingFeed.isLike" class="flex-1 flex items-center mr-2">
@@ -420,11 +439,11 @@
                     <div v-for="comment in comments" v-bind:key="comment.id">
                         <div class="mb-2 items-center justify-between">
                             <div class="flex items-center">
-                                <img :src="comment.avatar"
+                                <img :src="comment.userComment.imageAvatar"
                                     class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-2">
                                 <div class="comment-content rounded-lg bg-gray-200 p-2">
                                     <div>
-                                        <p><strong>{{ comment.fullName }}</strong></p>
+                                        <p><strong>{{ comment.userComment.fullName }}</strong></p>
                                     </div>
                                     <div>
                                         <p>{{ comment.content }}</p>
@@ -433,13 +452,7 @@
                             </div>
                             <div class="ml-15">
                                 <div class="comment-image">
-                                    <img class="file-comment rounded-lg" :src="comment.file" alt="Selected Image" />
-                                    <!-- <img class="upload-file-comment" v-if="isImage(comment.file)"
-                                        :src="getUrl(comment.file)" alt="Selected Image" />
-                                    <video v-else controls width="300" class="upload-file-comment">
-                                        <source :src="getUrl(newComment.file)" type="video/mp4" />
-                                        Your browser does not support the video tag.
-                                    </video> -->
+                                    <img class="file-comment rounded-lg" :src="comment.contentMedia"/>
                                 </div>
                                 <p class="text-gray-600">{{ formatDate(comment.updatedAt) }}</p>
                             </div>
@@ -462,10 +475,10 @@
                             alt="Selected Image" />
                         <video v-else controls width="300" class="upload-file-comment">
                             <source :src="getUrl(newComment.file)" type="video/mp4" />
-                            Your browser does not support the video tag.
+                            Trình duyệt không hỗ trợ định dạng này
                         </video>
                     </div>
-                    <v-btn @click="postComment">Đăng</v-btn>
+                    <v-btn @click="postComment(newComment)">Đăng</v-btn>
                 </div>
             </v-card-title>
         </v-card>
@@ -476,16 +489,25 @@
 import axios from 'axios';
 import { format } from 'date-fns';
 import { useToast } from "vue-toastification";
+import { Swiper, SwiperSlide } from 'vue-awesome-swiper';
+import 'swiper/css';
+import 'swiper/css/navigation'
+
 
 export default {
     name: 'FeedView',
 
     components: {
+        Swiper,
+        SwiperSlide,
     },
     setup() {
         // Get toast interface
         const toast = useToast();
-        return { toast }
+        const onSwiper=(s)=>{
+            console.log('kjjsnjkanjkdsn',s)
+        }
+        return { toast, onSwiper}
     },
     created() {
         const userString = localStorage.getItem('user');
@@ -505,8 +527,19 @@ export default {
     },
     data() {
         return {
+            // swiperOptions: {
+            //     navigation: {
+            //         nextEl: '.swiper-button-next',
+            //         prevEl: '.swiper-button-prev',
+            //     },
+            // },
             posts: [],
-            newComment: { /**senderPhoneNumber: '',**/ file: null, content: '' },
+            newComment: {
+                postId: null,
+                topComment: null,
+                content: '', 
+                file: null 
+            },
             user: null,
             fileListHeight: "100px",
             body: '',
@@ -565,25 +598,25 @@ export default {
             ],
             comments: [
                 {
-                    id: 1, fullName: "Từ Thanh Thoại", content: "Ảnh đẹp quá luôn", avatar: "https://i.imgur.com/gEKsypv.jpg",
-                    file: "https://i.imgur.com/gEKsypv.jpg", createdDate: new Date("2002-12-17T18:50:00"), updatedDate: new Date("2002-12-17T18:50:00")
-                },
-                {
-                    id: 2, fullName: "Võ Giang Nam", content: "Ảnh đẹp qtqd", avatar: "https://i.imgur.com/gEKsypv.jpg",
-                    file: "https://i.imgur.com/gEKsypv.jpg", createdDate: new Date("2002-12-17T18:50:00"), updatedDate: new Date("2002-12-17T18:50:00")
-                },
-                {
-                    id: 3, fullName: "Chú bé đần", content: "Ảnh của tui đẹp hơn", avatar: "https://i.imgur.com/gEKsypv.jpg",
-                    file: "https://i.imgur.com/gEKsypv.jpg", createdDate: new Date("2002-12-17T18:50:00"), updatedDate: new Date("2002-12-17T18:50:00")
-                },
-                {
-                    id: 4, fullName: "Thợ săn ảnh đẹp", content: "Ảnh này mới đẹp nè", avatar: "https://i.imgur.com/gEKsypv.jpg",
-                    file: "https://i.imgur.com/gEKsypv.jpg", createdDate: new Date("2002-12-17T18:50:00"), updatedDate: new Date("2002-12-17T18:50:00")
-                },
-                {
-                    id: 5, fullName: "Kaito Kid nè", content: "ảnh của m xấu điên", avatar: "https://i.imgur.com/gEKsypv.jpg",
-                    file: "https://i.imgur.com/gEKsypv.jpg", createdDate: new Date("2002-12-17T18:50:00"), updatedDate: new Date("2002-12-17T18:50:00")
-                },
+                    userComment: {
+                        userName: '',
+                        imageAvatar: '',
+                        phoneNumber: ''
+                    },
+                    userLike: [
+                        {
+                            userName: '',
+                            imageAvatar: '',
+                            phoneNumber: ''
+                        }
+                    ],
+                    infoCommentList: [
+                        
+                    ],
+                    content: '',
+                    createdAt: '',
+                    updatedAt: ''
+                }
             ]
             ,
             friends: [
@@ -612,6 +645,10 @@ export default {
         handleMouseOut(event) {
             //console.log("Gọi hàm: handleMouseOut");
             event.target.classList.remove("hovered");
+        },
+        openFullImage() {
+            // Hiển thị ảnh full màn hình và điều hướng qua các ảnh
+
         },
         // getIconClassPostOption(option){
         //     console.log("Gọi hàm getIconClassPostOption(option)");
@@ -769,8 +806,8 @@ export default {
         async createPost() {
             console.log("Gọi hàm: createPost");
             try {
-                console.log("PrivateSetting: " , this.privateSetting);
-                if (this.privateSetting === 'Công khai'){
+                console.log("PrivateSetting: ", this.privateSetting);
+                if (this.privateSetting === 'Công khai') {
                     this.newFeed.audience = 'Public'
                 }
                 else if (this.privateSetting === 'Bạn bè') {
@@ -968,6 +1005,7 @@ export default {
         },
         postComment() {
             console.log("Gọi hàm: postComment");
+            console.log("New comment: " , this.newComment);
         },
         async getListOfFriends() {
             console.log("Gọi hàm: getListOfFriends");
@@ -1003,7 +1041,7 @@ export default {
 }
 </script>
 
-<style scoped lang = "scss">
+<style lang = "scss" scoped>
 .post-container {
     display: flex;
     flex-direction: column;
