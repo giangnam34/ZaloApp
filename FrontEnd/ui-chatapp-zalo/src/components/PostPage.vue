@@ -24,35 +24,74 @@
                         </div>
                     </div>
 
-                <div v-for="feed in feeds" v-bind:key="feed.user_id" class="p-4 bg-white border border-gray-200 rounded-lg">
-                    <div class="mb-6 flex items-center justify-between">
-                        <div class="flex items-center space-x-6">
-                            <img :src="feed.userPost.imageAvatar"
-                                class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4">
-                            <div class="wrap-title">
-                                <p><strong>{{ feed.userPost.userName }}</strong></p>
-                                <div class="wrap-icon">
-                                    <div v-if="feed.audience === 'AllFriend'">
-                                        <font-awesome-icon icon="fa-solid fa-user-group" />
-                                        Bạn bè
+                    <div v-for="feed in feeds" v-bind:key="feed.user_id"
+                        class="p-4 bg-white border border-gray-200 rounded-lg">
+                        <div class="mb-6 flex items-center justify-between">
+                            <div class="flex items-center space-x-6">
+                                <img :src="feed.userPost.imageAvatar"
+                                    class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4">
+                                <div class="wrap-title flex">
+                                    <div>
+                                        <div class="flex">
+                                            <p><strong>{{ feed.userPost.userName }}</strong></p>
+                                            <p class="text-gray-600 ml-2">{{ formatTimeDifference(new Date(feed.updatedAt))
+                                            }}
+                                            </p>
+                                        </div>
+                                        <div class="wrap-icon">
+                                            <div v-if="feed.audience === 'AllFriend'">
+                                                <font-awesome-icon icon="fa-solid fa-user-group" />
+                                                Bạn bè
+                                            </div>
+                                            <div v-if="feed.audience === 'OnlyMe'">
+                                                <font-awesome-icon icon="fa-solid fa-lock" />
+                                                Chỉ mình tôi
+                                            </div>
+                                            <div v-if="feed.audience === 'SomeOneCanSee'">
+                                                <font-awesome-icon icon="fa-solid fa-user" />
+                                                Một số bạn bè
+                                            </div>
+                                            <div v-if="feed.audience === 'AllExceptSomeOne'">
+                                                <font-awesome-icon icon="fa-solid fa-user-minus" />
+                                                Bạn bè ngoại trừ
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div v-if="feed.audience === 'OnlyMe'">
-                                        <font-awesome-icon icon="fa-solid fa-lock" />
-                                        Chỉ mình tôi
-                                    </div>
-                                    <div v-if="feed.audience === 'SomeOneCanSee'">
-                                        <font-awesome-icon icon="fa-solid fa-user" />
-                                        Một số bạn bè
-                                    </div>
-                                    <div v-if="feed.audience === 'AllExceptSomeOne'">
-                                        <font-awesome-icon icon="fa-solid fa-user-minus" />
-                                        Bạn bè ngoại trừ
+                                    <div style="margin-left: 347px;" id="more-icon">
+                                        <div class="action cursor-pointer">
+                                            <div class="popover-action-container" @blur="hidePopover" tabindex="0">
+                                                <a id="ellipsis-icon"
+                                                    @click="(event) => handleClickAction(feed.user_id, event)">
+                                                    <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
+                                                </a>
+                                                <div class="popoverAction" v-show="feed.user_id === selectedItem"
+                                                    :style="{ right: popoverRight, top: popoverTop }">
+                                                    <div class="popover-body">
+                                                        <div class="popover-item"
+                                                            :class="{ 'hoveredFilter': hoveredItem === 'delete' }"
+                                                            @mouseenter="(hoveredItem = 'delete')"
+                                                            @mouseleave="hoveredItem = ''"
+                                                            @click="showFoundUserDialog(feed.user_id)">
+                                                            <div>
+                                                                Xóa bài viết
+                                                            </div>
+                                                        </div>
+                                                        <div class="separator"></div>
+                                                        <div class="popover-item"
+                                                            :class="{ 'hoveredFilter': hoveredItem === 'update' }"
+                                                            @mouseenter="(hoveredItem = 'update')"
+                                                            @mouseleave="hoveredItem = ''">
+                                                            <div>
+                                                                Chỉnh sửa bài viết
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
-                            <p class="text-gray-600">{{ formatDate(new Date(feed.updatedAt)) }}</p>
                         </div>
 
                         <p class="mb-3">{{ feed.content }}</p>
@@ -274,11 +313,11 @@
                             <div class="friend-info friend-container" @click="addFriendTag(friend)">
                                 <div class="avatar-container">
                                     <div class="avatar-wrapper">
-                                        <img :src="friend.avatar" class="avatar">
+                                        <img :src="friend.imageAvatar" class="avatar">
                                     </div>
                                 </div>
                                 <div class="detail">
-                                    <span>{{ friend.name }}</span>
+                                    <span>{{ friend.userName }}</span>
                                 </div>
                             </div>
                         </div>
@@ -308,7 +347,11 @@
                             <img :src="user.imageAvatarUrl"
                                 class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4">
                             <div class="wrap-title">
-                                <p><strong>{{ user.fullName }}</strong></p>
+                                <div class="flex">
+                                    <p><strong>{{ user.fullName }}</strong></p>
+                                    <p class="text-gray-600 ml-2">{{ formatTimeDifference(new Date(showingFeed.updatedAt))
+                                    }}</p>
+                                </div>
                                 <div class="wrap-icon">
                                     <div v-if="showingFeed.audience === 'AllFriend'">
                                         <font-awesome-icon icon="fa-solid fa-user-group" />
@@ -329,8 +372,6 @@
                                 </div>
                             </div>
                         </div>
-
-                        <p class="text-gray-600">{{ formatDate(new Date(showingFeed.updatedAt)) }}</p>
                     </div>
 
                     <p class="mb-3">{{ showingFeed.content }}</p>
@@ -469,17 +510,22 @@ export default {
             this.user = JSON.parse(userString);
         }
         this.getFeed();
+        this.getListOfFriends();
     },
     computed: {
         filteredFriends() {
             const normalizedSearchText = this.searchText.toLowerCase();
             return this.friends.filter(friend =>
-                friend.name.toLowerCase().includes(normalizedSearchText)
+                friend.userName.toLowerCase().includes(normalizedSearchText)
             );
         },
     },
     data() {
         return {
+            hoveredItem: '',
+            selectedItem: '',
+            popoverRight: 0,
+            popoverTop: 0,
             posts: [],
             newComment: { /**senderPhoneNumber: '',**/ file: null, content: '' },
             user: null,
@@ -493,24 +539,15 @@ export default {
             showVisibleInfoFeed: false,
             showingFeed: null,
             listFriends: [],
+            friends: [],
             allChosen: [
                 'Bạn bè',
                 'Bạn bè ngoại trừ',
                 'Một số bạn bè',
                 'Chỉ mình tôi'
             ],
-            feeds : [],
+            feeds: [],
             comments: [],
-            friends: [
-                { phoneNumber: '0968322444', name: "Võ Giang Nam", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
-                { phoneNumber: '0965556652', name: "Từ Thanh Thoại", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
-                { phoneNumber: '0968322666', name: "Kẻ Áo Đen", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
-                { phoneNumber: '0965556654', name: "Kẻ Áo Vàng", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
-                { phoneNumber: '0965556655', name: "Kẻ Áo Xanh", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
-                { phoneNumber: '0965556656', name: "Kẻ Áo Đỏ", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
-                { phoneNumber: '0965556657', name: "Kẻ Áo Tím", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
-                { phoneNumber: '0965556658', name: "Kẻ Áo Cam", avatar: 'https://i.imgur.com/gEKsypv.jpg' }
-            ],
             searchText: "",
         }
     },
@@ -520,6 +557,46 @@ export default {
     },
 
     methods: {
+        selectItem(item) {
+            this.selectedItem = item;
+        },
+        clearSelectedItem() {
+            this.selectedItem = '';
+        },
+        isSelected(item) {
+            return this.selectedItem === item;
+        },
+        togglePopover(item) {
+            this.selectItem(item);
+        },
+        hidePopover() {
+            this.clearSelectedItem();
+        },
+        handleClickAction(id, event) {
+            this.selectedItem = id;
+            const rect = event.target.getBoundingClientRect();
+            const x = rect.left;
+            const y = rect.top;
+            this.popoverRight = x - 654  + 'px';
+            this.popoverTop = y - 2 + 'px';
+            event.stopPropagation();
+        },
+        formatTimeDifference(date) {
+            const now = new Date();
+            const timeDiff = now - date;
+
+            const minutes = Math.floor(timeDiff / (1000 * 60));
+            const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+            const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+
+            if (minutes < 60) {
+                return `${minutes} phút trước`;
+            } else if (hours < 24) {
+                return `${hours} giờ trước`;
+            } else {
+                return `${days} ngày trước`;
+            }
+        },
         handleMouseOver(event) {
             event.target.classList.add("hovered");
         },
@@ -536,7 +613,7 @@ export default {
                 }**/)
                 .then(response => {
                     //console.log("Response status: " + response.status)
-                    response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))   
+                    response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))
                     this.feeds = response.data.getInfoPostResponse
                 })
                 .catch(error => {
@@ -604,6 +681,7 @@ export default {
         },
         showChooseTag() {
             this.hasTagFriend = true;
+            this.friends = this.listFriends;
             this.showPostVisible = false;
         },
         closeChooseTagDialog() {
@@ -1289,5 +1367,51 @@ export default {
 .file-comment {
     max-height: 210px;
     max-width: 210px;
+}
+
+.action {
+    margin-right: 20px;
+
+    .popover-action-container {
+
+
+        .popoverAction {
+            display: inline-block;
+            position: absolute;
+            border-radius: 4px;
+            z-index: 9999;
+            box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+            border: 1px solid #d6dbe1;
+
+
+            .popover-body {
+                position: absolute;
+                background-color: #fff;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+                border-radius: 8px;
+                height: 86px;
+                width: 180px;
+                justify-content: space-between;
+
+                .separator {
+                    height: 1px;
+                    background: #d6dbe1;
+                    margin: 4px;
+                }
+
+                .popover-item {
+                    height: 36px;
+                    padding-left: 14px;
+                    padding-top: 6px;
+                    padding-bottom: 2px;
+                    cursor: pointer;
+                }
+            }
+        }
+    }
+}
+
+.hoveredFilter {
+    background-color: #d6dbe1;
 }
 </style>
