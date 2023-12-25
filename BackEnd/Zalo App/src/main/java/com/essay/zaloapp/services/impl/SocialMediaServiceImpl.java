@@ -21,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -79,7 +78,7 @@ public class SocialMediaServiceImpl implements SocialMediaService {
             if (createNewPostRequest.getFiles() != null && !createNewPostRequest.getFiles()[0].isEmpty()) {
                 resourceList = Arrays.stream(createNewPostRequest.getFiles()).map(p -> new Resource(fileStorageService.storeFile(p), p.getContentType().contains("video") ? ResourceType.Video : ResourceType.Image )).collect(Collectors.toList());
             }
-            Post post = new Post(new Date(new Date().getTime() + 7 * 60 * 60*1000), new Date(new Date().getTime() + 7 * 60 * 60*1000), createNewPostRequest.getContent(),createNewPostRequest.getAudience() != null ? Audience.findByName(createNewPostRequest.getAudience()) : Audience.AllFriend,user, resourceList);
+            Post post = new Post(new Date(new Date().getTime() + 7 * 60 * 60*1000), new Date(new Date().getTime() + 7 * 60 * 60*1000), createNewPostRequest.getContent(),createNewPostRequest.getAudience() != null ? Audience.findByName(createNewPostRequest.getAudience()) : Audience.Public,user, resourceList);
             if (createNewPostRequest.getUserTagIDList() != null && !createNewPostRequest.getUserTagIDList().isEmpty()) {
                 for (String userPhoneNumber : createNewPostRequest.getUserTagIDList()){
                     if (!userRepository.existsUserByPhoneNumber(userPhoneNumber))
@@ -147,36 +146,48 @@ public class SocialMediaServiceImpl implements SocialMediaService {
         }
     }
 
+    // Nhận tất cả bài viết của người dùng
     @Override
     public GetAllInfoPostUser getAllPostUser(Long userId){
         try{
-            return new GetAllInfoPostUser("Thành công!",postRepository.findByUser_Id(userId).stream().map(p -> {
-                GetInfoPostResponse getInfoPostResponse = modelMapper.map(p, GetInfoPostResponse.class);
-                System.out.println(getInfoPostResponse.toString());
-                getInfoPostResponse.setPostFather( p.getPostTop() != null ? modelMapper.map(p.getPostTop(), GetInfoPostResponse.class) : null);
-                List <User> userLikeList = new ArrayList<>();
-                List <User> userTagList = new ArrayList<>();
-                Map<User, PostUserType> postUserTypeMap = new HashMap<>();
-                for(PostUser postUser : p.getPostUserList()){
-                    postUserTypeMap.put(postUser.getUser(),postUser.getPostUserType());
-                }
-                for (Map.Entry<User,PostUserType> key: postUserTypeMap.entrySet()){
-                    if(key.getValue().equals(PostUserType.UserLike)) userLikeList.add(key.getKey());
-                    else if (key.getValue().equals(PostUserType.TagUser)) userTagList.add(key.getKey());
-                }
-                getInfoPostResponse.setUserLikeList(userLikeList.stream().map(user -> new InfoUser(user.getFullName(), (user.getImageAvatarUrl() != null && !user.getImageAvatarUrl().isEmpty()) ? "http://localhost:8181/media/getImage/".concat(user.getImageAvatarUrl()) : null, user.getPhoneNumber())).collect(Collectors.toList()));
-                getInfoPostResponse.setUserTagList(userTagList.stream().map(user -> new InfoUser(user.getFullName(), (user.getImageAvatarUrl() != null && !user.getImageAvatarUrl().isEmpty()) ? "http://localhost:8181/media/getImage/".concat(user.getImageAvatarUrl()) : null, user.getPhoneNumber())).collect(Collectors.toList()));
-                getInfoPostResponse.setUserShareList(p.getPostTopList().stream().map(postUser -> new InfoUser(postUser.getUser().getFullName(),postUser.getUser().getImageAvatarUrl(), postUser.getUser().getPhoneNumber())).collect(Collectors.toList()));
-                getInfoPostResponse.setFiles(p.getResourceList().stream().map(file -> "http://localhost:8181/media/" + (file.getResourceType().equals(ResourceType.Video) ? "getVideo/" : "getImage/")  + file.getResourceValue()).collect(Collectors.toList()));
-                getInfoPostResponse.setCreatedAt(formatDate.formatDate(p.getCreatedAt()));
-                getInfoPostResponse.setUpdatedAt(formatDate.formatDate(p.getUpdatedAt()));
-                getInfoPostResponse.setUserPost(new InfoUser(p.getUser().getFullName(), "http://localhost:8181/media/getImage/" + p.getUser().getImageAvatarUrl(), p.getUser().getPhoneNumber()));
-                return getInfoPostResponse;
-            }).collect(Collectors.toList()));
+            return new GetAllInfoPostUser("Thành công!",mapPostEntityToResponse(postRepository.findByUser_Id(userId)));
         } catch(Exception e){
             System.out.println(e.toString());
             return new GetAllInfoPostUser("Có lỗi xảy ra trong quá trình thực thi. Vui lòng thử lại!", null);
         }
+    }
+
+    // Nhận bảng tin của người dùng
+    @Override
+    public GetAllInfoPostUser getNewFeedUser(Long userId){
+        return new GetAllInfoPostUser("Thành công!", mapPostEntityToResponse(postRepository.findAll()));
+    }
+
+    @Override
+    public List<GetInfoPostResponse> mapPostEntityToResponse(List<Post> postList){
+        return postList.stream().map(p -> {
+            GetInfoPostResponse getInfoPostResponse = modelMapper.map(p, GetInfoPostResponse.class);
+            System.out.println(getInfoPostResponse.toString());
+            getInfoPostResponse.setPostFather( p.getPostTop() != null ? modelMapper.map(p.getPostTop(), GetInfoPostResponse.class) : null);
+            List <User> userLikeList = new ArrayList<>();
+            List <User> userTagList = new ArrayList<>();
+            Map<User, PostUserType> postUserTypeMap = new HashMap<>();
+            for(PostUser postUser : p.getPostUserList()){
+                postUserTypeMap.put(postUser.getUser(),postUser.getPostUserType());
+            }
+            for (Map.Entry<User,PostUserType> key: postUserTypeMap.entrySet()){
+                if(key.getValue().equals(PostUserType.UserLike)) userLikeList.add(key.getKey());
+                else if (key.getValue().equals(PostUserType.TagUser)) userTagList.add(key.getKey());
+            }
+            getInfoPostResponse.setUserLikeList(userLikeList.stream().map(user -> new InfoUser(user.getFullName(), (user.getImageAvatarUrl() != null && !user.getImageAvatarUrl().isEmpty()) ? "http://localhost:8181/media/getImage/".concat(user.getImageAvatarUrl()) : null, user.getPhoneNumber())).collect(Collectors.toList()));
+            getInfoPostResponse.setUserTagList(userTagList.stream().map(user -> new InfoUser(user.getFullName(), (user.getImageAvatarUrl() != null && !user.getImageAvatarUrl().isEmpty()) ? "http://localhost:8181/media/getImage/".concat(user.getImageAvatarUrl()) : null, user.getPhoneNumber())).collect(Collectors.toList()));
+            getInfoPostResponse.setUserShareList(p.getPostTopList().stream().map(postUser -> new InfoUser(postUser.getUser().getFullName(),postUser.getUser().getImageAvatarUrl(), postUser.getUser().getPhoneNumber())).collect(Collectors.toList()));
+            getInfoPostResponse.setFiles(p.getResourceList().stream().map(file -> "http://localhost:8181/media/" + (file.getResourceType().equals(ResourceType.Video) ? "getVideo/" : "getImage/")  + file.getResourceValue()).collect(Collectors.toList()));
+            getInfoPostResponse.setCreatedAt(formatDate.formatDate(p.getCreatedAt()));
+            getInfoPostResponse.setUpdatedAt(formatDate.formatDate(p.getUpdatedAt()));
+            getInfoPostResponse.setUserPost(new InfoUser(p.getUser().getFullName(), "http://localhost:8181/media/getImage/" + p.getUser().getImageAvatarUrl(), p.getUser().getPhoneNumber()));
+            return getInfoPostResponse;
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -368,6 +379,7 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     // Chưa viết
     public Boolean isUserAuthorizeInteractPost(Post post, User user){
         if (!user.getIsConfirmed() || user.getIsLocked()) return false;
+        if (post.getAudienceValue().equals(Audience.Public)) return true;
         if (!post.getUser().equals(user)) {
             if (!friendsRepository.existsFriendsByFriendsId(new FriendsId(Math.min(post.getUser().getId(), user.getId()), Math.max(post.getUser().getId(), user.getId()))))
                 return false;

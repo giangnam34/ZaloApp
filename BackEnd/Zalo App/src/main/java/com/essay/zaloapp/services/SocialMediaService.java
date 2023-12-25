@@ -1,9 +1,11 @@
 package com.essay.zaloapp.services;
 
 import com.essay.zaloapp.domain.enums.Audience;
+import com.essay.zaloapp.domain.models.Post;
 import com.essay.zaloapp.domain.models.User;
 import com.essay.zaloapp.domain.payload.request.SocialMedia.CreateNewPostRequest;
 import com.essay.zaloapp.domain.payload.response.SocialMedia.Comment.InfoComment;
+import com.essay.zaloapp.domain.payload.response.SocialMedia.GetInfoPostResponse;
 import com.essay.zaloapp.services.impl.SocialMediaServiceImpl;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,6 +21,10 @@ public interface SocialMediaService {
     String updatePost(Long userId, Long postId, CreateNewPostRequest createNewPostRequest);
 
     SocialMediaServiceImpl.GetAllInfoPostUser getAllPostUser(Long userId);
+
+    SocialMediaServiceImpl.GetAllInfoPostUser getNewFeedUser(Long userId);
+
+    List<GetInfoPostResponse> mapPostEntityToResponse(List<Post> postList);
 
     String likePost(Long postId, Long userId);
 

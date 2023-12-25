@@ -36,5 +36,6 @@ build/
 /user/data/photographer/upload/
 /user/data/photographer/tmp/
 /user/setup/libreoffice/opt/libreoffice6.4/program/
-/appmap.yml
+/src/main/resources/
 /tmp
+/appmap.yml

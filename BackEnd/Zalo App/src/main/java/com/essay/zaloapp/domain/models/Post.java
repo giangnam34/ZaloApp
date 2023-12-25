@@ -63,8 +63,8 @@ public class Post {
         this.resourceList = resourceList;
     }
 
-    @PreUpdate
-    public void updateTime(){
-        this.updatedAt = new Date(new Date().getTime() + 7*60*60*1000);
-    }
+//    @PreUpdate
+//    public void updateTime(){
+//        this.updatedAt = new Date(new Date().getTime() + 7*60*60*1000);
+//    }
 }

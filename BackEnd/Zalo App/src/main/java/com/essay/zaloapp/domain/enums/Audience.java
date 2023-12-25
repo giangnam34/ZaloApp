@@ -2,6 +2,8 @@ package com.essay.zaloapp.domain.enums;
 
 public enum Audience {
 
+    // Public
+    Public,
     // Tất cả bạn bè
     AllFriend,
 
