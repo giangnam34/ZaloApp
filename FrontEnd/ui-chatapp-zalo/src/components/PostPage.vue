@@ -75,7 +75,7 @@
                                                         :style="{ right: popoverRight, top: popoverTop }">
                                                         <div class="popover-body">
                                                             <div class="popover-item"
-                                                                @click="showFoundUserDialog(showingFeed.user_id)">
+                                                                @click="deletePost(clickedFeed.id)">
                                                                 <div>
                                                                     Xóa bài viết
                                                                 </div>
@@ -217,7 +217,7 @@
                                                             :style="{ right: popoverRight, top: popoverTop }">
                                                             <div class="popover-body">
                                                                 <div class="popover-item"
-                                                                    @click="showFoundUserDialog(showingFeed.user_id)">
+                                                                    @click="deletePost(clickedFeed.id)">
                                                                     <div>
                                                                         Xóa bài viết
                                                                     </div>
@@ -672,7 +672,7 @@
                                                 style=" right: 252px; top: 40px; ">
                                                 <div class="popover-body">
                                                     <div class="popover-item"
-                                                        @click="showFoundUserDialog(showingFeed.user_id)">
+                                                        @click="deletePost(clickedFeed.id)">
                                                         <div>
                                                             Xóa bài viết
                                                         </div>
@@ -1246,16 +1246,24 @@ export default {
         },
         deletePost(postId) {
             console.log("Gọi hàm: deletePost");
-            console.log("Post id:", postId);
+            console.log("Post id:" , postId);
             //this.posts = this.posts.filter(post => post.id !== id)
             axios
                 .delete(`/social-media/delete-post/${postId}`)
                 .then(response => {
                     //console.log("Response status: " + response.status)
                     //response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))
-                    if (response.status === 200)
+                    if (response.status === 200){
                         this.toast.success("Xóa bài viết thành công!", 1500);
-                    else
+                        if(this.showPopupVisible){
+                            this.showPopupVisible = false;
+                        }
+                        if(this.showVisibleInfoFeed){
+                            this.showVisibleInfoFeed = false;
+                        }
+                        this.fetchFeed();
+                    }
+                    else 
                         this.toast.error("Có lỗi xảy ra, vui lòng thử lại!", 1500);
                 })
                 .catch(error => {
@@ -1772,6 +1780,7 @@ export default {
                         this.toast.success(response.data, { timeout: 1500 });
                         this.clearContentComment();
                         this.fetchComment(postId);
+                        this.fetchFeed();
                         const commentContainer = document.querySelector('#dialog-content');
                         console.log('scroll element', commentContainer)
                         console.log('scroll element', commentContainer.scrollHeight)
