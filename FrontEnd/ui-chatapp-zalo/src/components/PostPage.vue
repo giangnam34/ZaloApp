@@ -64,7 +64,7 @@
                                     <div style="margin-left: 347px;" id="more-icon">
                                         <div class="action cursor-pointer">
                                             <div class="popover-action-container" @click:outside="hidePopover">
-                                                <a id="ellipsis-icon" @click="(event) => handleClickAction(event, feed)">
+                                                <a v-if="feed.userPost.phoneNumber === user.phoneNumber" id="ellipsis-icon" @click="(event) => handleClickAction(event, feed)">
                                                     <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
                                                 </a>
                                                 <div class="popoverAction"
@@ -72,7 +72,7 @@
                                                     :style="{ right: popoverRight, top: popoverTop }">
                                                     <div class="popover-body">
                                                         <div class="popover-item"
-                                                            @click="showFoundUserDialog(feed.user_id)">
+                                                            @click="deletePost(clickedFeed.id)">
                                                             <div>
                                                                 Xóa bài viết
                                                             </div>
@@ -439,7 +439,7 @@
                 </h2>
             </v-card-title>
             <hr style="border: none; border-bottom: 1px solid #ccc;">
-            <v-card-text class="dialog-content py-0 px-0 overflow-auto">
+            <v-card-text id="dialog-content" class="dialog-content py-0 px-0 overflow-auto">
                 <div class="bg-white p-4">
                     <div class="mb-6 flex items-center justify-between">
                         <div class="flex items-center space-x-6">
@@ -554,7 +554,7 @@
                     <hr style="border: none; border-bottom: 1px solid #ccc;">
                 </div>
                 <div class="comment-container mr-3 ml-3">
-                    <div v-for="comment in comments" v-bind:key="comment.id">
+                    <div v-for="comment in comments.slice().reverse()" v-bind:key="comment.id">
                         <div class="mb-2 items-center justify-between">
                             <div class="flex items-center">
                                 <img :src="comment.userComment.imageAvatar"
@@ -587,10 +587,12 @@
                             </div>
                             <div class="ml-15">
                                 <div class="comment-image">
-                                    <img class="upload-file" v-if="checkIsImageUrl(comment.contentMedia)"
-                                        :src="getUrl(comment.contentMedia)" alt="Selected Image" />
-                                    <video v-else controls width="300" class="upload-file">
-                                        <source :src="getUrl(comment.contentMedia)" type="video/mp4" />
+                                    <img class="upload-file"
+                                        v-if="comment.contentMedia !== null && checkIsImageUrl(comment.contentMedia)"
+                                        :src="comment.contentMedia" alt="Selected Image" />
+                                    <video v-else-if="comment.contentMedia !== null" controls width="300"
+                                        class="upload-file">
+                                        <source :src="comment.contentMedia" type="video/mp4" />
                                         Trình duyệt không hỗ trợ định dạng này
                                     </video>
                                     <!-- <img class="file-comment rounded-lg" :src="comment.contentMedia" /> -->
@@ -737,7 +739,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="profile-action" @click="createPost">
+                <div class="profile-action" @click="updatePost(updateFeed)">
                     <div class="mx-4 flex items-center justify-center cursor-pointer bg-blue-400 rounded-lg h-8">
                         Lưu bài viết
                     </div>
@@ -925,10 +927,10 @@ export default {
             const rect = event.target.getBoundingClientRect();
             const x = rect.left;
             const y = rect.top;
-            this.popoverRight = x - 654 + 'px';
+            this.popoverRight = x - 680 + 'px';
             this.popoverTop = y - 2 + 'px';
             this.clickedFeed = feed;
-            this.showPopupVisible = true;
+            this.showPopupVisible = !this.showPopupVisible;
             event.stopPropagation();
         },
         formatTimeDifference(date) {
@@ -1057,9 +1059,24 @@ export default {
                     console.log('error', error)
                 })
         },
-        deletePost(id) {
+        deletePost(postId) {
             console.log("Gọi hàm: deletePost");
-            this.posts = this.posts.filter(post => post.id !== id)
+            console.log("Post id:" , postId);
+            //this.posts = this.posts.filter(post => post.id !== id)
+            axios
+                .delete(`/social-media/delete-post/${postId}`)
+                .then(response => {
+                    //console.log("Response status: " + response.status)
+                    //response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))
+                    if (response.status === 200)
+                        this.toast.success("Xóa bài viết thành công!", 1500);
+                    else 
+                        this.toast.error("Có lỗi xảy ra, vui lòng thử lại!", 1500);
+                })
+                .catch(error => {
+                    console.log('error', error)
+                    this.toast.error("Có lỗi xảy ra, vui lòng thử lại!", 1500);
+                })
         },
         showPostOption() {
             console.log("Gọi hàm: showPostOption");
@@ -1126,10 +1143,11 @@ export default {
         //         console.log("Hàm isImage lỗi rồi");
         //     }
         // },
-        checkIsImageUrl(mediaUrl){
+        checkIsImageUrl(mediaUrl) {
             try {
                 console.log("Gọi hàm: checkIsImageUrl");
-                console.log("Media url: " , mediaUrl);
+                console.log("Media url: ", mediaUrl);
+                console.log("Là ảnh hay không: ", mediaUrl.includes("/media/getImage/"));
                 return mediaUrl.includes("/media/getImage/");
             } catch (error) {
                 console.log("Hàm isImage lỗi rồi");
@@ -1339,6 +1357,72 @@ export default {
                 }
             }
         },
+        async updatePost(post){
+            console.log("Gọi hàm: updatePost");
+            try {
+                //console.log("PrivateSetting: ", this.privateSetting);
+                console.log("UpdatePost: ", post);
+                if (this.privateSetting === 'Công khai') {
+                    this.newFeed.audience = 'Public'
+                }
+                else if (this.privateSetting === 'Bạn bè') {
+                    this.newFeed.audience = 'AllFriend'
+                } else if (this.privateSetting === 'Chỉ mình tôi') {
+                    this.newFeed.audience = 'OnlyMe'
+                } else if (this.privateSetting === 'Một số bạn bè') {
+                    this.newFeed.audience = 'SomeOneCanSee'
+                } else {
+                    this.newFeed.audience = 'AllExceptSomeOne'
+                }
+
+                const listFriendTag = [];
+
+                for (let friendTagKey in this.newFeed.friendTag) {
+                    if (Object.prototype.hasOwnProperty.call(this.newFeed.friendTag, friendTagKey)) {
+                        const friendTagValue = this.newFeed.friendTag[friendTagKey];
+                        listFriendTag.push(friendTagValue.phoneNumber);
+                    }
+                }
+
+                // console.log(listFriendTag)
+
+                // console.log(typeof (listFriendTag))
+
+                const formData = new FormData();
+
+                formData.append('content', post.content);
+                formData.append('audience', this.newFeed.audience);
+                formData.append('userTagIDList', listFriendTag);
+                // console.log(this.newFeed.files)
+
+                for (let i = 0; i < post.files.length; i++) {
+                    formData.append('files', post.files[i]);
+                }
+
+                const response = await axios.post(`social-media/update-post/${post.id}`, formData);
+
+                if (response.status === 200) {
+                    this.showPostVisible = false;
+                    this.newFeed.content = '';
+                    this.fetchFeed();
+                    this.toast.success(response.data, { timeout: 3000 });
+                } else {
+                    this.toast.error(response.data, { timeout: 3000 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 3000 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 3000 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 3000 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 3000 });
+                }
+            }
+        },
         fetchAvatar() {
             console.log("Gọi hàm: fetchAvatar()");
             axios.get(`users/imageAvatar`, {
@@ -1499,12 +1583,17 @@ export default {
             axios.post(`social-media/create-new-comment`, formData)
                 .then(response => {
                     if (response.status === 200) {
-                        console.log(response.data);
-                        // if (response.data === 'Thích bình luận thành công!')
-                        //     comment.isUserLike = true;
-                        // else
-                        //     comment.isUserLike = false;
+                        this.toast.success(response.data, { timeout: 1500 });
+                        this.clearContentComment();
+                        this.fetchComment(postId);
+                        const commentContainer = document.querySelector('#dialog-content');
+                        console.log('scroll element', commentContainer)
+                        console.log('scroll element', commentContainer.scrollHeight)
+                        commentContainer.scrollTo(0, 500)
                     }
+                    else
+                        this.toast.error(response.data, { timeout: 1500 });
+
 
                 })
                 .catch(error => {
@@ -1513,7 +1602,12 @@ export default {
 
 
         },
-        async getListOfFriends() {
+        clearContentComment() {
+            this.newComment.content = '';
+            this.newComment.file = null;
+
+        }
+        , async getListOfFriends() {
             console.log("Gọi hàm: getListOfFriends");
             try {
                 const response = await axios.get(`users/getAllFriendUser`, {
@@ -1544,8 +1638,7 @@ export default {
             }
         },
         openUpdatePost(clickedFeed) {
-            // Your implementation here
-            console.log(clickedFeed)
+            //console.log(clickedFeed)
             this.showPopupVisible = false;
             this.showUpdatePostVisible = true;
             this.updateFeed = clickedFeed;
@@ -2062,6 +2155,7 @@ export default {
 .like-button-comment-active {
     color: blue;
 }
+
 .action {
     margin-right: 20px;
 

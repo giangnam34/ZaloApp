@@ -14,6 +14,9 @@ import java.util.List;
 @ToString
 public class CreateNewPostRequest {
 
+    // Id bài viết gốc, dùng để chia sẻ bài viết
+    private Long postTopId;
+
     // Nội dung bài viết
     private String content;
 

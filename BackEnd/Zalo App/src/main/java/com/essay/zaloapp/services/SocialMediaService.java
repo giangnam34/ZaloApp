@@ -20,11 +20,15 @@ public interface SocialMediaService {
 
     String updatePost(Long userId, Long postId, CreateNewPostRequest createNewPostRequest);
 
+    String deletePost(Long userId, Long postId);
+
     SocialMediaServiceImpl.GetAllInfoPostUser getAllPostUser(Long userId);
 
     SocialMediaServiceImpl.GetAllInfoPostUser getNewFeedUser(Long userId);
 
-    List<GetInfoPostResponse> mapPostEntityToResponse(List<Post> postList);
+    List<GetInfoPostResponse> mapListPostEntityToResponse(List<Post> postList);
+
+    GetInfoPostResponse mapPostEntityToResponse(Post p);
 
     String likePost(Long postId, Long userId);
 

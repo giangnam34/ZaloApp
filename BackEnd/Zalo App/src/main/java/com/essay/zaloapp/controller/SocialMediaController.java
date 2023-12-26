@@ -54,6 +54,12 @@ public class SocialMediaController {
         return result.equals("Chỉnh sửa bài viết thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
+    @DeleteMapping("/delete-post/{postId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> deletePost(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long postId){
+        String result = socialMediaService.deletePost(userPrincipal.getId(), postId);
+        return result.equals("Xóa bài viết thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
+    }
     // Xem tất cả bài viết đã đăng -- Checked
     @GetMapping(value = "/get-all-info-post", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('USER')")
