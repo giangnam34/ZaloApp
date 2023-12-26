@@ -63,21 +63,22 @@
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div style="margin-left: 347px;" id="more-icon">
-                                        <div class="action cursor-pointer">
-                                            <div class="popover-action-container" @click:outside="hidePopover">
-                                                <a v-if="feed.userPost.phoneNumber === user.phoneNumber" id="ellipsis-icon" @click="(event) => handleClickAction(event, feed)">
-                                                    <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
-                                                </a>
-                                                <div class="popoverAction"
-                                                    v-show="showPopupVisible && clickedFeed.userPost.phoneNumber === user.phoneNumber"
-                                                    :style="{ right: popoverRight, top: popoverTop }">
-                                                    <div class="popover-body">
-                                                        <div class="popover-item"
-                                                            @click="deletePost(clickedFeed.id)">
-                                                            <div>
-                                                                Xóa bài viết
+                                        <div style="margin-left: 307px;" id="more-icon">
+                                            <div class="action cursor-pointer">
+                                                <div class="popover-action-container" @click:outside="hidePopover">
+                                                    <a id="ellipsis-icon"
+                                                        @click="(event) => handleClickAction(event, feed)">
+                                                        <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
+                                                    </a>
+                                                    <div class="popoverAction"
+                                                        v-show="showPopupVisible && !showVisibleInfoFeed && clickedFeed.userPost.phoneNumber === user.phoneNumber"
+                                                        :style="{ right: popoverRight, top: popoverTop }">
+                                                        <div class="popover-body">
+                                                            <div class="popover-item"
+                                                                @click="showFoundUserDialog(showingFeed.user_id)">
+                                                                <div>
+                                                                    Xóa bài viết
+                                                                </div>
                                                             </div>
                                                             <div class="popover-item" @click="openUpdatePost(clickedFeed)">
                                                                 <div>
@@ -541,7 +542,7 @@
                                                            justify-content: space-between;
                                                            align-items: center;
                                                            padding: 8px;">
-                                        <span class="color-blue">{{ friend.name }}
+                                        <span class="color-blue">{{ friend.userName }}
                                             <font-awesome-icon icon="fa-solid fa-x" /></span>
                                     </div>
                                 </div>
@@ -710,8 +711,7 @@
                             <swiper-slide v-for="(image, index) in showingFeed.files" :key="index">
                                 <div class="image-container-feed cursor-pointer"
                                     @click="openFullImage(showingFeed.files, index)">
-                                    <img v-if="isImage(image)" :src="image"
-                                        class="w-full h-[500px] rounded-lg" />
+                                    <img v-if="isImage(image)" :src="image" class="w-full h-[500px] rounded-lg" />
                                     <video v-else controls width="300" class="w-full h-[500px] rounded-lg">
                                         <source :src="image" type="video/mp4" />
                                         Your browser does not support the video tag.
@@ -809,8 +809,8 @@
                                     <!-- div table-option-comment -->
                                     <div class="table-option-comment rounded-lg bg-gray-200 p-2"
                                         style="position: absolute; top: 100%; left: 0px; margin-left: 10px; min-width: 100px; display: none">
-                                        <p @click = "updateComment(comment.idComment)">Chỉnh sửa</p>
-                                        <p @click = "deleteComment(comment.idComment)">Xóa</p>
+                                        <p @click="updateComment(comment.idComment)">Chỉnh sửa</p>
+                                        <p @click="deleteComment(comment.idComment)">Xóa</p>
                                     </div>
 
                                 </div>
@@ -1189,11 +1189,11 @@ export default {
                 }
             }
         },
-        updateComment(commentId){
+        updateComment(commentId) {
             console.log("Gọi hàm updateComment");
             console.log("CommentId: ", commentId);
         },
-        deleteComment(commentId){
+        deleteComment(commentId) {
             console.log("Gọi hàm deleteComment");
             console.log("commenId: ", commentId);
         },
@@ -1306,7 +1306,7 @@ export default {
         },
         deletePost(postId) {
             console.log("Gọi hàm: deletePost");
-            console.log("Post id:" , postId);
+            console.log("Post id:", postId);
             //this.posts = this.posts.filter(post => post.id !== id)
             axios
                 .delete(`/social-media/delete-post/${postId}`)
@@ -1315,7 +1315,7 @@ export default {
                     //response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))
                     if (response.status === 200)
                         this.toast.success("Xóa bài viết thành công!", 1500);
-                    else 
+                    else
                         this.toast.error("Có lỗi xảy ra, vui lòng thử lại!", 1500);
                 })
                 .catch(error => {
@@ -1602,7 +1602,7 @@ export default {
                 }
             }
         },
-        async updatePost(post){
+        async updatePost(post) {
             console.log("Gọi hàm: updatePost");
             try {
                 //console.log("PrivateSetting: ", this.privateSetting);
@@ -1911,15 +1911,16 @@ export default {
 </script>
 
 <style lang = "scss" scoped>
-
-.table-option-comment{
+.table-option-comment {
     p {
         cursor: pointer;
     }
-    p:hover{
+
+    p:hover {
         background-color: #ccc;
     }
 }
+
 .post-container {
     display: flex;
     flex-direction: column;

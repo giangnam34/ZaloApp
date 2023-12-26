@@ -44,7 +44,7 @@
 <script>
 
 import axios from 'axios';
-//import { useToast } from "vue-toastification";
+import { useToast } from "vue-toastification";
 import OTPForgotPassword from './OTPForgotPassword.vue';
 
 export default {
@@ -62,6 +62,11 @@ export default {
     },
     components: {
         OTPForgotPassword
+    },
+    setup() {
+        // Get toast interface
+        const toast = useToast();
+        return { toast}
     },
     methods: {
         togglePasswordVisibility() {
@@ -131,12 +136,12 @@ export default {
                 // Kiểm tra trạng thái phản hồi
                 if (response.status === 200) {
 
-                    this.toast.info(response.data.msg, { timeout: 3000 });
+                    this.toast.info(response.data, { timeout: 3000 });
 
                 } else {
                     console.error('Xác thực không thành công:', response.statusText);
                     this.isError = true;
-                    this.validationError = response.data.msg;
+                    this.validationError = response.data;
                 }
             } catch (error) {
                 if (error.response) {
