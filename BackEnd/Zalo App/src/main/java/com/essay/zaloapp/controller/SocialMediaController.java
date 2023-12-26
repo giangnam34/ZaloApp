@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -90,8 +91,33 @@ public class SocialMediaController {
     @PutMapping(value = "/update-comment", produces = MediaType.ALL_VALUE)
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> updateComment(@AuthenticationPrincipal UserPrincipal userPrincipal, @ModelAttribute UpdateCommentRequest updateCommentRequest){
-        if (updateCommentRequest.getCommentId() == null) return ResponseEntity.badRequest().body("Comment id không được phép null");
-        String result = socialMediaService.updateComment(userPrincipal.getId(), updateCommentRequest.getCommentId(),updateCommentRequest.getContent(), updateCommentRequest.getFile());
+        if (updateCommentRequest.getCommentId() == null) {
+            return ResponseEntity.badRequest().body("Comment id không được phép null");
+        }
+
+        String result;
+
+        if (updateCommentRequest.getFile() instanceof MultipartFile) {
+            // Handle MultipartFile case
+            result = socialMediaService.updateComment(
+                    userPrincipal.getId(),
+                    updateCommentRequest.getCommentId(),
+                    updateCommentRequest.getContent(),
+                    (MultipartFile) updateCommentRequest.getFile()
+            );
+        } else if (updateCommentRequest.getFile() instanceof String) {
+            // Handle String (URL) case
+            result = socialMediaService.updateComment(
+                    userPrincipal.getId(),
+                    updateCommentRequest.getCommentId(),
+                    updateCommentRequest.getContent(),
+                    (String) updateCommentRequest.getFile()
+            );
+        } else {
+            // Handle unsupported case or return an error
+            return ResponseEntity.badRequest().body("Unsupported file type");
+        }
+
         return result.equals("Cập nhật bình luận thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
     // Xóa bình luận -- Checked

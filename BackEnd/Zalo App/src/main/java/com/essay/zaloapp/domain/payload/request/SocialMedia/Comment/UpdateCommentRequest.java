@@ -14,5 +14,5 @@ public class UpdateCommentRequest {
 
     private String content;
 
-    private MultipartFile file;
+    private Object file;
 }

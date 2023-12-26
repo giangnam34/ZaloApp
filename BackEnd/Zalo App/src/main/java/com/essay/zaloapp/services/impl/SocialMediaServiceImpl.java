@@ -210,7 +210,10 @@ public class SocialMediaServiceImpl implements SocialMediaService {
         getInfoPostResponse.setCreatedAt(formatDate.formatDate(post.getCreatedAt()));
         getInfoPostResponse.setUpdatedAt(formatDate.formatDate(post.getUpdatedAt()));
         getInfoPostResponse.setUserPost(new InfoUser(post.getUser().getFullName(), "http://localhost:8181/media/getImage/" + post.getUser().getImageAvatarUrl(), post.getUser().getPhoneNumber()));
-        getInfoPostResponse.setCommentCount(Long.valueOf(post.getCommentList().size()));
+        long nonDeletedCommentCount = post.getCommentList().stream()
+                .filter(comment -> comment.getIsDelete() != true)
+                .count();
+        getInfoPostResponse.setCommentCount(Long.valueOf(nonDeletedCommentCount));
         return getInfoPostResponse;
     }
 
@@ -273,39 +276,50 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     }
 
     @Override
-    public String updateComment(Long userId, Long commentId, String content, MultipartFile file){
-        try{
-            Comment comment = new Comment();
+    public String updateComment(Long userId, Long commentId, String content, Object file) {
+        try {
+            Comment comment = null;
             if (commentId != null) {
-                comment = commentRepository.findById(commentId).isPresent() ? commentRepository.findById(commentId).get() : null;
-                if (comment == null) return "Bình luận không còn tồn tại hoặc người dùng không có quyền này!";
+                comment = commentRepository.findById(commentId).orElse(null);
+                if (comment == null) {
+                    return "Bình luận không còn tồn tại hoặc người dùng không có quyền này!";
+                }
             }
+
             User user = userRepository.findById(userId);
-            if (user == null) return "Người dùng không tồn tại!";
-            if ( (content == null || content.isEmpty()) && (file == null || file.isEmpty()) )
-                return "Không có nội dung để cập nhật!";
-            System.out.println(comment.getId());
-            if (isUserAuthorizeInteractComment(comment,user)){
-                if (content != null){
+            if (user == null) {
+                return "Người dùng không tồn tại!";
+            }
+
+            if ((content == null || content.isEmpty()) && (file == null || (file instanceof MultipartFile && ((MultipartFile) file).isEmpty()))) {
+                return "Không có nội dung hoặc file để cập nhật!";
+            }
+
+            if (isUserAuthorizeInteractComment(comment, user)) {
+                if (content != null) {
                     comment.setContentComment(content);
                 }
-                if (file != null){
-                    if (!file.isEmpty()) {
-                        String fileName = fileStorageService.storeFile(file);
-                        comment.setResource(new Resource(fileName, file.getContentType().contains("video") ? ResourceType.Video : ResourceType.Image));
-                    } else {
-                        if (comment.getResource() != null) {
-                            Resource resource = comment.getResource();
-                            comment.setResource(null);
+
+                if (file != null) {
+                    if (file instanceof MultipartFile) {
+                        // Handle MultipartFile case
+                        MultipartFile multipartFile = (MultipartFile) file;
+                        if (!multipartFile.isEmpty()) {
+                            String fileName = fileStorageService.storeFile(multipartFile);
+                            comment.setResource(new Resource(fileName, multipartFile.getContentType().contains("video") ? ResourceType.Video : ResourceType.Image));
+                        } else {
+                            if (comment.getResource() != null) {
+                                comment.setResource(null);
+                            }
                         }
                     }
                 }
-
                 commentRepository.save(comment);
                 return "Cập nhật bình luận thành công!";
             }
+
             return "Người dùng không có quyền thực hiện hành động này!";
-        } catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e.getMessage());
             return "Có lỗi xảy ra trong quá trình thực thi. Vui lòng thử lại!";
         }

@@ -74,8 +74,7 @@
                                                         v-show="showPopupVisible && !showVisibleInfoFeed && clickedFeed.userPost.phoneNumber === user.phoneNumber"
                                                         :style="{ right: popoverRight, top: popoverTop }">
                                                         <div class="popover-body">
-                                                            <div class="popover-item"
-                                                                @click="deletePost(clickedFeed.id)">
+                                                            <div class="popover-item" @click="deletePost(clickedFeed.id)">
                                                                 <div>
                                                                     Xóa bài viết
                                                                 </div>
@@ -671,8 +670,7 @@
                                                 v-show="showPopupVisible && clickedFeed.userPost.phoneNumber === user.phoneNumber"
                                                 style=" right: 252px; top: 40px; ">
                                                 <div class="popover-body">
-                                                    <div class="popover-item"
-                                                        @click="deletePost(clickedFeed.id)">
+                                                    <div class="popover-item" @click="deletePost(clickedFeed.id)">
                                                         <div>
                                                             Xóa bài viết
                                                         </div>
@@ -757,7 +755,7 @@
                             <div class="flex items-center space-x-2 ml-auto hover:underline cursor-pointer"
                                 @click="openFeedInfo(showingFeed)">
                                 <font-awesome-icon icon="fa-regular fa-comment" />
-                                <span class="text-gray-500 text-lg">{{ showingFeed.commentCount }} bình luận</span>
+                                <span class="text-gray-500 text-lg">{{ comments.length }} bình luận</span>
                             </div>
                         </div>
                     </div>
@@ -809,8 +807,8 @@
                                     <!-- div table-option-comment -->
                                     <div class="table-option-comment rounded-lg bg-gray-200 p-2"
                                         style="position: absolute; top: 100%; left: 0px; margin-left: 10px; min-width: 100px; display: none">
-                                        <p @click="updateComment(comment.idComment)">Chỉnh sửa</p>
-                                        <p @click="deleteComment(comment.idComment)">Xóa</p>
+                                        <p @click="chooseComment(comment)">Chỉnh sửa</p>
+                                        <p @click="deleteComment(comment.idComment, showingFeed.id)">Xóa</p>
                                     </div>
 
                                 </div>
@@ -818,14 +816,26 @@
                             </div>
                             <div class="ml-15">
                                 <div class="comment-image">
-                                    <img class="upload-file"
-                                        v-if="comment.contentMedia !== null && checkIsImageUrl(comment.contentMedia)"
-                                        :src="comment.contentMedia" alt="Selected Image" />
-                                    <video v-else-if="comment.contentMedia !== null" controls width="300"
-                                        class="upload-file">
-                                        <source :src="comment.contentMedia" type="video/mp4" />
-                                        Trình duyệt không hỗ trợ định dạng này
-                                    </video>
+                                    <div v-if="(typeof comment.contentMedia) === 'string'">
+                                        <img class="upload-file"
+                                            v-if="comment.contentMedia !== null && isImage(comment.contentMedia)"
+                                            :src="comment.contentMedia" alt="Selected Image" />
+                                        <video v-else-if="comment.contentMedia !== null" controls width="300"
+                                            class="upload-file">
+                                            <source :src="comment.contentMedia" type="video/mp4" />
+                                            Trình duyệt không hỗ trợ định dạng này
+                                        </video>
+                                    </div>
+                                    <div v-else>
+                                        <img class="upload-file"
+                                            v-if="comment.contentMedia !== null && isImage(comment.contentMedia)"
+                                            :src="getUrl(comment.contentMedia)" alt="Selected Image" />
+                                        <video v-else-if="comment.contentMedia !== null" controls width="300"
+                                            class="upload-file">
+                                            <source :src="getUrl(comment.contentMedia)" type="video/mp4" />
+                                            Trình duyệt không hỗ trợ định dạng này
+                                        </video>
+                                    </div>
                                     <!-- <img class="file-comment rounded-lg" :src="comment.contentMedia" /> -->
                                 </div>
                                 <p class="text-gray-600">{{ formatDate(comment.updatedAt) }}</p>
@@ -846,22 +856,55 @@
         </v-card>
         <v-card class="dialog-component-2">
             <v-card-title class="dialog-title flex items-center justify-between">
-                <div class="pr-2 flex-1">
-                    <textarea ref="comment" class="p-4 w-full bg-gray-100 rounded-lg border comment-input"
-                        placeholder="Viết bình luận..." v-model="newComment.content"></textarea>
-                </div>
-                <div class="flex flex-none items-center space-x-2">
-                    <input type="file" @change="handleFileChange" ref="fileInputComment" style="display: none;" />
-                    <v-btn v-if="newComment.file === null" @click="openFilePicker">Chọn file</v-btn>
-                    <div v-else class="cursor-pointer" @click="openFilePicker">
-                        <img class="upload-file-comment" v-if="isImage(newComment.file)" :src="getUrl(newComment.file)"
-                            alt="Selected Image" />
-                        <video v-else controls width="300" class="upload-file-comment">
-                            <source :src="getUrl(newComment.file)" type="video/mp4" />
-                            Trình duyệt không hỗ trợ định dạng này
-                        </video>
+                <div v-if="chosenUpdateComment === null">
+                    <div class="pr-2 flex-1">
+                        <textarea ref="comment" class="p-4 w-full bg-gray-100 rounded-lg border comment-input"
+                            placeholder="Viết bình luận..." v-model="newComment.content"></textarea>
                     </div>
-                    <v-btn @click="postComment(showingFeed.id)">Đăng</v-btn>
+                    <div class="flex flex-none items-center space-x-2">
+                        <input type="file" @change="handleFileChange" ref="fileInputComment" style="display: none;" />
+                        <v-btn v-if="newComment.file === null" @click="openFilePicker">Chọn file</v-btn>
+                        <div v-else class="cursor-pointer" @click="openFilePicker">
+                            <img class="upload-file-comment" v-if="isImage(newComment.file)" :src="getUrl(newComment.file)"
+                                alt="Selected Image" />
+                            <video v-else controls width="300" class="upload-file-comment">
+                                <source :src="getUrl(newComment.file)" type="video/mp4" />
+                                Trình duyệt không hỗ trợ định dạng này
+                            </video>
+                        </div>
+                        <v-btn @click="postComment(showingFeed.id)">Đăng</v-btn>
+                    </div>
+                </div>
+                <div v-else>
+                    <div class="pr-2 flex-1">
+                        <textarea ref="comment" class="p-4 w-full bg-gray-100 rounded-lg border comment-input"
+                            placeholder="Viết bình luận..." v-model="chosenUpdateComment.content"></textarea>
+                    </div>
+                    <div class="flex flex-none items-center space-x-2">
+                        <input type="file" @change="handleFileChange" ref="fileInputComment" style="display: none;" />
+                        <v-btn v-if="chosenUpdateComment.contentMedia === null" @click="openFilePicker">Chọn file</v-btn>
+                        <div v-else class="cursor-pointer" @click="openFilePicker">
+                            <div v-if="(typeof chosenUpdateComment.contentMedia) === 'string'">
+
+                                <img class="upload-file-comment" v-if="isImage(chosenUpdateComment.contentMedia)"
+                                    :src="chosenUpdateComment.contentMedia" alt="Selected Image" />
+                                <video v-else controls width="300" class="upload-file-comment">
+                                    <source :src="chosenUpdateComment.contentMedia" type="video/mp4" />
+                                    Trình duyệt không hỗ trợ định dạng này
+                                </video>
+                            </div>
+                            <div v-else>
+                                <img class="upload-file-comment" v-if="isImage(chosenUpdateComment.contentMedia)"
+                                    :src="getUrl(chosenUpdateComment.contentMedia)" alt="Selected Image" />
+                                <video v-else controls width="300" class="upload-file-comment">
+                                    <source :src="getUrl(chosenUpdateComment.contentMedia)" type="video/mp4" />
+                                    Trình duyệt không hỗ trợ định dạng này
+                                </video>
+                            </div>
+                        </div>
+                        <v-btn @click="updateComment(showingFeed.id)">Hoàn tất chỉnh
+                            sửa</v-btn>
+                    </div>
                 </div>
             </v-card-title>
         </v-card>
@@ -1072,6 +1115,7 @@ export default {
             comments: [],
             friends: [],
             searchText: "",
+            chosenUpdateComment: null,
         }
     },
     mounted() {
@@ -1129,13 +1173,59 @@ export default {
                 }
             }
         },
-        updateComment(commentId) {
-            console.log("Gọi hàm updateComment");
-            console.log("CommentId: ", commentId);
+        chooseComment(comment) {
+            this.chosenUpdateComment = comment;
+            console.log(this.chosenUpdateComment)
+            this.focusComment;
         },
-        deleteComment(commentId) {
-            console.log("Gọi hàm deleteComment");
-            console.log("commenId: ", commentId);
+        updateComment(feedId) {
+
+            // console.log("New comment: ", this.newComment);
+            const formData = new FormData();
+            formData.append('commentId', this.chosenUpdateComment.idComment);
+            if (this.chosenUpdateComment.content) formData.append('content', this.chosenUpdateComment.content);
+            if (this.chosenUpdateComment.contentMedia) formData.append('file', this.chosenUpdateComment.contentMedia);
+            axios
+                .put(`/social-media/update-comment/`, formData)
+                .then(response => {
+                    //console.log("Response status: " + response.status)
+                    //response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))
+                    if (response.status === 200) {
+                        console.log(response.data);
+                        if (response.data === 'Cập nhật bình luận thành công!') {
+                            this.toast.success(response.data, 1500);
+                            this.chosenUpdateComment = null;
+                            this.clearContentComment();
+                            this.fetchComment(feedId);
+                            this.fetchFeed();
+                        }
+                    } else
+                        this.toast.error(response.data, { timeout: 1500 });
+                })
+                .catch(error => {
+                    console.log('error', error)
+                })
+        },
+        deleteComment(commentId, feedId) {
+            axios
+                .delete(`/social-media/delete-comment/${commentId}`,/**{
+                    headers: {
+                        'Authorization': localStorage.getItem("token"),
+                        'Content-Type': 'multipart/form-data',
+                    }
+                }**/)
+                .then(response => {
+                    //console.log("Response status: " + response.status)
+                    //response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))
+                    if (response.status === 200) {
+                        console.log(response.data);
+                        if (response.data === 'Xóa bình luận thành công!')
+                            this.fetchComment(feedId)
+                    }
+                })
+                .catch(error => {
+                    console.log('error', error)
+                })
         },
         handleMouseOver(event) {
             //console.log("Gọi hàm: handleMouseOver");
@@ -1246,24 +1336,24 @@ export default {
         },
         deletePost(postId) {
             console.log("Gọi hàm: deletePost");
-            console.log("Post id:" , postId);
+            console.log("Post id:", postId);
             //this.posts = this.posts.filter(post => post.id !== id)
             axios
                 .delete(`/social-media/delete-post/${postId}`)
                 .then(response => {
                     //console.log("Response status: " + response.status)
                     //response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))
-                    if (response.status === 200){
+                    if (response.status === 200) {
                         this.toast.success("Xóa bài viết thành công!", 1500);
-                        if(this.showPopupVisible){
+                        if (this.showPopupVisible) {
                             this.showPopupVisible = false;
                         }
-                        if(this.showVisibleInfoFeed){
+                        if (this.showVisibleInfoFeed) {
                             this.showVisibleInfoFeed = false;
                         }
                         this.fetchFeed();
                     }
-                    else 
+                    else
                         this.toast.error("Có lỗi xảy ra, vui lòng thử lại!", 1500);
                 })
                 .catch(error => {
@@ -1750,7 +1840,12 @@ export default {
             console.log("Gọi hàm: handleFileChange");
             const selectedFile = event.target.files[0];
             //console.log(selectedFile);
-            this.newComment.file = selectedFile;
+            if (this.chosenUpdateComment == null) {
+                this.newComment.file = selectedFile;
+            } else {
+                this.chosenUpdateComment.contentMedia = selectedFile;
+            }
+
         },
         openFilePicker() {
             console.log("Gọi hàm: openFilePicker");

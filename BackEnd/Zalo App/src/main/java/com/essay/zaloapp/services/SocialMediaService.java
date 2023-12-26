@@ -34,7 +34,7 @@ public interface SocialMediaService {
 
     String createNewComment(Long postId, Long userId, Long topComment, String content, MultipartFile file);
 
-    String updateComment(Long userId, Long commentId, String content, MultipartFile file);
+    String updateComment(Long userId, Long commentId, String content, Object file);
 
     String deleteComment(Long commentId, Long userId);
 
