@@ -210,6 +210,7 @@ public class SocialMediaServiceImpl implements SocialMediaService {
         getInfoPostResponse.setCreatedAt(formatDate.formatDate(post.getCreatedAt()));
         getInfoPostResponse.setUpdatedAt(formatDate.formatDate(post.getUpdatedAt()));
         getInfoPostResponse.setUserPost(new InfoUser(post.getUser().getFullName(), "http://localhost:8181/media/getImage/" + post.getUser().getImageAvatarUrl(), post.getUser().getPhoneNumber()));
+        getInfoPostResponse.setCommentCount(Long.valueOf(post.getCommentList().size()));
         return getInfoPostResponse;
     }
 

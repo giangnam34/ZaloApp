@@ -1068,68 +1068,8 @@ export default {
                 'Một số bạn bè',
                 'Chỉ mình tôi'
             ],
-            feeds: [
-                {
-                    id: null,
-                    content: "",
-                    audience: "",
-                    postFather: null,
-                    isLike: null,
-                    userTagList: [
-                        {
-                            userName: "",
-                            imageAvatar: "",
-                            phoneNumber: ""
-                        }
-                    ],
-                    userLikeList: [
-                        {
-                            userName: "",
-                            imageAvatar: "",
-                            phoneNumber: ""
-                        }
-                    ],
-                    userShareList: [
-                        {
-                            userName: "",
-                            imageAvatar: "",
-                            phoneNumber: ""
-                        }
-                    ],
-                    files: [],
-                    createdAt: "",
-                    updatedAt: "",
-                    userPost: {
-                        userName: "",
-                        imageAvatar: "",
-                        phoneNumber: ""
-                    }
-                }
-            ],
-            comments: [
-                {
-                    idComment: null,
-                    isUserLike: null,
-                    userComment: {
-                        userName: '',
-                        imageAvatar: '',
-                        phoneNumber: ''
-                    },
-                    userLike: [
-                        {
-                            userName: '',
-                            imageAvatar: '',
-                            phoneNumber: ''
-                        }
-                    ],
-                    infoCommentList: [
-
-                    ],
-                    content: '',
-                    createdAt: '',
-                    updatedAt: ''
-                }
-            ],
+            feeds: [],
+            comments: [],
             friends: [],
             searchText: "",
         }

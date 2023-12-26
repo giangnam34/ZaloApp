@@ -41,4 +41,6 @@ public class GetInfoPostResponse {
     private String updatedAt;
 
     private InfoUser userPost;
+
+    private Long commentCount;
 }
