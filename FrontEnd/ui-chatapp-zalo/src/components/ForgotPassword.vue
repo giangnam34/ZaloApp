@@ -44,15 +44,10 @@
 <script>
 
 import axios from 'axios';
-import { useToast } from "vue-toastification";
+//import { useToast } from "vue-toastification";
 import OTPForgotPassword from './OTPForgotPassword.vue';
 
 export default {
-    setup() {
-        // Get toast interface
-        const toast = useToast();
-        return { toast }
-    },
     data() {
         return {
             isError: true,

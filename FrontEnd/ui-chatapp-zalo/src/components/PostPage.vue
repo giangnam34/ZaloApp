@@ -24,50 +24,92 @@
                         </div>
                     </div>
 
-                    <div v-for="feed in feeds" v-bind:key="feed.user_id"
-                        class="p-4 bg-white border border-gray-200 rounded-lg">
+                    <div v-for="feed in feeds" v-bind:key="feed.id" class="p-4 bg-white border border-gray-200 rounded-lg">
                         <div class="mb-6 flex items-center justify-between">
                             <div class="flex items-center space-x-6">
                                 <img :src="feed.userPost.imageAvatar"
                                     class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4">
-                                <div class="wrap-title">
-                                    <p><strong>{{ feed.userPost.userName }}</strong></p>
-                                    <div class="wrap-icon">
-                                        <div v-if="feed.audience === 'Public'">
-                                            <font-awesome-icon icon="fa-solid fa-earth-americas" />
-                                            Công khai
+                                <div class="wrap-title flex">
+                                    <div>
+                                        <div class="flex">
+                                            <p class="name"><strong>{{ feed.userPost.userName }}</strong></p>
+                                            <p class="text-gray-600 ml-2 date">{{ formatTimeDifference(new
+                                                Date(feed.updatedAt))
+                                            }}
+                                            </p>
                                         </div>
-                                        <div v-if="feed.audience === 'AllFriend'">
-                                            <font-awesome-icon icon="fa-solid fa-user-group" />
-                                            Bạn bè
+                                        <div class="wrap-icon">
+                                            <div v-if="feed.audience === 'Public'">
+                                                <font-awesome-icon icon="fa-solid fa-earth-americas" />
+                                                Công khai
+                                            </div>
+                                            <div v-if="feed.audience === 'AllFriend'">
+                                                <font-awesome-icon icon="fa-solid fa-user-group" />
+                                                Bạn bè
+                                            </div>
+                                            <div v-if="feed.audience === 'OnlyMe'">
+                                                <font-awesome-icon icon="fa-solid fa-lock" />
+                                                Chỉ mình tôi
+                                            </div>
+                                            <div v-if="feed.audience === 'SomeOneCanSee'">
+                                                <font-awesome-icon icon="fa-solid fa-user" />
+                                                Một số bạn bè
+                                            </div>
+                                            <div v-if="feed.audience === 'AllExceptSomeOne'">
+                                                <font-awesome-icon icon="fa-solid fa-user-minus" />
+                                                Bạn bè ngoại trừ
+                                            </div>
                                         </div>
-                                        <div v-else-if="feed.audience === 'OnlyMe'">
-                                            <font-awesome-icon icon="fa-solid fa-lock" />
-                                            Chỉ mình tôi
-                                        </div>
-                                        <div v-else-if="feed.audience === 'SomeOneCanSee'">
-                                            <font-awesome-icon icon="fa-solid fa-user" />
-                                            Một số bạn bè
-                                        </div>
-                                        <div v-else-if="feed.audience === 'AllExceptSomeOne'">
-                                            <font-awesome-icon icon="fa-solid fa-user-minus" />
-                                            Bạn bè ngoại trừ
+                                    </div>
+                                    <div style="margin-left: 347px;" id="more-icon">
+                                        <div class="action cursor-pointer">
+                                            <div class="popover-action-container" @click:outside="hidePopover">
+                                                <a id="ellipsis-icon" @click="(event) => handleClickAction(event, feed)">
+                                                    <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
+                                                </a>
+                                                <div class="popoverAction"
+                                                    v-show="showPopupVisible && clickedFeed.userPost.phoneNumber === user.phoneNumber"
+                                                    :style="{ right: popoverRight, top: popoverTop }">
+                                                    <div class="popover-body">
+                                                        <div class="popover-item"
+                                                            @click="showFoundUserDialog(feed.user_id)">
+                                                            <div>
+                                                                Xóa bài viết
+                                                            </div>
+                                                        </div>
+                                                        <div class="separator"></div>
+                                                        <div class="popover-item" @click="openUpdatePost(clickedFeed)">
+                                                            <div>
+                                                                Chỉnh sửa bài viết
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
-                            <p class="text-gray-600">{{ formatDate(new Date(feed.updatedAt)) }}</p>
                         </div>
 
                         <p class="mb-3">{{ feed.content }}</p>
 
-                        <img :src="feed.files[0]" class="w-full h-[500px] rounded-lg cursor-pointer"
-                            v-if="feed.files.length > 0" @click="openFeedInfo(feed)" />
+                        <div v-if="feed.files.length > 0">
+                            <img :src="feed.files[0]" class="w-full h-[500px] rounded-lg cursor-pointer"
+                                v-if="isImage(feed.files[0])" @click="openFeedInfo(feed)" />
+                            <video v-else controls width="300" class="w-full h-[500px] rounded-lg cursor-pointer">
+                                <source :src="feed.files[0]" type="video/mp4" @click="openFeedInfo(feed)" />
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
 
                         <div v-if="feed.files.length > 1" class="image-container-feed cursor-pointer"
                             @click="openFeedInfo(feed)">
-                            <img :src="feed.files[1]" class="w-full h-[500px] rounded-lg" />
+                            <img v-if="isImage(feed.files[1])" :src="feed.files[1]" class="w-full h-[500px] rounded-lg" />
+                            <video v-else controls width="300" class="w-full h-[500px] rounded-lg">
+                                <source :src="feed.files[1]" type="video/mp4" />
+                                Your browser does not support the video tag.
+                            </video>
                             <div class="overlay-feed" v-if="feed.files.length !== 2">
                                 <div class="overlay-content-feed">
                                     +{{ feed.files.length - 2 }}
@@ -234,19 +276,52 @@
             </v-card-title>
             <hr style="border: none; border-bottom: 1px solid #ccc;">
             <v-card-text class="dialog-content">
-                <div class="pt-4 pl-4 pr-4">
-                    <div class="update-file-container">
-                        <div v-for="(file, index) in newFeed.files" :key="index" class="position-relative">
-                            <img class="upload-file" v-if="isImage(file)" :src="getUrl(file)" alt="Selected Image" />
-                            <video v-else controls width="300" class="upload-file">
-                                <source :src="getUrl(file)" type="video/mp4" />
-                                Trình duyệt không hỗ trợ định dạng này
-                            </video>
-                            <div class="close-icon" @click="removeFile(index)"><font-awesome-icon icon="fa-solid fa-x" />
+                <div v-if="!showUpdatePostVisible">
+                    <div class="pt-4 pl-4 pr-4">
+                        <div class="update-file-container">
+                            <div v-for="(file, index) in newFeed.files" :key="index" class="position-relative">
+                                <img class="upload-file" v-if="isImage(file)" :src="getUrl(file)" alt="Selected Image" />
+                                <video v-else controls width="300" class="upload-file">
+                                    <source :src="getUrl(file)" type="video/mp4" />
+                                    Your browser does not support the video tag.
+                                </video>
+                                <div class="close-icon" @click="removeFile(index)"><font-awesome-icon
+                                        icon="fa-solid fa-x" />
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                <div v-else>
+                    <div class="pt-4 pl-4 pr-4">
+                        <div class="update-file-container">
+                            <div v-for="(file, index) in updateFeed.files" :key="index" class="position-relative">
+                                <div v-if="(typeof file) === 'string'">
+                                    <img class="upload-file" v-if="isImage(file)" :src="file" alt="Selected Image" />
+                                    <video v-else controls width="300" class="upload-file">
+                                        <source :src="file" type="video/mp4" />
+                                        Your browser does not support the video tag.
+                                    </video>
+                                    <div class="close-icon" @click="removeFile(index)"><font-awesome-icon
+                                            icon="fa-solid fa-x" />
+                                    </div>
+                                </div>
+                                <div v-else>
+                                    <img class="upload-file" v-if="isImage(file)" :src="getUrl(file)"
+                                        alt="Selected Image" />
+                                    <video v-else controls width="300" class="upload-file">
+                                        <source :src="getUrl(file)" type="video/mp4" />
+                                        Your browser does not support the video tag.
+                                    </video>
+                                    <div class="close-icon" @click="removeFile(index)"><font-awesome-icon
+                                            icon="fa-solid fa-x" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="mt-4"></div>
                 <div class="profile-action">
                     <label for="addFileInput" class="cursor-pointer">
@@ -269,41 +344,84 @@
             </v-card-title>
             <hr style="border: none; border-bottom: 1px solid #ccc;">
             <v-card-text class="dialog-content">
-                <div class="pt-4 pl-4 pr-4">
-                    <input type="text" v-model="searchText" placeholder="Tìm kiếm theo tên" class="search-input" />
-                    <div v-if="newFeed.friendTag.length !== 0"><span>Đã gắn thẻ</span></div>
-                    <div class="update-file-container" style="height:100px" v-if="newFeed.friendTag.length !== 0">
-                        <div v-for="friend in newFeed.friendTag" v-bind:key="friend.phoneNumber" class="position-relative">
-                            <div class="friend-info cursor-pointer m-2" @click="deleteFriendTag(friend)">
-                                <div :class="{ 'wrap': shouldWrap }" class="detail" style="border: 1px solid #ccc;
+                <div v-if="!showUpdatePostVisible">
+                    <div class="pt-4 pl-4 pr-4">
+                        <input type="text" v-model="searchText" placeholder="Tìm kiếm theo tên" class="search-input" />
+                        <div v-if="newFeed.friendTag.length !== 0"><span>Đã gắn thẻ</span></div>
+                        <div class="update-file-container" style="height:100px" v-if="newFeed.friendTag.length !== 0">
+                            <div v-for="friend in newFeed.friendTag" v-bind:key="friend.phoneNumber"
+                                class="position-relative">
+                                <div class="friend-info cursor-pointer m-2" @click="deleteFriendTag(friend)">
+                                    <div :class="{ 'wrap': shouldWrap }" class="detail" style="border: 1px solid #ccc;
                                                            border-radius: 8px;
                                                            display: flex;
                                                            justify-content: space-between;
                                                            align-items: center;
                                                            padding: 8px;">
-                                    <span class="color-blue">{{ friend.name }}
-                                        <font-awesome-icon icon="fa-solid fa-x" /></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div><span>Danh sách bạn bè</span></div>
-                    <div class="friend-list-container">
-                        <div v-for="friend in filteredFriends" v-bind:key="friend.phoneNumber" class="position-relative">
-                            <div class="friend-info friend-container" @click="addFriendTag(friend)">
-                                <div class="avatar-container">
-                                    <div class="avatar-wrapper">
-                                        <img :src="friend.avatar" class="avatar">
+                                        <span class="color-blue">{{ friend.name }}
+                                            <font-awesome-icon icon="fa-solid fa-x" /></span>
                                     </div>
                                 </div>
-                                <div class="detail">
-                                    <span>{{ friend.name }}</span>
+                            </div>
+                        </div>
+                        <div><span>Danh sách bạn bè</span></div>
+                        <div class="friend-list-container">
+                            <div v-for="friend in filteredFriends" v-bind:key="friend.phoneNumber"
+                                class="position-relative">
+                                <div class="friend-info friend-container" @click="addFriendTag(friend)">
+                                    <div class="avatar-container">
+                                        <div class="avatar-wrapper">
+                                            <img :src="friend.imageAvatar" class="avatar">
+                                        </div>
+                                    </div>
+                                    <div class="detail">
+                                        <span>{{ friend.userName }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    <div class="mt-4"></div>
                 </div>
-                <div class="mt-4"></div>
+                <div v-else>
+                    <div class="pt-4 pl-4 pr-4">
+                        <input type="text" v-model="searchText" placeholder="Tìm kiếm theo tên" class="search-input" />
+                        <div v-if="updateFeed.userTagList.length !== 0"><span>Đã gắn thẻ</span></div>
+                        <div class="update-file-container" style="height:100px" v-if="updateFeed.userTagList.length !== 0">
+                            <div v-for="friend in updateFeed.userTagList" v-bind:key="friend.phoneNumber"
+                                class="position-relative">
+                                <div class="friend-info cursor-pointer m-2" @click="deleteFriendTag(friend)">
+                                    <div :class="{ 'wrap': shouldWrap }" class="detail" style="border: 1px solid #ccc;
+                                                           border-radius: 8px;
+                                                           display: flex;
+                                                           justify-content: space-between;
+                                                           align-items: center;
+                                                           padding: 8px;">
+                                        <span class="color-blue">{{ friend.userName }}
+                                            <font-awesome-icon icon="fa-solid fa-x" /></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div><span>Danh sách bạn bè</span></div>
+                        <div class="friend-list-container">
+                            <div v-for="friend in filteredFriends" v-bind:key="friend.phoneNumber"
+                                class="position-relative">
+                                <div class="friend-info friend-container" @click="addFriendTag(friend)">
+                                    <div class="avatar-container">
+                                        <div class="avatar-wrapper">
+                                            <img :src="friend.imageAvatar" class="avatar">
+                                        </div>
+                                    </div>
+                                    <div class="detail">
+                                        <span>{{ friend.userName }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4"></div>
+                </div>
                 <div class="profile-action" @click="closeChooseTagDialog">
                     <div class="items-center text-center cursor-pointer bg-blue-400 rounded-lg h-10 mx-4 px-4 py-2">
                         Xong
@@ -438,7 +556,7 @@
                 <div class="comment-container mr-3 ml-3">
                     <div v-for="comment in comments" v-bind:key="comment.id">
                         <div class="mb-2 items-center justify-between">
-                            <div class="flex items-center" @mouseover="showOptionComment()" @mouseout="hideOptionComment()">
+                            <div class="flex items-center">
                                 <img :src="comment.userComment.imageAvatar"
                                     class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-2">
                                 <div class="comment-content rounded-lg bg-gray-200 p-2">
@@ -515,6 +633,118 @@
             </v-card-title>
         </v-card>
     </v-dialog>
+    <v-dialog class="dialog-container" v-model="showUpdatePostVisible" max-width="500px"
+        @click:outside="closeUpdatePostOption">
+        <v-card class="dialog-component">
+            <v-card-title class="dialog-title">
+                <h2 class="title">Chỉnh sửa bài viết
+                    <div class="icon-close" @click="closeUpdatePostOption"><font-awesome-icon icon="fa-solid fa-x" /></div>
+                </h2>
+            </v-card-title>
+            <hr style="border: none; border-bottom: 1px solid #ccc;">
+            <v-card-text class="dialog-content">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div class="friend-info">
+                        <div class="avatar-container">
+                            <div class="avatar-wrapper">
+                                <img :src="user.imageAvatarUrl" class="avatar">
+                            </div>
+                        </div>
+                        <div class="detail">
+                            <p><strong>{{ user.fullName }}</strong></p>
+                            <select v-model="privateSetting" name="privateSetting" class="form-control cursor-pointer">
+                                <option v-for="option in allChosen" :key="option" class="cursor-pointer">{{ option }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="file-list-container" :style="{ height: fileListHeight }">
+                    <div class="pl-4 pr-4">
+                        <textarea class="p-4 w-full bg-gray-100 rounded-lg border" placeholder="Bạn đang nghĩ gì?"
+                            v-model="updateFeed.content"></textarea>
+                    </div>
+                    <div class="pl-4 pr-4">
+                        <div v-for="(file, index) in updateFeed.files" :key="index">
+                            <div v-if="(typeof file) === 'string'">
+                                <div v-if="index === 0" class="cursor-pointer" @click="showUpdateFileDialog">
+                                    <img class="upload-file" v-if="isImage(file)" :src="file" alt="Selected Image" />
+                                    <video v-else controls width="300" class="upload-file">
+                                        <source :src="file" type="video/mp4" />
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                                <div v-if="index === 1" class="cursor-pointer" @click="showUpdateFileDialog">
+                                    <div class="image-container">
+                                        <img class="upload-file" v-if="isImage(file)" :src="file" alt="Selected Image" />
+                                        <video v-else controls width="300" class="upload-file">
+                                            <source :src="file" type="video/mp4" />
+                                            Your browser does not support the video tag.
+                                        </video>
+                                        <div class="overlay"
+                                            v-if="updateFeed.files.length > 1 && updateFeed.files.length !== 2">
+                                            +{{ updateFeed.files.length - 2 }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-else>
+                                <div v-if="index === 0" class="cursor-pointer" @click="showUpdateFileDialog">
+                                    <img class="upload-file" v-if="isImage(file)" :src="getUrl(file)"
+                                        alt="Selected Image" />
+                                    <video v-else controls width="300" class="upload-file">
+                                        <source :src="getUrl(file)" type="video/mp4" />
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                                <div v-if="index === 1" class="cursor-pointer" @click="showUpdateFileDialog">
+                                    <div class="image-container">
+                                        <img class="upload-file" v-if="isImage(file)" :src="getUrl(file)"
+                                            alt="Selected Image" />
+                                        <video v-else controls width="300" class="upload-file">
+                                            <source :src="getUrl(file)" type="video/mp4" />
+                                            Your browser does not support the video tag.
+                                        </video>
+                                        <div class="overlay"
+                                            v-if="updateFeed.files.length > 1 && updateFeed.files.length !== 2">
+                                            +{{ updateFeed.files.length - 2 }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="profile-action pt-1" v-if="index === updateFeed.files.length - 1">
+                                <div class="flex items-center justify-center cursor-pointer bg-blue-400 rounded-lg h-8"
+                                    @click="removeFiles">
+                                    Xóa tất cả ảnh/video
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pb-2 pl-4 pr-4">
+                    <div class="p-4 bg-white border border-gray-200 text-center rounded-lg flex">
+                        <span class="flex-none mr-20">Thêm vào bài viết của bạn </span>
+                        <div class="flex-1">
+                            <label for="fileInput" class="text-sea-green cursor-pointer">
+                                <font-awesome-icon icon="fa-regular fa-images" />
+                            </label>
+                            <input type="file" id="fileInput" ref="fileInput" @change="onFileSelected"
+                                style="display: none;" multiple accept="image/*,video/*">
+                        </div>
+                        <div class="flex-1">
+                            <font-awesome-icon icon="fa-solid fa-user-tag" class="text-leaf-green cursor-pointer"
+                                @click="showChooseTag" />
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-action" @click="createPost">
+                    <div class="mx-4 flex items-center justify-center cursor-pointer bg-blue-400 rounded-lg h-8">
+                        Lưu bài viết
+                    </div>
+                </div>
+            </v-card-text>
+        </v-card>
+    </v-dialog>
 </template>
 
 <script>
@@ -524,7 +754,6 @@ import { useToast } from "vue-toastification";
 import { Swiper, SwiperSlide } from 'vue-awesome-swiper';
 import 'swiper/css';
 import 'swiper/css/navigation'
-
 
 export default {
     name: 'FeedView',
@@ -546,14 +775,14 @@ export default {
         if (userString) {
             this.user = JSON.parse(userString);
         }
-        // console.log("User: " + this.user.phoneNumber);
         this.fetchFeed();
+        this.getListOfFriends();
     },
     computed: {
         filteredFriends() {
             const normalizedSearchText = this.searchText.toLowerCase();
             return this.friends.filter(friend =>
-                friend.name.toLowerCase().includes(normalizedSearchText)
+                friend.userName.toLowerCase().includes(normalizedSearchText)
             );
         },
     },
@@ -565,6 +794,10 @@ export default {
             //         prevEl: '.swiper-button-prev',
             //     },
             // },
+            hoveredItem: '',
+            selectedItem: '',
+            popoverRight: 0,
+            popoverTop: 0,
             posts: [],
             newComment: {
                 postId: null,
@@ -581,8 +814,12 @@ export default {
             privateSetting: 'Bạn bè',
             showUpdateFile: false,
             showVisibleInfoFeed: false,
+            showPopupVisible: false,
             showingFeed: null,
+            showUpdatePostVisible: false,
             listFriends: [],
+            clickedFeed: null,
+            updateFeed: null,
             allChosen: [
                 'Công khai',
                 'Bạn bè',
@@ -651,8 +888,7 @@ export default {
                     createdAt: '',
                     updatedAt: ''
                 }
-            ]
-            ,
+            ],
             friends: [
                 { phoneNumber: '0968322444', name: "Võ Giang Nam", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
                 { phoneNumber: '0965556652', name: "Từ Thanh Thoại", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
@@ -672,6 +908,48 @@ export default {
     },
 
     methods: {
+        selectItem(item) {
+            this.selectedItem = item;
+        },
+        isSelected(item) {
+            return this.selectedItem === item;
+        },
+        togglePopover(item) {
+            this.selectItem(item);
+        },
+        hidePopover() {
+            console.log("in")
+            this.showPopupVisible = false;
+        },
+        handleClickAction(event, feed) {
+            const rect = event.target.getBoundingClientRect();
+            const x = rect.left;
+            const y = rect.top;
+            this.popoverRight = x - 654 + 'px';
+            this.popoverTop = y - 2 + 'px';
+            this.clickedFeed = feed;
+            this.showPopupVisible = true;
+            event.stopPropagation();
+        },
+        formatTimeDifference(date) {
+            const now = new Date();
+            const timeDiff = Math.abs(now - date); // Use Math.abs to ensure a positive value
+
+            const seconds = Math.floor(timeDiff / 1000);
+            const minutes = Math.floor(timeDiff / (1000 * 60));
+            const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+            const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+
+            if (seconds < 60) {
+                return `${seconds} giây trước`;
+            } else if (minutes < 60) {
+                return `${minutes} phút trước`;
+            } else if (hours < 24) {
+                return `${hours} giờ trước`;
+            } else {
+                return `${days} ngày trước`;
+            }
+        },
         handleMouseOver(event) {
             //console.log("Gọi hàm: handleMouseOver");
             event.target.classList.add("hovered");
@@ -823,23 +1101,31 @@ export default {
             console.log("Gọi hàm: onFileSelected");
             const files = event.target.files;
             if (files.length != 0) {
-                this.newFeed.files = [];
-                for (let i = 0; i < files.length; i++) {
-                    const file = files[i];
-                    this.newFeed.files.push(file);
+                if (!this.showUpdatePostVisible) {
+                    this.newFeed.files = [];
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+                        this.newFeed.files.push(file);
+                    }
+                } else {
+                    this.updateFeed.files = [];
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+                        this.updateFeed.files.push(file);
+                    }
                 }
                 this.fileListHeight = "400px";
             }
 
         },
-        isImage(file) {
-            try {
-                console.log("Gọi hàm: isImage");
-                return file.type.startsWith('image/');
-            } catch (error) {
-                console.log("Hàm isImage lỗi rồi");
-            }
-        },
+        // isImage(file) {
+        //     try {
+        //         console.log("Gọi hàm: isImage");
+        //         return file.type.startsWith('image/');
+        //     } catch (error) {
+        //         console.log("Hàm isImage lỗi rồi");
+        //     }
+        // },
         checkIsImageUrl(mediaUrl){
             try {
                 console.log("Gọi hàm: checkIsImageUrl");
@@ -858,66 +1144,124 @@ export default {
                 console.log("Hàm getUrl lỗi rồi");
             }
         },
+        isImage(file) {
+            if (typeof (file) === 'string') {
+                const imageExtensions = ["jpg", "jpeg", "png", "gif", "webp", "jfif"];
+                const extension = this.getFileExtension(file);
+                return imageExtensions.includes(extension);
+            } else {
+                return file.type.startsWith('image/');
+            }
+        },
+        getFileExtension(url) {
+            const parts = url.split(".");
+            return parts[parts.length - 1].toLowerCase();
+        },
         showUpdateFileDialog() {
             this.showUpdateFile = true;
             this.showPostVisible = false;
         },
         closeUpdateFileDialog() {
-            console.log("Gọi hàm: closeUpdateFileDialog");
-            this.showUpdateFile = false;
-            this.showPostVisible = true;
+            if (!this.showUpdatePostVisible) {
+                this.showUpdateFile = false;
+                this.showPostVisible = true;
+            } else {
+                this.showUpdateFile = false;
+            }
         },
         addFile(event) {
             console.log("Gọi hàm: addFile");
             const files = event.target.files;
-            if (files.length != 0) {
-                for (let i = 0; i < files.length; i++) {
-                    const file = files[i];
-                    this.newFeed.files.push(file);
+            if (!this.showUpdatePostVisible) {
+                if (files.length != 0) {
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+                        this.newFeed.files.push(file);
+                    }
+                }
+            } else {
+                if (files.length != 0) {
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+                        this.updateFeed.files.push(file);
+                    }
                 }
             }
         },
         removeFiles() {
-            console.log("Gọi hàm: removeFiles");
-            this.newFeed.files = [];
+            if (this.showUpdatePostVisible) {
+                this.updateFeed = [];
+            } else {
+                this.newFeed.files = [];
+            }
             this.fileListHeight = "100px";
         },
         removeFile(index) {
-            console.log("Gọi hàm: removeFile");
-            this.newFeed.files.splice(index, 1);
-            if (this.newFeed.files.length === 0) {
-                this.fileListHeight = "100px";
+            if (!this.showUpdatePostVisible) {
+                this.newFeed.files.splice(index, 1);
+                if (this.newFeed.files.length === 0) {
+                    this.fileListHeight = "100px";
+                }
+            } else {
+                this.updateFeed.files.splice(index, 1);
+                if (this.newFeed.files.length === 0) {
+                    this.fileListHeight = "100px";
+                }
             }
         },
         showChooseTag() {
-            console.log("Gọi hàm: showChooseTag");
-            this.hasTagFriend = true;
-            this.showPostVisible = false;
+            if (!this.showUpdatePostVisible) {
+                this.hasTagFriend = true;
+                this.friends = this.listFriends;
+                this.showPostVisible = false;
+            } else {
+                this.hasTagFriend = true;
+                const userTagPhoneNumbers = this.updateFeed.userTagList.map(user => user.phoneNumber);
+                this.friends = this.listFriends.filter(friend => !userTagPhoneNumbers.includes(friend.phoneNumber));
+            }
         },
         closeChooseTagDialog() {
-            console.log("Gọi hàm: closeChooseTagDialog");
-            this.hasTagFriend = false;
-            this.showPostVisible = true;
+            if (!this.showUpdatePostVisible) {
+                this.hasTagFriend = false;
+                this.showPostVisible = true;
+            } else {
+                this.hasTagFriend = false;
+            }
         },
         deleteFriendByPhoneNumber(phoneNumber) {
             console.log("Gọi hàm: deleteFriendByPhoneNumber");
             this.friends = this.friends.filter(friend => friend.phoneNumber !== phoneNumber);
         },
         addFriendTag(friend) {
-            console.log("Gọi hàm: addFriendTag");
-            this.newFeed.friendTag.push(friend);
-            this.deleteFriendByPhoneNumber(friend.phoneNumber);
+            if (!this.showUpdatePostVisible) {
+                this.newFeed.friendTag.push(friend);
+                this.deleteFriendByPhoneNumber(friend.phoneNumber);
+            } else {
+                this.updateFeed.userTagList.push(friend);
+                this.deleteFriendByPhoneNumber(friend.phoneNumber);
+            }
         },
         deleteFriendTag(friend) {
-            console.log("Gọi hàm: deleteFriendTag");
-            const indexInTag = this.newFeed.friendTag.findIndex(taggedFriend => taggedFriend.phoneNumber === friend.phoneNumber);
-            if (indexInTag !== -1) {
-                this.newFeed.friendTag.splice(indexInTag, 1);
-            }
+            if (!this.showUpdatePostVisible) {
+                const indexInTag = this.newFeed.friendTag.findIndex(taggedFriend => taggedFriend.phoneNumber === friend.phoneNumber);
+                if (indexInTag !== -1) {
+                    this.newFeed.friendTag.splice(indexInTag, 1);
+                }
 
-            const indexInFriends = this.friends.findIndex(existingFriend => existingFriend.phoneNumber === friend.phoneNumber);
-            if (indexInFriends === -1) {
-                this.friends.push(friend);
+                const indexInFriends = this.friends.findIndex(existingFriend => existingFriend.phoneNumber === friend.phoneNumber);
+                if (indexInFriends === -1) {
+                    this.friends.push(friend);
+                }
+            } else {
+                const indexInTag = this.updateFeed.userTagList.findIndex(taggedFriend => taggedFriend.phoneNumber === friend.phoneNumber);
+                if (indexInTag !== -1) {
+                    this.updateFeed.userTagList.splice(indexInTag, 1);
+                }
+
+                const indexInFriends = this.friends.findIndex(existingFriend => existingFriend.phoneNumber === friend.phoneNumber);
+                if (indexInFriends === -1) {
+                    this.friends.push(friend);
+                }
             }
         },
         async createPost() {
@@ -1199,6 +1543,25 @@ export default {
                 }
             }
         },
+        openUpdatePost(clickedFeed) {
+            // Your implementation here
+            console.log(clickedFeed)
+            this.showPopupVisible = false;
+            this.showUpdatePostVisible = true;
+            this.updateFeed = clickedFeed;
+            if (clickedFeed.audience === 'Public') {
+                this.privateSetting = "Công khai"
+            } else if (clickedFeed.audience === 'AllFriend') {
+                this.privateSetting = "Bạn bè"
+            } else if (clickedFeed.audience === 'SomeOneCanSee') {
+                this.privateSetting = "Một số bạn bè"
+            } else if (clickedFeed.audience === 'AllExceptSomeOne') {
+                this.privateSetting = "Bạn bè ngoại trừ"
+            }
+        },
+        closeUpdatePostOption() {
+            this.showUpdatePostVisible = false;
+        }
     }
 }
 </script>
@@ -1698,5 +2061,51 @@ export default {
 
 .like-button-comment-active {
     color: blue;
+}
+.action {
+    margin-right: 20px;
+
+    .popover-action-container {
+
+
+        .popoverAction {
+            display: inline-block;
+            position: absolute;
+            border-radius: 4px;
+            z-index: 9999;
+            box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+            border: 1px solid #d6dbe1;
+
+
+            .popover-body {
+                position: absolute;
+                background-color: #fff;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+                border-radius: 8px;
+                height: 86px;
+                width: 180px;
+                justify-content: space-between;
+
+                .separator {
+                    height: 1px;
+                    background: #d6dbe1;
+                    margin: 4px;
+                }
+
+                .popover-item {
+                    height: 36px;
+                    padding-left: 14px;
+                    padding-top: 6px;
+                    padding-bottom: 2px;
+                    cursor: pointer;
+                }
+            }
+        }
+    }
+}
+
+.name,
+.date {
+    width: 100px;
 }
 </style>

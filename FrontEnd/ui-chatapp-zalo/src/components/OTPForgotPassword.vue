@@ -243,6 +243,7 @@ export default {
             }
         },
         async sendOtp() {
+
             try {
                 const response = await axios.post(`auth/send-OTP/${this.phoneNumber}`);
 
