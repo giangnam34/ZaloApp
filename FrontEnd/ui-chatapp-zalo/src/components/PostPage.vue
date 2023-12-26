@@ -24,7 +24,7 @@
                         </div>
                     </div>
 
-                    <div v-for="feed in feeds" v-bind:key="feed.id" class="p-4 bg-white border border-gray-200 rounded-lg">
+                    <div v-for="feed in feeds.slice().reverse()" v-bind:key="feed.id" class="p-4 bg-white border border-gray-200 rounded-lg">
                         <div class="mb-6 flex items-center justify-between">
                             <div class="flex items-center space-x-6">
                                 <img :src="feed.userPost.imageAvatar"
@@ -554,7 +554,7 @@
                     <hr style="border: none; border-bottom: 1px solid #ccc;">
                 </div>
                 <div class="comment-container mr-3 ml-3">
-                    <div v-for="comment in comments.slice().reverse()" v-bind:key="comment.id">
+                    <div v-for="(comment, index) in comments.slice().reverse()" v-bind:key="comment.id">
                         <div class="mb-2 items-center justify-between">
                             <div class="flex items-center">
                                 <img :src="comment.userComment.imageAvatar"
@@ -570,7 +570,7 @@
                                 <div style="position: relative; display: inline-block;">
 
                                     <!-- div show-more-option -->
-                                    <div @click="showTableOption" class="show-more-option"
+                                    <div @click="showTableOption(index)" class="show-more-option"
                                         style="cursor: pointer; margin-left: 10px;">
                                         <p>...</p>
                                     </div>
@@ -578,8 +578,8 @@
                                     <!-- div table-option-comment -->
                                     <div class="table-option-comment rounded-lg bg-gray-200 p-2"
                                         style="position: absolute; top: 100%; left: 0px; margin-left: 10px; min-width: 100px; display: none">
-                                        <p>Chỉnh sửa</p>
-                                        <p>Xóa</p>
+                                        <p @click = "updateComment(comment.idComment)">Chỉnh sửa</p>
+                                        <p @click = "deleteComment(comment.idComment)">Xóa</p>
                                     </div>
 
                                 </div>
@@ -952,6 +952,14 @@ export default {
                 return `${days} ngày trước`;
             }
         },
+        updateComment(commentId){
+            console.log("Gọi hàm updateComment");
+            console.log("CommentId: ", commentId);
+        },
+        deleteComment(commentId){
+            console.log("Gọi hàm deleteComment");
+            console.log("commenId: ", commentId);
+        },
         handleMouseOver(event) {
             //console.log("Gọi hàm: handleMouseOver");
             event.target.classList.add("hovered");
@@ -1003,9 +1011,9 @@ export default {
                     console.log('error', error)
                 })
         },
-        showTableOption() {
+        showTableOption(index) {
             console.log("Gọi hàm showTableOption");
-            const button = document.getElementsByClassName('table-option-comment')[0];
+            const button = document.getElementsByClassName('table-option-comment')[index];
             if (button.style.display === 'none')
                 button.style.display = 'block';
             else
@@ -1660,6 +1668,15 @@ export default {
 </script>
 
 <style lang = "scss" scoped>
+
+.table-option-comment{
+    p {
+        cursor: pointer;
+    }
+    p:hover{
+        background-color: #ccc;
+    }
+}
 .post-container {
     display: flex;
     flex-direction: column;
