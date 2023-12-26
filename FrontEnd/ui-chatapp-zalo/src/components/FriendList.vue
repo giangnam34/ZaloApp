@@ -16,7 +16,7 @@
                         <a id="search-icon">
                             <font-awesome-icon icon="fa-solid fa-magnifying-glass" />
                         </a>
-                        <input type="text" id="contact-input-search" placeholder="Tìm kiếm">
+                        <input type="text" v-model="searchText" id="contact-input-search" placeholder="Tìm kiếm">
                     </div>
                     <div class="filter-contact" @blur="hidePopover" tabindex="0">
                         <div class="filter-contact-child"
@@ -106,7 +106,7 @@
                     </div>
                 </div>
                 <div class="list">
-                    <div class="loop" v-for="friend in friends" :key="friend.phoneNumber">
+                    <div class="loop" v-for="friend in filteredFriends" :key="friend.phoneNumber">
                         <div style="display: flex; align-items: center; justify-content: space-between;"
                             :class="{ 'hovered': hoveredItem === friend.phoneNumber }"
                             @mouseenter="(hoveredItem = friend.phoneNumber)" @mouseleave="hoveredItem = ''">
@@ -249,6 +249,7 @@ export default {
             friends: [],
             user: null,
             userFound: null,
+            searchText: "",
         };
     },
     setup() {
@@ -262,6 +263,14 @@ export default {
         if (userString) {
             this.user = JSON.parse(userString);
         }
+    },
+    computed:{
+        filteredFriends() {
+            const normalizedSearchText = this.searchText.toLowerCase();
+            return this.friends.filter(friend =>
+                friend.userName.toLowerCase().includes(normalizedSearchText)
+            );
+        },
     },
     methods: {
         selectItem(item) {

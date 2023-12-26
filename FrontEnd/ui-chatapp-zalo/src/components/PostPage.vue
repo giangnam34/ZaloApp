@@ -24,40 +24,43 @@
                         </div>
                     </div>
 
-                    <div v-for="feed in feeds.slice().reverse()" v-bind:key="feed.id" class="p-4 bg-white border border-gray-200 rounded-lg">
-                        <div class="mb-6 flex items-center justify-between">
-                            <div class="flex items-center space-x-6">
-                                <img :src="feed.userPost.imageAvatar"
-                                    class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4">
-                                <div class="wrap-title flex">
-                                    <div>
-                                        <div class="flex">
-                                            <p class="name"><strong>{{ feed.userPost.userName }}</strong></p>
-                                            <p class="text-gray-600 ml-2 date">{{ formatTimeDifference(new
-                                                Date(feed.updatedAt))
-                                            }}
-                                            </p>
-                                        </div>
-                                        <div class="wrap-icon">
-                                            <div v-if="feed.audience === 'Public'">
-                                                <font-awesome-icon icon="fa-solid fa-earth-americas" />
-                                                Công khai
+                    <div v-for="feed in sortedFeeds" v-bind:key="feed.id"
+                        class="p-4 bg-white border border-gray-200 rounded-lg">
+                        <div v-if="feed.postFather === null">
+                            <div class="mb-6 flex items-center justify-between">
+                                <div class="flex items-center space-x-6">
+                                    <img :src="feed.userPost.imageAvatar"
+                                        class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4">
+                                    <div class="wrap-title flex">
+                                        <div>
+                                            <div class="flex">
+                                                <p class="name"><strong>{{ feed.userPost.userName }}</strong></p>
+                                                <p class="text-gray-600 ml-2 date">{{ formatTimeDifference(new
+                                                    Date(feed.updatedAt))
+                                                }}
+                                                </p>
                                             </div>
-                                            <div v-if="feed.audience === 'AllFriend'">
-                                                <font-awesome-icon icon="fa-solid fa-user-group" />
-                                                Bạn bè
-                                            </div>
-                                            <div v-if="feed.audience === 'OnlyMe'">
-                                                <font-awesome-icon icon="fa-solid fa-lock" />
-                                                Chỉ mình tôi
-                                            </div>
-                                            <div v-if="feed.audience === 'SomeOneCanSee'">
-                                                <font-awesome-icon icon="fa-solid fa-user" />
-                                                Một số bạn bè
-                                            </div>
-                                            <div v-if="feed.audience === 'AllExceptSomeOne'">
-                                                <font-awesome-icon icon="fa-solid fa-user-minus" />
-                                                Bạn bè ngoại trừ
+                                            <div class="wrap-icon">
+                                                <div v-if="feed.audience === 'Public'">
+                                                    <font-awesome-icon icon="fa-solid fa-earth-americas" />
+                                                    Công khai
+                                                </div>
+                                                <div v-if="feed.audience === 'AllFriend'">
+                                                    <font-awesome-icon icon="fa-solid fa-user-group" />
+                                                    Bạn bè
+                                                </div>
+                                                <div v-if="feed.audience === 'OnlyMe'">
+                                                    <font-awesome-icon icon="fa-solid fa-lock" />
+                                                    Chỉ mình tôi
+                                                </div>
+                                                <div v-if="feed.audience === 'SomeOneCanSee'">
+                                                    <font-awesome-icon icon="fa-solid fa-user" />
+                                                    Một số bạn bè
+                                                </div>
+                                                <div v-if="feed.audience === 'AllExceptSomeOne'">
+                                                    <font-awesome-icon icon="fa-solid fa-user-minus" />
+                                                    Bạn bè ngoại trừ
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -76,11 +79,16 @@
                                                             <div>
                                                                 Xóa bài viết
                                                             </div>
-                                                        </div>
-                                                        <div class="separator"></div>
-                                                        <div class="popover-item" @click="openUpdatePost(clickedFeed)">
-                                                            <div>
-                                                                Chỉnh sửa bài viết
+                                                            <div class="popover-item" @click="openUpdatePost(clickedFeed)">
+                                                                <div>
+                                                                    Chỉnh sửa bài viết
+                                                                </div>
+                                                            </div>
+                                                            <div class="separator"></div>
+                                                            <div class="popover-item" @click="hidePopover">
+                                                                <div>
+                                                                    Hủy
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -90,93 +98,268 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <p class="mb-3">{{ feed.content }}</p>
+                            <p class="mb-3">{{ feed.content }}</p>
 
-                        <div v-if="feed.files.length > 0">
-                            <img :src="feed.files[0]" class="w-full h-[500px] rounded-lg cursor-pointer"
-                                v-if="isImage(feed.files[0])" @click="openFeedInfo(feed)" />
-                            <video v-else controls width="300" class="w-full h-[500px] rounded-lg cursor-pointer">
-                                <source :src="feed.files[0]" type="video/mp4" @click="openFeedInfo(feed)" />
-                                Your browser does not support the video tag.
-                            </video>
-                        </div>
+                            <div v-if="feed.files.length > 0">
+                                <img :src="feed.files[0]" class="w-full h-[500px] rounded-lg cursor-pointer"
+                                    v-if="isImage(feed.files[0])" @click="openFeedInfo(feed)" />
+                                <video v-else controls width="300" class="w-full h-[500px] rounded-lg cursor-pointer">
+                                    <source :src="feed.files[0]" type="video/mp4" @click="openFeedInfo(feed)" />
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
 
-                        <div v-if="feed.files.length > 1" class="image-container-feed cursor-pointer"
-                            @click="openFeedInfo(feed)">
-                            <img v-if="isImage(feed.files[1])" :src="feed.files[1]" class="w-full h-[500px] rounded-lg" />
-                            <video v-else controls width="300" class="w-full h-[500px] rounded-lg">
-                                <source :src="feed.files[1]" type="video/mp4" />
-                                Your browser does not support the video tag.
-                            </video>
-                            <div class="overlay-feed" v-if="feed.files.length !== 2">
-                                <div class="overlay-content-feed">
-                                    +{{ feed.files.length - 2 }}
+                            <div v-if="feed.files.length > 1" class="image-container-feed cursor-pointer"
+                                @click="openFeedInfo(feed)">
+                                <img v-if="isImage(feed.files[1])" :src="feed.files[1]"
+                                    class="w-full h-[500px] rounded-lg" />
+                                <video v-else controls width="300" class="w-full h-[500px] rounded-lg">
+                                    <source :src="feed.files[1]" type="video/mp4" />
+                                    Your browser does not support the video tag.
+                                </video>
+                                <div class="overlay-feed" v-if="feed.files.length !== 2">
+                                    <div class="overlay-content-feed">
+                                        +{{ feed.files.length - 2 }}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="my-3 flex">
-                            <div v-if="!feed.isLike" class="flex-1 flex items-center mr-2">
-                                <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
-                                    icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
-                                <span class="text-gray-500 text-lg hover:underline cursor-pointer">
-                                    <template v-if="feed.userLikeList == null || feed.userLikeList.length === 0">
+                            <div class="my-3 flex">
+                                <div v-if="!feed.isLike" class="flex-1 flex items-center mr-2">
+                                    <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
+                                        icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
+                                    <span class="text-gray-500 text-lg hover:underline cursor-pointer">
+                                        <template v-if="feed.userLikeList == null || feed.userLikeList.length === 0">
 
-                                    </template>
-                                    <template v-else>
-                                        {{ feed.userLikeList.length }}
-                                    </template>
-                                </span>
-                            </div>
-                            <div v-else class="flex-1 flex items-center mr-2">
-                                <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
-                                    icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
-                                <span class="text-gray-500 text-lg hover:underline cursor-pointer">
-                                    <template v-if="feed.userLikeList.length === 1">
-                                        {{ user.fullName }}
-                                    </template>
-                                    <template v-else>
-                                        Bạn và {{ feed.userLikeList.length - 1 }} người khác
-                                    </template>
-                                </span>
-                            </div>
+                                        </template>
+                                        <template v-else>
+                                            {{ feed.userLikeList.length }}
+                                        </template>
+                                    </span>
+                                </div>
+                                <div v-else class="flex-1 flex items-center mr-2">
+                                    <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
+                                        icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
+                                    <span class="text-gray-500 text-lg hover:underline cursor-pointer">
+                                        <template v-if="feed.userLikeList.length === 1">
+                                            {{ user.fullName }}
+                                        </template>
+                                        <template v-else>
+                                            Bạn và {{ feed.userLikeList.length - 1 }} người khác
+                                        </template>
+                                    </span>
+                                </div>
 
-                            <div class="flex-1 flex items-center justify-end">
-                                <div class="flex items-center space-x-2 ml-auto hover:underline cursor-pointer"
-                                    @click="openFeedInfo(feed)">
-                                    <font-awesome-icon icon="fa-regular fa-comment" />
-                                    <span class="text-gray-500 text-lg">{{ feed.commentCount }} bình luận</span>
+                                <div class="flex-1 flex items-center justify-end">
+                                    <div class="flex items-center space-x-2 ml-auto hover:underline cursor-pointer"
+                                        @click="openFeedInfo(feed)">
+                                        <font-awesome-icon icon="fa-regular fa-comment" />
+                                        <span class="text-gray-500 text-lg">{{ feed.commentCount }} bình luận</span>
+                                    </div>
                                 </div>
                             </div>
+                            <hr style="border: none; border-bottom: 1px solid #ccc;">
+                            <div class="flex justify-between items-center">
+                                <button v-if="!feed.isLike"
+                                    class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
+                                    @mouseover="handleMouseOver" @mouseout="handleMouseOut"
+                                    @click="likePost(feed)"><font-awesome-icon icon="fa-regular fa-thumbs-up"
+                                        class="mr-2" />Thích</button>
+                                <button v-else
+                                    class="button p-2 text-black cursor-pointer flex-1 justify-between items-center text-blue"
+                                    @mouseover="handleMouseOver" @mouseout="handleMouseOut"
+                                    @click="likePost(feed)"><font-awesome-icon icon="fa-regular fa-thumbs-up"
+                                        class="mr-2" />Thích</button>
+                                <button class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
+                                    @click="openFeedInfo(feed)" @mouseover="handleMouseOver"
+                                    @mouseout="handleMouseOut"><font-awesome-icon icon="fa-regular fa-comment"
+                                        class="mr-2" />Bình
+                                    luận</button>
+                                <button class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
+                                    @click="sharePost(feed)" @mouseover="handleMouseOver"
+                                    @mouseout="handleMouseOut"><font-awesome-icon icon="fa-solid fa-share" class="mr-2" />
+                                    Chia
+                                    sẻ
+                                </button>
+                            </div>
+                            <hr style="border: none; border-bottom: 1px solid #ccc;">
                         </div>
-                        <hr style="border: none; border-bottom: 1px solid #ccc;">
-                        <div class="flex justify-between items-center">
-                            <button v-if="!feed.isLike"
-                                class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
-                                @mouseover="handleMouseOver" @mouseout="handleMouseOut"
-                                @click="likePost(feed)"><font-awesome-icon icon="fa-regular fa-thumbs-up"
-                                    class="mr-2" />Thích</button>
-                            <button v-else
-                                class="button p-2 text-black cursor-pointer flex-1 justify-between items-center text-blue"
-                                @mouseover="handleMouseOver" @mouseout="handleMouseOut"
-                                @click="likePost(feed)"><font-awesome-icon icon="fa-regular fa-thumbs-up"
-                                    class="mr-2" />Thích</button>
-                            <button class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
-                                @click="openFeedInfo(feed)" @mouseover="handleMouseOver"
-                                @mouseout="handleMouseOut"><font-awesome-icon icon="fa-regular fa-comment"
-                                    class="mr-2" />Bình
-                                luận</button>
-                            <button class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
-                                @mouseover="handleMouseOver" @mouseout="handleMouseOut"><font-awesome-icon
-                                    icon="fa-solid fa-share" class="mr-2" /> Chia sẻ
-                            </button>
+                        <div v-else>
+                            <div v-if="feed.userLikeList.length === 0">
+                                <div class="mb-6 flex items-center justify-between">
+                                    <div class="flex items-center space-x-6">
+                                        <img :src="feed.userPost.imageAvatar"
+                                            class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4">
+                                        <div class="wrap-title flex">
+                                            <div>
+                                                <div class="flex">
+                                                    <p class="name"><strong>{{ feed.userPost.userName }}</strong></p>
+                                                    <p class="text-gray-600 ml-2 date"></p>
+                                                </div>
+                                                <div class="wrap-icon">
+                                                    <div>
+                                                        <font-awesome-icon icon="fa-solid fa-earth-americas" />
+                                                        Công khai
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div style="margin-left: 307px;" id="more-icon">
+                                                <div class="action cursor-pointer">
+                                                    <div class="popover-action-container" @click:outside="hidePopover">
+                                                        <a id="ellipsis-icon"
+                                                            @click="(event) => handleClickAction(event, feed)">
+                                                            <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
+                                                        </a>
+                                                        <div class="popoverAction"
+                                                            v-show="showPopupVisible && !showVisibleInfoFeed && clickedFeed.userPost.phoneNumber === user.phoneNumber"
+                                                            :style="{ right: popoverRight, top: popoverTop }">
+                                                            <div class="popover-body">
+                                                                <div class="popover-item"
+                                                                    @click="showFoundUserDialog(showingFeed.user_id)">
+                                                                    <div>
+                                                                        Xóa bài viết
+                                                                    </div>
+                                                                </div>
+                                                                <div class="separator"></div>
+                                                                <div class="popover-item" @click="hidePopover">
+                                                                    <div>
+                                                                        Hủy
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-4 border rounded-lg">
+                                    <div v-if="feed.postFather.files.length > 0"
+                                        class="image-container-feed cursor-pointer mb-2"
+                                        @click="openFeedInfo(feed.postFather)">
+                                        <img :src="feed.postFather.files[0]"
+                                            class="w-full h-[500px] rounded-lg cursor-pointer"
+                                            v-if="isImage(feed.postFather.files[0])"
+                                            @click="openFeedInfo(feed.postFather)" />
+                                        <video v-else controls width="300"
+                                            class="w-full h-[500px] rounded-lg cursor-pointer">
+                                            <source :src="feed.postFather.files[0]" type="video/mp4"
+                                                @click="openFeedInfo(feed.postFather)" />
+                                            Your browser does not support the video tag.
+                                        </video>
+                                        <div class="overlay-feed"
+                                            v-if="feed.postFather.files.length > 1 && feed.postFather.files.length !== 2">
+                                            <div class="overlay-content-feed">
+                                                +{{ feed.postFather.files.length - 1 }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-6 flex items-center justify-between">
+                                        <div class="flex items-center space-x-6">
+                                            <img :src="feed.postFather.userPost.imageAvatar"
+                                                class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4">
+                                            <div class="wrap-title flex">
+                                                <div>
+                                                    <div class="flex">
+                                                        <p class="name"><strong>{{ feed.postFather.userPost.userName
+                                                        }}</strong>
+                                                        </p>
+                                                        <p class="text-gray-600 ml-2 date">{{ formatTimeDifference(new
+                                                            Date(feed.postFather.updatedAt))
+                                                        }}
+                                                        </p>
+                                                    </div>
+                                                    <div class="wrap-icon">
+                                                        <div v-if="feed.postFather.audience === 'Public'">
+                                                            <font-awesome-icon icon="fa-solid fa-earth-americas" />
+                                                            Công khai
+                                                        </div>
+                                                        <div v-if="feed.postFather.audience === 'AllFriend'">
+                                                            <font-awesome-icon icon="fa-solid fa-user-group" />
+                                                            Bạn bè
+                                                        </div>
+                                                        <div v-if="feed.postFather.audience === 'OnlyMe'">
+                                                            <font-awesome-icon icon="fa-solid fa-lock" />
+                                                            Chỉ mình tôi
+                                                        </div>
+                                                        <div v-if="feed.postFather.audience === 'SomeOneCanSee'">
+                                                            <font-awesome-icon icon="fa-solid fa-user" />
+                                                            Một số bạn bè
+                                                        </div>
+                                                        <div v-if="feed.postFather.audience === 'AllExceptSomeOne'">
+                                                            <font-awesome-icon icon="fa-solid fa-user-minus" />
+                                                            Bạn bè ngoại trừ
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <p class="mb-3">{{ feed.postFather.content }}</p>
+                                </div>
+
+
+                                <div class="my-3 flex">
+                                    <div v-if="!feed.isLike" class="flex-1 flex items-center mr-2">
+                                        <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
+                                            icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
+                                        <span class="text-gray-500 text-lg hover:underline cursor-pointer">
+                                            <template v-if="feed.userLikeList == null || feed.userLikeList.length === 0">
+
+                                            </template>
+                                            <template v-else>
+                                                {{ feed.userLikeList.length }}
+                                            </template>
+                                        </span>
+                                    </div>
+                                    <div v-else class="flex-1 flex items-center mr-2">
+                                        <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
+                                            icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
+                                        <span class="text-gray-500 text-lg hover:underline cursor-pointer">
+                                            <template v-if="feed.userLikeList.length === 1">
+                                                {{ user.fullName }}
+                                            </template>
+                                            <template v-else>
+                                                Bạn và {{ feed.userLikeList.length - 1 }} người khác
+                                            </template>
+                                        </span>
+                                    </div>
+
+                                    <div class="flex-1 flex items-center justify-end">
+                                        <div class="flex items-center space-x-2 ml-auto hover:underline cursor-pointer"
+                                            @click="openFeedInfo(feed.postFather)">
+                                            <font-awesome-icon icon="fa-regular fa-comment" />
+                                            <span class="text-gray-500 text-lg">{{ feed.commentCount }} bình luận</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr style="border: none; border-bottom: 1px solid #ccc;">
+                                <div class="flex justify-between items-center">
+                                    <button v-if="!feed.isLike"
+                                        class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
+                                        @mouseover="handleMouseOver" @mouseout="handleMouseOut"
+                                        @click="likePost(feed)"><font-awesome-icon icon="fa-regular fa-thumbs-up"
+                                            class="mr-2" />Thích</button>
+                                    <button v-else
+                                        class="button p-2 text-black cursor-pointer flex-1 justify-between items-center text-blue"
+                                        @mouseover="handleMouseOver" @mouseout="handleMouseOut"
+                                        @click="likePost(feed)"><font-awesome-icon icon="fa-regular fa-thumbs-up"
+                                            class="mr-2" />Thích</button>
+                                    <button class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
+                                        @click="openFeedInfo(feed)" @mouseover="handleMouseOver"
+                                        @mouseout="handleMouseOut"><font-awesome-icon icon="fa-regular fa-comment"
+                                            class="mr-2" />Bình
+                                        luận</button>
+                                </div>
+                                <hr style="border: none; border-bottom: 1px solid #ccc;">
+                            </div>
                         </div>
-                        <hr style="border: none; border-bottom: 1px solid #ccc;">
                     </div>
-
                 </div>
+
             </div>
         </div>
     </div>
@@ -259,7 +442,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="profile-action" @click="createPost(showi)">
+                <div class="profile-action" @click="createPost">
                     <div class="mx-4 flex items-center justify-center cursor-pointer bg-blue-400 rounded-lg h-8">
                         Đăng
                     </div>
@@ -434,7 +617,7 @@
     <v-dialog class="dialog-container-feed" v-model="showVisibleInfoFeed" max-width="800px" @click:outside="closeFeedInfo">
         <v-card class="dialog-component-1">
             <v-card-title class="dialog-title">
-                <h2 class="title">Bài viết của {{ user.fullName }}
+                <h2 class="title">Bài viết của {{ showingFeed.userPost.userName }}
                     <div class="icon-close" @click="closeFeedInfo"><font-awesome-icon icon="fa-solid fa-x" /></div>
                 </h2>
             </v-card-title>
@@ -443,31 +626,74 @@
                 <div class="bg-white p-4">
                     <div class="mb-6 flex items-center justify-between">
                         <div class="flex items-center space-x-6">
-                            <img :src="user.imageAvatarUrl"
+                            <img :src="showingFeed.userPost.imageAvatar"
                                 class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4">
-                            <div class="wrap-title">
-                                <p><strong>{{ user.fullName }}</strong></p>
-                                <div class="wrap-icon">
-                                    <div v-if="showingFeed.audience === 'AllFriend'">
-                                        <font-awesome-icon icon="fa-solid fa-user-group" />
-                                        Bạn bè
+                            <div class="wrap-title flex">
+                                <div>
+                                    <div class="flex">
+                                        <p class="name"><strong>{{ showingFeed.userPost.userName }}</strong></p>
+                                        <p class="text-gray-600 ml-2 date">{{ formatTimeDifference(new
+                                            Date(showingFeed.updatedAt))
+                                        }}
+                                        </p>
                                     </div>
-                                    <div v-if="showingFeed.audience === 'OnlyMe'">
-                                        <font-awesome-icon icon="fa-solid fa-lock" />
-                                        Chỉ mình tôi
+                                    <div class="wrap-icon">
+                                        <div v-if="showingFeed.audience === 'Public'">
+                                            <font-awesome-icon icon="fa-solid fa-earth-americas" />
+                                            Công khai
+                                        </div>
+                                        <div v-if="showingFeed.audience === 'AllFriend'">
+                                            <font-awesome-icon icon="fa-solid fa-user-group" />
+                                            Bạn bè
+                                        </div>
+                                        <div v-if="showingFeed.audience === 'OnlyMe'">
+                                            <font-awesome-icon icon="fa-solid fa-lock" />
+                                            Chỉ mình tôi
+                                        </div>
+                                        <div v-if="showingFeed.audience === 'SomeOneCanSee'">
+                                            <font-awesome-icon icon="fa-solid fa-user" />
+                                            Một số bạn bè
+                                        </div>
+                                        <div v-if="showingFeed.audience === 'AllExceptSomeOne'">
+                                            <font-awesome-icon icon="fa-solid fa-user-minus" />
+                                            Bạn bè ngoại trừ
+                                        </div>
                                     </div>
-                                    <div v-if="showingFeed.audience === 'SomeOneCanSee'">
-                                        <font-awesome-icon icon="fa-solid fa-user" />
-                                        Một số bạn bè
-                                    </div>
-                                    <div v-if="showingFeed.audience === 'AllExceptSomeOne'">
-                                        <font-awesome-icon icon="fa-solid fa-user-minus" />
-                                        Bạn bè ngoại trừ
+                                </div>
+                                <div style="margin-left: 307px;" id="more-icon">
+                                    <div class="action cursor-pointer">
+                                        <div class="popover-action-container" @click:outside="hidePopover">
+                                            <a id="ellipsis-icon" @click="(event) => handleClickAction(event, showingFeed)">
+                                                <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
+                                            </a>
+                                            <div class="popoverAction"
+                                                v-show="showPopupVisible && clickedFeed.userPost.phoneNumber === user.phoneNumber"
+                                                style=" right: 252px; top: 40px; ">
+                                                <div class="popover-body">
+                                                    <div class="popover-item"
+                                                        @click="showFoundUserDialog(showingFeed.user_id)">
+                                                        <div>
+                                                            Xóa bài viết
+                                                        </div>
+                                                    </div>
+                                                    <div class="popover-item" @click="openUpdatePost(clickedFeed)">
+                                                        <div>
+                                                            Chỉnh sửa bài viết
+                                                        </div>
+                                                    </div>
+                                                    <div class="separator"></div>
+                                                    <div class="popover-item" @click="hidePopover">
+                                                        <div>
+                                                            Hủy
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <p class="text-gray-600">{{ formatDate(new Date(showingFeed.updatedAt)) }}</p>
                     </div>
 
                     <p class="mb-3">{{ showingFeed.content }}</p>
@@ -484,7 +710,12 @@
                             <swiper-slide v-for="(image, index) in showingFeed.files" :key="index">
                                 <div class="image-container-feed cursor-pointer"
                                     @click="openFullImage(showingFeed.files, index)">
-                                    <img :src="image" class="w-full h-[500px] rounded-lg" />
+                                    <img v-if="isImage(image)" :src="image"
+                                        class="w-full h-[500px] rounded-lg" />
+                                    <video v-else controls width="300" class="w-full h-[500px] rounded-lg">
+                                        <source :src="image" type="video/mp4" />
+                                        Your browser does not support the video tag.
+                                    </video>
                                 </div>
                             </swiper-slide>
                         </swiper>
@@ -547,8 +778,8 @@
                                 icon="fa-regular fa-comment" class="mr-2" />Bình
                             luận</button>
                         <button class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
-                            @mouseover="handleMouseOver" @mouseout="handleMouseOut"><font-awesome-icon
-                                icon="fa-solid fa-share" /> Chia sẻ
+                            @click="sharePost(showingFeed)" @mouseover="handleMouseOver"
+                            @mouseout="handleMouseOut"><font-awesome-icon icon="fa-solid fa-share" /> Chia sẻ
                         </button>
                     </div>
                     <hr style="border: none; border-bottom: 1px solid #ccc;">
@@ -787,6 +1018,14 @@ export default {
                 friend.userName.toLowerCase().includes(normalizedSearchText)
             );
         },
+        sortedFeeds() {
+            return this.feeds.slice().sort((a, b) => {
+                const dateA = new Date(a.createdAt);
+                const dateB = new Date(b.createdAt);
+
+                return dateB - dateA;
+            });
+        },
     },
     data() {
         return {
@@ -891,16 +1130,7 @@ export default {
                     updatedAt: ''
                 }
             ],
-            friends: [
-                { phoneNumber: '0968322444', name: "Võ Giang Nam", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
-                { phoneNumber: '0965556652', name: "Từ Thanh Thoại", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
-                { phoneNumber: '0968322666', name: "Kẻ Áo Đen", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
-                { phoneNumber: '0965556654', name: "Kẻ Áo Vàng", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
-                { phoneNumber: '0965556655', name: "Kẻ Áo Xanh", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
-                { phoneNumber: '0965556656', name: "Kẻ Áo Đỏ", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
-                { phoneNumber: '0965556657', name: "Kẻ Áo Tím", avatar: 'https://i.imgur.com/gEKsypv.jpg' },
-                { phoneNumber: '0965556658', name: "Kẻ Áo Cam", avatar: 'https://i.imgur.com/gEKsypv.jpg' }
-            ],
+            friends: [],
             searchText: "",
         }
     },
@@ -935,7 +1165,7 @@ export default {
         },
         formatTimeDifference(date) {
             const now = new Date();
-            const timeDiff = Math.abs(now - date); // Use Math.abs to ensure a positive value
+            const timeDiff = Math.abs(now - date);
 
             const seconds = Math.floor(timeDiff / 1000);
             const minutes = Math.floor(timeDiff / (1000 * 60));
@@ -949,7 +1179,14 @@ export default {
             } else if (hours < 24) {
                 return `${hours} giờ trước`;
             } else {
-                return `${days} ngày trước`;
+                // Adjust the order based on magnitude
+                if (seconds >= 60 && minutes < 60) {
+                    return `${minutes} phút trước`;
+                } else if (minutes >= 60 && hours < 24) {
+                    return `${hours} giờ trước`;
+                } else {
+                    return `${days} ngày trước`;
+                }
             }
         },
         updateComment(commentId){
@@ -1559,6 +1796,7 @@ export default {
         closeFeedInfo() {
             console.log("Gọi hàm: closeFeedInfo");
             this.showVisibleInfoFeed = false;
+            this.showPopupVisible = false;
         },
         handleFileChange(event) {
             console.log("Gọi hàm: handleFileChange");
@@ -1662,6 +1900,11 @@ export default {
         },
         closeUpdatePostOption() {
             this.showUpdatePostVisible = false;
+        },
+        sharePost(feed) {
+            if (confirm("Bạn có muốn chia sẻ bài viết?")) {
+                console.log(feed)
+            }
         }
     }
 }
@@ -2193,7 +2436,7 @@ export default {
                 background-color: #fff;
                 box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
                 border-radius: 8px;
-                height: 86px;
+                height: 120px;
                 width: 180px;
                 justify-content: space-between;
 
@@ -2215,7 +2458,10 @@ export default {
     }
 }
 
-.name,
+.name {
+    width: 140px;
+}
+
 .date {
     width: 100px;
 }
