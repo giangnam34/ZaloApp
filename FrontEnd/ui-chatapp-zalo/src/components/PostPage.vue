@@ -185,7 +185,7 @@
                                         alt="Selected Image" />
                                     <video v-else controls width="300" class="upload-file">
                                         <source :src="getUrl(file)" type="video/mp4" />
-                                       Trình duyệt không hỗ trợ định dạng này
+                                        Trình duyệt không hỗ trợ định dạng này
                                     </video>
                                     <div class="overlay" v-if="newFeed.files.length > 1 && newFeed.files.length !== 2">
                                         +{{ newFeed.files.length - 2 }}
@@ -362,7 +362,7 @@
                             class="w-full h-[500px] rounded-lg cursor-pointer" @click="openFullImage(showingFeed.files)" /> -->
 
                         <!-- Multiple Images -->
-                        <swiper class="swiper" :modules="modules" navigation>
+                        <swiper class="swiper" :modules="modules">
                             <swiper-slide v-for="(image, index) in showingFeed.files" :key="index">
                                 <div class="image-container-feed cursor-pointer"
                                     @click="openFullImage(showingFeed.files, index)">
@@ -438,23 +438,55 @@
                 <div class="comment-container mr-3 ml-3">
                     <div v-for="comment in comments" v-bind:key="comment.id">
                         <div class="mb-2 items-center justify-between">
-                            <div class="flex items-center">
+                            <div class="flex items-center" @mouseover="showOptionComment()" @mouseout="hideOptionComment()">
                                 <img :src="comment.userComment.imageAvatar"
                                     class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-2">
                                 <div class="comment-content rounded-lg bg-gray-200 p-2">
                                     <div>
-                                        <p><strong>{{ comment.userComment.fullName }}</strong></p>
+                                        <p><strong>{{ comment.userComment.userName }}</strong></p>
                                     </div>
                                     <div>
                                         <p>{{ comment.content }}</p>
                                     </div>
                                 </div>
+                                <div style="position: relative; display: inline-block;">
+
+                                    <!-- div show-more-option -->
+                                    <div @click="showTableOption" class="show-more-option"
+                                        style="cursor: pointer; margin-left: 10px;">
+                                        <p>...</p>
+                                    </div>
+
+                                    <!-- div table-option-comment -->
+                                    <div class="table-option-comment rounded-lg bg-gray-200 p-2"
+                                        style="position: absolute; top: 100%; left: 0px; margin-left: 10px; min-width: 100px; display: none">
+                                        <p>Chỉnh sửa</p>
+                                        <p>Xóa</p>
+                                    </div>
+
+                                </div>
+
                             </div>
                             <div class="ml-15">
                                 <div class="comment-image">
-                                    <img class="file-comment rounded-lg" :src="comment.contentMedia"/>
+                                    <img class="upload-file" v-if="checkIsImageUrl(comment.contentMedia)"
+                                        :src="getUrl(comment.contentMedia)" alt="Selected Image" />
+                                    <video v-else controls width="300" class="upload-file">
+                                        <source :src="getUrl(comment.contentMedia)" type="video/mp4" />
+                                        Trình duyệt không hỗ trợ định dạng này
+                                    </video>
+                                    <!-- <img class="file-comment rounded-lg" :src="comment.contentMedia" /> -->
                                 </div>
                                 <p class="text-gray-600">{{ formatDate(comment.updatedAt) }}</p>
+                            </div>
+                            <div class="ml-15 info-comment">
+                                <p class="like-button-comment" @click="likeComment(comment.idComment)"
+                                    @mouseover="changeColorButtonComment('like-button-comment', true)"
+                                    @mouseout="changeColorButtonComment('like-button-comment', false)"
+                                    :class="{ 'like-button-comment-active': comment.isUserLike }">Thích </p>
+                                <p class="reply-button-comment"
+                                    @mouseover="changeColorButtonComment('reply-button-comment', true)"
+                                    @mouseout="changeColorButtonComment('reply-button-comment', false)">Phản hồi</p>
                             </div>
                         </div>
                     </div>
@@ -478,7 +510,7 @@
                             Trình duyệt không hỗ trợ định dạng này
                         </video>
                     </div>
-                    <v-btn @click="postComment(newComment)">Đăng</v-btn>
+                    <v-btn @click="postComment(showingFeed.id)">Đăng</v-btn>
                 </div>
             </v-card-title>
         </v-card>
@@ -504,10 +536,10 @@ export default {
     setup() {
         // Get toast interface
         const toast = useToast();
-        const onSwiper=(s)=>{
-            console.log('kjjsnjkanjkdsn',s)
+        const onSwiper = (s) => {
+            console.log('kjjsnjkanjkdsn', s)
         }
-        return { toast, onSwiper}
+        return { toast, onSwiper }
     },
     created() {
         const userString = localStorage.getItem('user');
@@ -537,8 +569,8 @@ export default {
             newComment: {
                 postId: null,
                 topComment: null,
-                content: '', 
-                file: null 
+                content: '',
+                file: null
             },
             user: null,
             fileListHeight: "100px",
@@ -598,6 +630,8 @@ export default {
             ],
             comments: [
                 {
+                    idComment: null,
+                    isUserLike: null,
                     userComment: {
                         userName: '',
                         imageAvatar: '',
@@ -611,7 +645,7 @@ export default {
                         }
                     ],
                     infoCommentList: [
-                        
+
                     ],
                     content: '',
                     createdAt: '',
@@ -680,10 +714,66 @@ export default {
                 }**/)
                 .then(response => {
                     //console.log("Response status: " + response.status)
-                    response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))
+                    //response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))
                     this.feeds = response.data.getInfoPostResponse;
                     this.feeds.forEach(feed => this.updateIsUserLikePost(feed));
                     console.log("Danh sách bài viết: ", this.feeds);
+                })
+                .catch(error => {
+                    console.log('error', error)
+                })
+        },
+        showTableOption() {
+            console.log("Gọi hàm showTableOption");
+            const button = document.getElementsByClassName('table-option-comment')[0];
+            if (button.style.display === 'none')
+                button.style.display = 'block';
+            else
+                button.style.display = 'none';
+        },
+        showOptionComment() {
+            console.log("Gọi hàm showOptionComment");
+            const button = document.getElementsByClassName('show-more-option')[0];
+            //console.log("Button: ", button);
+            button.style.display = "inline-block";
+        },
+        hideOptionComment() {
+            console.log("Gọi hàm hideOptionComment");
+            const button = document.getElementsByClassName('show-more-option')[0];
+            const buttonShowOption = document.getElementsByClassName('table-option-comment')[0];
+            if (!buttonShowOption.style.display === 'none')
+                button.style.display = "none";
+            //console.log("Button: ", button);
+        },
+        likeComment(commentId) {
+            console.log("Gọi hàm likeComment()");
+            axios
+                .post(`/social-media/like-comment/${commentId}`)
+                .then(response => {
+                    if (response.status === 200) {
+                        console.log(response.data);
+                        const comment = this.comments.filter(comment => comment.idComment === commentId)[0];
+                        if (response.data === 'Thích bình luận thành công!')
+                            comment.isUserLike = true;
+                        else
+                            comment.isUserLike = false;
+                    }
+
+                })
+                .catch(error => {
+                    console.log('error', error)
+                })
+
+        },
+        fetchComment(postId) {
+            console.log("Gọi hàm: fetchComment()");
+            axios
+                .get(`/social-media/get-all-info-comment/${postId}`)
+                .then(response => {
+                    //console.log("Response status: " + response.status)
+                    //response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))
+                    this.comments = response.data;
+                    this.comments.forEach(comment => this.updateIsUserLikeComment(comment));
                 })
                 .catch(error => {
                     console.log('error', error)
@@ -700,6 +790,15 @@ export default {
         closePostOption() {
             console.log("Gọi hàm: closePostOption");
             this.showPostVisible = false;
+        },
+        changeColorButtonComment(nameButton, isHovered) {
+            const textDecoration = isHovered ? 'underline' : 'none';
+            console.log("Name button: ", nameButton);
+            console.log("Is hoevered: ", isHovered);
+            console.log(document.getElementsByClassName(nameButton).style);
+            const button = document.getElementsByClassName(nameButton)[0];
+            // console.log("Button: ", button);
+            button.style.textDecoration = textDecoration;
         },
         formatDate(date) {
             try {
@@ -734,12 +833,30 @@ export default {
 
         },
         isImage(file) {
-            console.log("Gọi hàm: isImage");
-            return file.type.startsWith('image/');
+            try {
+                console.log("Gọi hàm: isImage");
+                return file.type.startsWith('image/');
+            } catch (error) {
+                console.log("Hàm isImage lỗi rồi");
+            }
+        },
+        checkIsImageUrl(mediaUrl){
+            try {
+                console.log("Gọi hàm: checkIsImageUrl");
+                console.log("Media url: " , mediaUrl);
+                return mediaUrl.includes("/media/getImage/");
+            } catch (error) {
+                console.log("Hàm isImage lỗi rồi");
+                return false;
+            }
         },
         getUrl(file) {
-            console.log("Gọi hàm: getUrl");
-            return URL.createObjectURL(file);
+            try {
+                console.log("Gọi hàm: getUrl");
+                return URL.createObjectURL(file);
+            } catch (error) {
+                console.log("Hàm getUrl lỗi rồi");
+            }
         },
         showUpdateFileDialog() {
             this.showUpdateFile = true;
@@ -960,7 +1077,7 @@ export default {
             const currentUserPhoneNumber = this.user.phoneNumber;
 
             //console.log(Object.keys(this.user))
-            console.log(this.user.fullName);
+            //console.log(this.user.fullName);
 
             // Kiểm tra xem có tồn tại user có phoneNumber trùng với currentUserPhoneNumber không
             const isUserLiked = post.userLikeList.some(user => user.phoneNumber === currentUserPhoneNumber);
@@ -975,10 +1092,31 @@ export default {
                 console.log(`User with phoneNumber ${currentUserPhoneNumber} unliked the post.`);
             }
         },
+        updateIsUserLikeComment(comment) {
+            console.log("Gọi hàm: updateIsUserLikeComment(post)");
+            const currentUserPhoneNumber = this.user.phoneNumber;
+
+            //console.log(Object.keys(this.user))
+            //console.log(this.user.fullName);
+
+            // Kiểm tra xem có tồn tại user có phoneNumber trùng với currentUserPhoneNumber không
+            const isUserLiked = comment.userLike.some(user => user.phoneNumber === currentUserPhoneNumber);
+
+            // Cập nhật trạng thái isLike của post
+            comment.isUserLike = isUserLiked;
+
+            // Xuất thông báo kiểm tra
+            if (isUserLiked) {
+                console.log(`User with phoneNumber ${currentUserPhoneNumber} liked the comment.`);
+            } else {
+                console.log(`User with phoneNumber ${currentUserPhoneNumber} unliked the comment.`);
+            }
+        },
         openFeedInfo(feed) {
             console.log("Gọi hàm: openFeedInfo");
             this.showVisibleInfoFeed = true;
             this.showingFeed = feed;
+            this.fetchComment(feed.id);
             //this.newComment.senderPhoneNumber = this.user.phoneNumber;
             //console.log("Ngày showing feed: " + this.showingFeed.updatedAt)
         },
@@ -1003,9 +1141,33 @@ export default {
             console.log("Gọi hàm: focusComment");
             this.$refs.comment.focus();
         },
-        postComment() {
+        postComment(postId) {
             console.log("Gọi hàm: postComment");
-            console.log("New comment: " , this.newComment);
+            // console.log("New comment: ", this.newComment);
+            // console.log("Post id: " , postId);
+            this.newComment.postId = postId;
+            // console.log("New comment: ", this.newComment);
+            const formData = new FormData();
+            formData.append('postId', this.newComment.postId);
+            if (this.newComment.topComment) formData.append('topComment', this.newComment.topComment);
+            if (this.newComment.content) formData.append('content', this.newComment.content);
+            if (this.newComment.file) formData.append('file', this.newComment.file);
+            axios.post(`social-media/create-new-comment`, formData)
+                .then(response => {
+                    if (response.status === 200) {
+                        console.log(response.data);
+                        // if (response.data === 'Thích bình luận thành công!')
+                        //     comment.isUserLike = true;
+                        // else
+                        //     comment.isUserLike = false;
+                    }
+
+                })
+                .catch(error => {
+                    console.log('error', error)
+                })
+
+
         },
         async getListOfFriends() {
             console.log("Gọi hàm: getListOfFriends");
@@ -1473,6 +1635,16 @@ export default {
     .color-blue {
         color: #007BFF;
     }
+
+    .info-comment {
+        font-size: 12px;
+
+        p {
+            display: inline;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+    }
 }
 
 .button {
@@ -1522,5 +1694,9 @@ export default {
 .file-comment {
     max-height: 210px;
     max-width: 210px;
+}
+
+.like-button-comment-active {
+    color: blue;
 }
 </style>

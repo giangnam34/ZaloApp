@@ -74,6 +74,7 @@ public class SocialMediaController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> createNewComment(@AuthenticationPrincipal UserPrincipal userPrincipal, @ModelAttribute AddNewCommentRequest addNewCommentRequest){
         System.out.println("Người dùng: " + userPrincipal.getId());
+        System.out.println("AddNewCommentRequest: " +  addNewCommentRequest);
         if (addNewCommentRequest.getPostId() == null) return ResponseEntity.badRequest().body("Post id không được phép null");
         if ( (addNewCommentRequest.getContent() == null || addNewCommentRequest.getContent().isEmpty()) && (addNewCommentRequest.getFile() == null || addNewCommentRequest.getFile().isEmpty())) return ResponseEntity.badRequest().body("Nội dung bình luận không được phép rỗng!");
         String result = socialMediaService.createNewComment(addNewCommentRequest.getPostId(),userPrincipal.getId(),addNewCommentRequest.getTopComment(),addNewCommentRequest.getContent(),addNewCommentRequest.getFile());

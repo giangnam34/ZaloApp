@@ -13,6 +13,8 @@ import java.util.List;
 @AllArgsConstructor
 public class InfoComment {
 
+    // Id comment
+    private Long idComment;
     // Người bình luận comment này
     private InfoUser userComment;
 
@@ -21,6 +23,12 @@ public class InfoComment {
 
     // Danh sách bình luận con của comment này
     private List<InfoComment> infoCommentList;
+
+    // Nội dung bình luận
+    private String content;
+
+    // Đường dẫn hình ảnh hoặc video của bình luận
+    private String contentMedia;
 
     // Ngày bình luận
     private Date createdAt;

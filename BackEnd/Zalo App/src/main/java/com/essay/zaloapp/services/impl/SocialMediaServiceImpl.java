@@ -353,7 +353,7 @@ public class SocialMediaServiceImpl implements SocialMediaService {
         try{
             if (!commentRepository.existsCommentById(commentId)) throw new Exception("Bình luận này không tồn tại hoặc người dùng không có quyền xem bình luận này!");
             Comment comment = commentRepository.findById(commentId).get();
-            InfoUser infoUser = new InfoUser(comment.getUser().getFullName(), comment.getUser().getImageAvatarUrl(), comment.getUser().getPhoneNumber());
+            InfoUser infoUser = new InfoUser(comment.getUser().getFullName(), "http://localhost:8181/media/getImage/" +comment.getUser().getImageAvatarUrl(), comment.getUser().getPhoneNumber());
             Set<User> userSet = new HashSet<>();
             for(CommentUser commentUser : comment.getCommentUserList()){
                 userSet.add(commentUser.getUser());
@@ -361,7 +361,7 @@ public class SocialMediaServiceImpl implements SocialMediaService {
             List<InfoUser> infoUserList = new ArrayList<>();
             for (User user : userSet){
                 if (commentUserRepository.findFirstByUserAndCommentOrderByCreatedAtDesc(user,comment).getIsUserLike()){
-                    infoUserList.add(new InfoUser(user.getFullName(),user.getImageAvatarUrl(),user.getPhoneNumber()));
+                    infoUserList.add(new InfoUser(user.getFullName(),"http://localhost:8181/media/getImage/" + user.getImageAvatarUrl(),user.getPhoneNumber()));
                 }
             }
             List<InfoComment> infoCommentList = comment.getCommentBot().stream().map(commentBot -> {
@@ -371,7 +371,7 @@ public class SocialMediaServiceImpl implements SocialMediaService {
                     throw new RuntimeException(e);
                 }
             }).collect(Collectors.toList());
-            return new InfoComment(infoUser,infoUserList,infoCommentList,comment.getCreatedAt(),comment.getUpdatedAt());
+            return new InfoComment(commentId,infoUser,infoUserList,infoCommentList,comment.getContentComment(),comment.getResource() != null ? "http://localhost:8181/media/" + (comment.getResource().getResourceType().equals(ResourceType.Video) ? "getVideo/" : "getImage/")  + comment.getResource().getResourceValue() : null,comment.getCreatedAt(),comment.getUpdatedAt());
         } catch (Exception e){
             throw new Exception(e.getMessage());
         }
