@@ -237,7 +237,8 @@
                                     </div>
                                 </div>
                                 <div class="p-4 border rounded-lg">
-                                    <div v-if="feed.postFather.files.length > 0" class="image-container-feed cursor-pointer mb-2"
+                                    <div v-if="feed.postFather.files.length > 0"
+                                        class="image-container-feed cursor-pointer mb-2"
                                         @click="openFeedInfo(feed.postFather)">
                                         <img :src="feed.postFather.files[0]"
                                             class="w-full h-[500px] rounded-lg cursor-pointer"
@@ -710,7 +711,12 @@
                             <swiper-slide v-for="(image, index) in showingFeed.files" :key="index">
                                 <div class="image-container-feed cursor-pointer"
                                     @click="openFullImage(showingFeed.files, index)">
-                                    <img :src="image" class="w-full h-[500px] rounded-lg" />
+                                    <img v-if="isImage(image)" :src="image"
+                                        class="w-full h-[500px] rounded-lg" />
+                                    <video v-else controls width="300" class="w-full h-[500px] rounded-lg">
+                                        <source :src="image" type="video/mp4" />
+                                        Your browser does not support the video tag.
+                                    </video>
                                 </div>
                             </swiper-slide>
                         </swiper>

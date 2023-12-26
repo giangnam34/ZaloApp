@@ -368,6 +368,7 @@ public class UserServiceImpl implements UserService {
                 }
                 friends.setFriendStatus(FriendStatus.ISBlock);
                 friends.setIsBlock(Objects.equals(user1.getId(), userId) ? 1L : 2L);
+                friendsRepository.save(friends);
                 return ResponseEntity.ok("Chặn người dùng này thành công!!!");
             }
             Friends friends = new Friends(new FriendsId(user1.getId(),user2.getId()), null, Objects.equals(user1.getId(), userId) ? 1L : 2L, 0L, user2.getFullName(), user1.getFullName(), null, FriendStatus.ISBlock);

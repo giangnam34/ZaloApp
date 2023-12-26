@@ -162,8 +162,8 @@
                         style="border: none; border-bottom: 1px solid #ccc;">
                     <div class="mt-2"></div>
                     <div class="profile-action-user" v-if="user.phoneNumber !== userFound.phoneNumber">
-                        <div
-                            class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/2 text-sm">
+                        <div class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/2 text-sm"
+                            @click="blockUser(userFound.phoneNumber)">
                             Chặn
                         </div>
                         <div v-if="!sended && !isFriend"
@@ -348,6 +348,40 @@ export default {
                 }
             }
         },
+        async blockUser(phoneNumber) {
+            try {
+                const friendRequest = {
+                    fromPhoneNumberUser: this.user.phoneNumber,
+                    toPhoneNumberUser: phoneNumber,
+                }
+
+                const response = await axios.post(`users/blockFriendUser`, friendRequest, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token")
+                    }
+                });
+
+                if (response.status === 200) {
+                    await this.getListOfFriends();
+                    this.toast.success(response.data, { timeout: 1500 });
+                } else {
+                    console.error(response.body);
+                    this.toast.error(response.data || 'Đã xảy ra lỗi!', { timeout: 1500 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
+            }
+        },
         async getInviteFriend() {
             try {
 
@@ -383,7 +417,7 @@ export default {
                     this.sended = false;
                 } else {
                     const temp = this.inviteList.find(friend => friend.phoneNumber === this.searchPhoneNumber);
-                    this.sended = temp !== undefined; 
+                    this.sended = temp !== undefined;
                 }
             } else {
                 const temp2 = this.listOfFriends.find(friend => friend.phoneNumber === this.searchPhoneNumber);
