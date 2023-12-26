@@ -82,7 +82,7 @@
                             <v-text-field v-model="updatedGender" label="Chọn giới tính" readonly
                                 @click="toggleGenderMenu"></v-text-field>
                             <v-menu v-model="genderMenu" :close-on-content-click="false" transition="scale-transition"
-                                offset-y origin="bottom left">
+                                :style="{ left: popoverLeft, top: popoverTop }">
                                 <v-list>
                                     <v-list-item v-for="genderOption in genderOptions" :key="genderOption"
                                         @click="selectGender(genderOption)">
@@ -139,6 +139,8 @@ export default {
             genderOptions: ['Nam', 'Nữ'],
             genderMenu: false,
             displayedDate: '',
+            popoverLeft: "608px",
+            popoverTop: "396px",
         };
     },
     watch: {
