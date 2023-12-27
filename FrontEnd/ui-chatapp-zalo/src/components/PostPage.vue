@@ -1220,6 +1220,7 @@ export default {
                     if (response.status === 200) {
                         console.log(response.data);
                         if (response.data === 'Xóa bình luận thành công!')
+                            this.toast.success("Xóa bình luận thành công!", 500);
                             this.fetchComment(feedId)
                     }
                 })
@@ -1945,9 +1946,43 @@ export default {
         closeUpdatePostOption() {
             this.showUpdatePostVisible = false;
         },
-        sharePost(feed) {
+        async sharePost(feed) {
             if (confirm("Bạn có muốn chia sẻ bài viết?")) {
-                console.log(feed)
+                console.log("Feed: ", feed)
+                try {
+                
+                // console.log(listFriendTag)
+
+                // console.log(typeof (listFriendTag))
+
+                const formData = new FormData();
+
+                formData.append('postTopId', feed.id);
+
+                const response = await axios.post(`social-media/create-new-post`, formData);
+
+                if (response.status === 200) {
+                    // this.showPostVisible = false;
+                    // this.newFeed.content = '';
+                    this.fetchFeed();
+                    this.toast.success(response.data, { timeout: 3000 });
+                } else {
+                    this.toast.error(response.data, { timeout: 3000 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 3000 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 3000 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 3000 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 3000 });
+                }
+            }
+
             }
         }
     }

@@ -58,7 +58,7 @@ public class SocialMediaServiceImpl implements SocialMediaService {
 
     @Override
     public String validateCreateNewPostRequest(User user, CreateNewPostRequest createNewPostRequest){
-        if ( (createNewPostRequest.getFiles() == null || (createNewPostRequest.getFiles() != null && createNewPostRequest.getFiles()[0].isEmpty())) && (createNewPostRequest.getContent() == null || createNewPostRequest.getContent().isEmpty()) && ( createNewPostRequest.getUserTagIDList() == null || createNewPostRequest.getUserTagIDList().isEmpty())) {
+        if ( createNewPostRequest.getPostTopId() == null && (createNewPostRequest.getFiles() == null || (createNewPostRequest.getFiles() != null && createNewPostRequest.getFiles()[0].isEmpty())) && (createNewPostRequest.getContent() == null || createNewPostRequest.getContent().isEmpty()) && ( createNewPostRequest.getUserTagIDList() == null || createNewPostRequest.getUserTagIDList().isEmpty())) {
             return "Bài đăng phải có nội dung hoặc hình ảnh hoặc gắn thẻ người dùng!";
         }
         if (createNewPostRequest.getUserTagIDList() != null && createNewPostRequest.getUserTagIDList().contains(user.getPhoneNumber()))
