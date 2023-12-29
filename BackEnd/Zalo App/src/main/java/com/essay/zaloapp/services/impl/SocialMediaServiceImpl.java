@@ -12,6 +12,7 @@ import com.essay.zaloapp.domain.payload.response.SocialMedia.GetInfoPostResponse
 import com.essay.zaloapp.repository.*;
 import com.essay.zaloapp.services.FileStorageService;
 import com.essay.zaloapp.services.FormatDate;
+import com.essay.zaloapp.services.FriendService;
 import com.essay.zaloapp.services.SocialMediaService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -52,9 +53,10 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     private CommentUserRepository commentUserRepository;
 
     @Autowired
-    private FriendsRepository friendsRepository;
+    private FriendService friendService;
+
     @Autowired
-    private ResourceRepository resourceRepository;
+    private FriendsRepository friendsRepository;
 
     @Override
     public String validateCreateNewPostRequest(User user, CreateNewPostRequest createNewPostRequest){
@@ -180,7 +182,14 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     // Nhận bảng tin của người dùng
     @Override
     public GetAllInfoPostUser getNewFeedUser(Long userId){
-        return new GetAllInfoPostUser("Thành công!", mapListPostEntityToResponse(postRepository.findAll()));
+        List <Post> postList = postRepository.findAll().stream().filter(post -> {
+            return (post.getAudienceValue() == Audience.Public ||
+                    post.getUser().getId() == userId ||
+                    (friendService.isFriendUser(userId,post.getUser().getId()) &&
+                            (post.getAudienceValue() == Audience.AllFriend || (post.getAudienceValue() == Audience.SomeOneCanSee && !post.getPostUserList().stream().filter(postUser -> postUser.getPostUserType() == PostUserType.TagUser && postUser.getUser().getId() == userId).collect(Collectors.toList()).isEmpty())
+                                                                           || (post.getAudienceValue() == Audience.AllExceptSomeOne && post.getPostUserList().stream().filter(postUser -> postUser.getPostUserType() == PostUserType.TagUser && postUser.getUser().getId() == userId).collect(Collectors.toList()).isEmpty()))));
+        }).collect(Collectors.toList());
+        return new GetAllInfoPostUser("Thành công!", mapListPostEntityToResponse(postList));
     }
 
     @Override

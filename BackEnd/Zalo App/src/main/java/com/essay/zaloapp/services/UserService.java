@@ -34,18 +34,4 @@ public interface UserService {
     ResponseEntity<?> updateInfoUser(Long userId, ChangeInfoUserRequest changeInfoUserRequest) throws Exception;
 
     ResponseEntity<?> findUserByPhoneNumber(String phoneNumber) throws Exception;
-
-    ResponseEntity<?> sendInviteFriend(Long userId, FriendRequest addFriendRequest) throws Exception;
-
-    ResponseEntity<?> acceptingInviteFriend(Long userId, FriendRequest addFriendRequest) throws Exception;
-
-    ResponseEntity<?> cancelInviteFriend(Long userId, FriendRequest addFriendRequest) throws Exception;
-
-    ResponseEntity<?> unFriendUser(Long userId, FriendRequest addFriendRequest) throws Exception;
-
-    ResponseEntity<?> blockFriendUser(Long userId, FriendRequest addFriendRequest) throws Exception;
-
-    ResponseEntity<?> listAllFriend(Long userId) throws Exception;
-
-    ResponseEntity<?> listAllInviteFriend(Long userId) throws Exception;
 }

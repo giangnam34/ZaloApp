@@ -7,6 +7,7 @@ import com.essay.zaloapp.domain.payload.request.Authorize.ChangePhoneNumberUserR
 import com.essay.zaloapp.domain.payload.request.Friend.FriendRequest;
 import com.essay.zaloapp.secruity.UserPrincipal;
 import com.essay.zaloapp.services.AuthenticationService;
+import com.essay.zaloapp.services.FriendService;
 import com.essay.zaloapp.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -25,6 +26,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private FriendService friendService;
 
     @Autowired
     private AuthenticationService authenticationService;
@@ -111,48 +115,48 @@ public class UserController {
     @PostMapping("/sendInviteFriend")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> addFriend(@RequestBody FriendRequest friendRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
-        return userService.sendInviteFriend(userPrincipal.getId(),friendRequest);
+        return friendService.sendInviteFriend(userPrincipal.getId(),friendRequest);
     }
 
     // Chấp nhận lời mời của người dùng, friendRequest.fromPhoneNumberUser là người chấp nhận lời mời, friendRequest.toPhoneNumberUser là người được chấp nhận lời mời (người gửi lời mời)
     @PostMapping("/acceptingInviteFriend")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> acceptingInviteFriend(@RequestBody FriendRequest friendRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
-        return userService.acceptingInviteFriend(userPrincipal.getId(),friendRequest);
+        return friendService.acceptingInviteFriend(userPrincipal.getId(),friendRequest);
     }
 
     // Hủy lời mời kết bạn
     @PostMapping("/cancelInviteFriend")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> cancelInviteFriend(@RequestBody FriendRequest friendRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
-        return userService.cancelInviteFriend(userPrincipal.getId(),friendRequest);
+        return friendService.cancelInviteFriend(userPrincipal.getId(),friendRequest);
     }
 
     // Hủy kết bạn
     @PostMapping("/unFriendUser")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> unFriendUser(@RequestBody FriendRequest friendRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
-        return userService.unFriendUser(userPrincipal.getId(),friendRequest);
+        return friendService.unFriendUser(userPrincipal.getId(),friendRequest);
     }
 
     // Chặn người dùng
     @PostMapping("/blockFriendUser")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> blockFriendUser(@RequestBody FriendRequest friendRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
-        return userService.blockFriendUser(userPrincipal.getId(),friendRequest);
+        return friendService.blockFriendUser(userPrincipal.getId(),friendRequest);
     }
 
     // Hiển thị danh sách bạn bè
     @GetMapping("/getAllFriendUser")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getAllFriendUser(@AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
-        return userService.listAllFriend(userPrincipal.getId());
+        return friendService.listAllFriend(userPrincipal.getId());
     }
 
     @GetMapping("/getAllInviteFriend")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getAllInviteFriendUser(@AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
-        return userService.listAllInviteFriend(userPrincipal.getId());
+        return friendService.listAllInviteFriend(userPrincipal.getId());
     }
 
 }

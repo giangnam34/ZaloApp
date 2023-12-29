@@ -33,8 +33,10 @@ public class Friends {
 
 	private Date friendFrom;
 
+	// Block bởi ai
 	private Long isBlock;
 
+	// Xóa bởi ai
 	private Long isDelete;
 
 	private String nickNameFromUser1;
