@@ -739,17 +739,21 @@
                                 showingFeed.userLikeList.length
                             }}</span>
                         </div>
+
+                        <!-- Test -->
                         <div v-else class="flex-1 flex items-center mr-2">
-                            <font-awesome-icon icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
+                            <font-awesome-icon v-if="showingFeed.userLikeList !== null && showingFeed.userLikeList.length > 0"
+                                icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
                             <span class="text-gray-500 text-lg hover:underline cursor-pointer">
-                                <template v-if="showingFeed.userLikeList === null || showingFeed.userLikeList.length === 0">
-                                    {this.user.fullName}
+                                <template v-if="showingFeed.userLikeList.length === 1">
+                                    {{ user.fullName }}
                                 </template>
                                 <template v-else>
-                                    Bạn và {{ showingFeed.userLikeList.length }} người khác
+                                    Bạn và {{ showingFeed.userLikeList.length - 1 }} người khác
                                 </template>
                             </span>
                         </div>
+                        <!-- Test -->
 
                         <div class="flex-1 flex items-center justify-end">
                             <div class="flex items-center space-x-2 ml-auto hover:underline cursor-pointer"
@@ -1040,7 +1044,9 @@ export default {
     },
     setup() {
         // Get toast interface
-        const toast = useToast();
+        const toast = useToast(
+            
+        );
         const onSwiper = (s) => {
             console.log('kjjsnjkanjkdsn', s)
         }
@@ -1221,7 +1227,7 @@ export default {
                         console.log(response.data);
                         if (response.data === 'Xóa bình luận thành công!')
                             this.toast.success("Xóa bình luận thành công!", 500);
-                            this.fetchComment(feedId)
+                        this.fetchComment(feedId)
                     }
                 })
                 .catch(error => {
@@ -1682,6 +1688,7 @@ export default {
                 for (let i = 0; i < post.files.length; i++) {
                     formData.append('files', post.files[i]);
                 }
+                if (post.files.length === 0) formData.append('files', new Blob([''], { type: 'multipart/form-data' }));
 
                 const response = await axios.post(`social-media/update-post/${post.id}`, formData);
 
@@ -1689,21 +1696,21 @@ export default {
                     this.showPostVisible = false;
                     this.newFeed.content = '';
                     this.fetchFeed();
-                    this.toast.success(response.data, { timeout: 3000 });
+                    this.toast.success(response.data, { timeout: 1000 });
                 } else {
-                    this.toast.error(response.data, { timeout: 3000 });
+                    this.toast.error(response.data, { timeout: 1000 });
                 }
             } catch (error) {
                 if (error.response) {
                     if (error.response.status === 400) {
-                        this.toast.error(error.response.data, { timeout: 3000 });
+                        this.toast.error(error.response.data, { timeout: 1000 });
                     } else {
-                        this.toast.error(error.response.data, { timeout: 3000 });
+                        this.toast.error(error.response.data, { timeout: 1000 });
                     }
                 } else if (error.request) {
-                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 3000 });
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
                 } else {
-                    this.toast.error('Error setting up the request:' + error.message, { timeout: 3000 });
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
                 }
             }
         },
@@ -1777,6 +1784,7 @@ export default {
                     this.showingFeed.isLike = updatedFeed.isLike;
                 }
                 this.fetchUpdateLike(feed.id);
+                //if (this.showVisibleInfoFeed) this.showingFeed = this.feeds.findIndex(f => f.id === feed.id);
 
                 if (index !== -1) {
                     //console.log("Vô index !== -1")
@@ -1950,38 +1958,38 @@ export default {
             if (confirm("Bạn có muốn chia sẻ bài viết?")) {
                 console.log("Feed: ", feed)
                 try {
-                
-                // console.log(listFriendTag)
 
-                // console.log(typeof (listFriendTag))
+                    // console.log(listFriendTag)
 
-                const formData = new FormData();
+                    // console.log(typeof (listFriendTag))
 
-                formData.append('postTopId', feed.id);
+                    const formData = new FormData();
 
-                const response = await axios.post(`social-media/create-new-post`, formData);
+                    formData.append('postTopId', feed.id);
 
-                if (response.status === 200) {
-                    // this.showPostVisible = false;
-                    // this.newFeed.content = '';
-                    this.fetchFeed();
-                    this.toast.success(response.data, { timeout: 3000 });
-                } else {
-                    this.toast.error(response.data, { timeout: 3000 });
-                }
-            } catch (error) {
-                if (error.response) {
-                    if (error.response.status === 400) {
-                        this.toast.error(error.response.data, { timeout: 3000 });
+                    const response = await axios.post(`social-media/create-new-post`, formData);
+
+                    if (response.status === 200) {
+                        // this.showPostVisible = false;
+                        // this.newFeed.content = '';
+                        this.fetchFeed();
+                        this.toast.success(response.data, { timeout: 3000 });
                     } else {
-                        this.toast.error(error.response.data, { timeout: 3000 });
+                        this.toast.error(response.data, { timeout: 3000 });
                     }
-                } else if (error.request) {
-                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 3000 });
-                } else {
-                    this.toast.error('Error setting up the request:' + error.message, { timeout: 3000 });
+                } catch (error) {
+                    if (error.response) {
+                        if (error.response.status === 400) {
+                            this.toast.error(error.response.data, { timeout: 3000 });
+                        } else {
+                            this.toast.error(error.response.data, { timeout: 3000 });
+                        }
+                    } else if (error.request) {
+                        this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 3000 });
+                    } else {
+                        this.toast.error('Error setting up the request:' + error.message, { timeout: 3000 });
+                    }
                 }
-            }
 
             }
         }
