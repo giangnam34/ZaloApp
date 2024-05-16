@@ -18,7 +18,7 @@ public class GroupChat {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
+	private Long id;
 
 	private String groupName;
 
@@ -31,6 +31,8 @@ public class GroupChat {
 	private Boolean isCreateNewPoll;
 
 	private Boolean isSendMessage;
+
+	private String avatar;
 
 	@OneToMany(mappedBy = "groupChat")
 	private List<MessageChat> messageChatList;

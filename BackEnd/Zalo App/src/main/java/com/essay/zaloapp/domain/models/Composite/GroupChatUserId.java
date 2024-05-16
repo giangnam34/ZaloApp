@@ -13,6 +13,7 @@ import java.io.Serializable;
 @EqualsAndHashCode
 public class GroupChatUserId implements Serializable {
 
-	private String groupId;
+	private Long groupId;
 	private String phoneNumberUser;
+
 }

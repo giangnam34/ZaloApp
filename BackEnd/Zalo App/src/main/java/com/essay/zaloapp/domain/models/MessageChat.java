@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "message_chat")
@@ -18,15 +19,29 @@ public class MessageChat {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
+	private Long id;
 
 	private Date sendAt;
 
 	private Date updatedAt;
 
-	private Boolean isImportant;
+	private String content;
 
-	private Boolean isUrgent;
+	private Boolean isSystem = false;
+
+	private Boolean saved = true;
+
+	private Boolean distributed = false;
+
+	private Boolean seen = false;
+
+	private Boolean deleted = false;
+
+	private Boolean failure = false;
+
+	private Boolean disableActions = false;
+
+	private Boolean disableReactions = false;
 
 	@ManyToOne
 	@JoinColumn(name = "group_id")
@@ -39,4 +54,19 @@ public class MessageChat {
 	@ManyToOne
 	@JoinColumn(name = "message_type")
 	private MessageType messageType;
+
+//	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+//	@JoinColumn(name = "reply_message_id")
+//	private ReplyMessage replyMessage;
+
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "reply_message_id")
+	private MessageChat replyMessage;
+
+	@OneToMany(mappedBy="replyMessage")
+	private List<MessageChat> replyMessageList;
+
+	@ManyToMany(cascade = CascadeType.ALL)
+	@JoinTable(name = "message_resource", joinColumns = @JoinColumn(name = "message_id"), inverseJoinColumns = @JoinColumn(name = "resource_id"))
+	private List<Resource> files;
 }
