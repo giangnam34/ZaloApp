@@ -1,5 +1,6 @@
 package com.essay.zaloapp.services;
 
+import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewChatMessageRequest;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.ChatMessageResponse;
 import com.essay.zaloapp.services.impl.ChatMessageServiceImpl;
 
@@ -15,6 +16,9 @@ public interface ChatMessageService {
     String deleteRoom(Long userId, Long roomId);
 
     String createRoom(Long senderId, Long receiverId);
+
+
+    String createChatMessage(Long userId, AddNewChatMessageRequest addNewChatMessageRequest);
 
     String deleteMessage(Long userId, Long messageId);
 }

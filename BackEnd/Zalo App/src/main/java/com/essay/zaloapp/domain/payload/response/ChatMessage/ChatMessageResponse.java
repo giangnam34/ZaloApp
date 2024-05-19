@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -29,6 +30,6 @@ public class ChatMessageResponse {
     private Boolean disableActions;
     private Boolean disableReactions;
     private List<FileData> files;
-    private List<String> reactions;
+    private Map<String, List<String>> reactions;
     private ReplyMessageResponse replyMessage;
 }

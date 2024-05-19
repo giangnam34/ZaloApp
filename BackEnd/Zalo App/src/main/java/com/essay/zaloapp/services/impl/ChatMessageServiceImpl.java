@@ -1,7 +1,9 @@
 package com.essay.zaloapp.services.impl;
 
+import com.essay.zaloapp.domain.enums.ResourceType;
 import com.essay.zaloapp.domain.models.*;
 import com.essay.zaloapp.domain.models.Composite.GroupChatUserId;
+import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewChatMessageRequest;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.ChatMessageResponse;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.FileData;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.ReplyMessageResponse;
@@ -9,11 +11,9 @@ import com.essay.zaloapp.domain.payload.response.RoomChat.GetAllRoomResponse;
 import com.essay.zaloapp.domain.payload.response.RoomChat.LastMessage;
 import com.essay.zaloapp.domain.payload.response.RoomChat.StatusOfUser;
 import com.essay.zaloapp.domain.payload.response.RoomChat.UserOfRoom;
-import com.essay.zaloapp.repository.GroupChatRepository;
-import com.essay.zaloapp.repository.GroupChatUserRepository;
-import com.essay.zaloapp.repository.MessageChatRepository;
-import com.essay.zaloapp.repository.UserRepository;
+import com.essay.zaloapp.repository.*;
 import com.essay.zaloapp.services.ChatMessageService;
+import com.essay.zaloapp.services.FileStorageService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -47,6 +48,12 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ReactionRepository reactionRepository;
+
+    @Autowired
+    private FileStorageService fileStorageService;
 
     @Override
     public GetAllMessages getAllMessages(Long roomId, Long userId, int page, int size) throws Exception {
@@ -74,87 +81,103 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
         Pageable pageable = PageRequest.of(page, size);
         Page<MessageChat> messageChatPage = messageChatRepository.findAllByGroupId(roomId, pageable);
-        Page<MessageChat> replyMessageChatPage = messageChatRepository.findAllByGroupIdAndReplyMessage(roomId, pageable);
 
         List<MessageChat> messageChatList = messageChatPage.getContent();
-        List<MessageChat> replyMessageChatList = replyMessageChatPage.getContent();
 
         Map<Long, ChatMessageResponse> responseMap = new HashMap<>();
         List<ChatMessageResponse> responses = new ArrayList<>();
 
         for (MessageChat messageChat : messageChatList) {
+
+            ChatMessageResponse response = new ChatMessageResponse();
+            response.set_id(messageChat.getId() + "");
+            response.setContent(messageChat.getContent());
+            User sender = userRepository.findById(messageChat.getUser().getId());
+            response.setSenderId(sender.getId() + "");
+            response.setUsername(sender.getFullName());
+            response.setAvatar("http://localhost:8181/media/getImage/" + sender.getImageAvatarUrl());
+
+//            Calendar calendar = Calendar.getInstance();
+//            calendar.setTime(messageChat.getUpdatedAt());
+//            calendar.add(Calendar.HOUR_OF_DAY, -7);
+//            Date adjustedDate = calendar.getTime();
+//            response.setDate(formatDate(adjustedDate));
+//            response.setTimestamp(extractTime(adjustedDate));
+            response.setDate(formatDate(messageChat.getUpdatedAt()));
+            response.setTimestamp(extractTime(messageChat.getUpdatedAt()));
+
+            response.setSystem(messageChat.getIsSystem());
+            response.setSaved(messageChat.getSaved());
+            response.setDistributed(messageChat.getDistributed());
+            response.setSeen(messageChat.getSeen());
+            response.setDeleted(messageChat.getDeleted());
+            response.setFailure(messageChat.getFailure());
+            response.setDisableActions(messageChat.getDisableActions());
+            response.setDisableReactions(messageChat.getDisableReactions());
+
+            MessageChat messageChatForGetReactions = messageChatRepository.findByIdWithReactions(messageChat.getId());
+            Map<String, List<String>> reactions = messageChatForGetReactions.getReactions().stream()
+                    .collect(Collectors.groupingBy(
+                            Reaction::getEmoji,
+                            Collectors.mapping(reaction -> reaction.getUser().getId().toString(), Collectors.toList())
+                    ));
+            response.setReactions(reactions);
             if (messageChat.getReplyMessage() == null) {
-                ChatMessageResponse response = new ChatMessageResponse();
-                List<String> reactions = new ArrayList<>();
-                response.set_id(messageChat.getId() + "");
-                response.setContent(messageChat.getContent());
-                User sender = userRepository.findById(messageChat.getUser().getId());
-                response.setSenderId(sender.getId() + "");
-                response.setUsername(sender.getFullName());
-                response.setAvatar("http://localhost:8181/media/getImage/" + sender.getImageAvatarUrl());
-
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTime(messageChat.getUpdatedAt());
-                calendar.add(Calendar.HOUR_OF_DAY, -7);
-                Date adjustedDate = calendar.getTime();
-                response.setDate(formatDate(adjustedDate));
-                response.setTimestamp(extractTime(adjustedDate));
-
-                response.setSystem(messageChat.getIsSystem());
-                response.setSaved(messageChat.getSaved());
-                response.setDistributed(messageChat.getDistributed());
-                response.setSeen(messageChat.getSeen());
-                response.setDeleted(messageChat.getDeleted());
-                response.setFailure(messageChat.getFailure());
-                response.setDisableActions(messageChat.getDisableActions());
-                response.setDisableReactions(messageChat.getDisableReactions());
-                response.setReactions(reactions);
                 response.setReplyMessage(null);
-//                response.setFiles(messageChat.getFiles().stream().map(file -> "http://localhost:8181/media/" + (file.getResourceType().equals(ResourceType.Video) ? "getVideo/" : "getImage/") + file.getResourceValue()).collect(Collectors.toList()));
-
-                List<FileData> files = new ArrayList<>();
-                FileData fileData = new FileData();
-                fileData.setName("response");
-                fileData.setSize(Long.valueOf(2200));
-                fileData.setAudio(false);
-                fileData.setType("jpeg");
-                fileData.setDuration(Float.valueOf(0));
-                fileData.setPreview("data:image/jpeg;base64");
-                fileData.setProgress(Long.valueOf(88));
-                fileData.setUrl("http://localhost:8181/media/getImage/" + fileData.getName() + "." + fileData.getType());
-                files.add(fileData);
-                response.setFiles(files);
-
-                responseMap.put(messageChat.getId(), response);
-                responses.add(response);
-            }
-        }
-
-        for (MessageChat replyMessageChat : replyMessageChatList) {
-            ChatMessageResponse parentResponse = responseMap.get(replyMessageChat.getReplyMessage().getId());
-            if (parentResponse != null) {
+            } else {
+                MessageChat messageChatForReplyMessage = messageChatRepository.findById(messageChat.getReplyMessage().getId()).get();
                 ReplyMessageResponse replyMessageResponse = new ReplyMessageResponse();
-
-                replyMessageResponse.setContent(replyMessageChat.getContent());
-                replyMessageResponse.setSenderId(replyMessageChat.getUser().getId() + "");
+                replyMessageResponse.setContent(messageChatForReplyMessage.getContent());
+                replyMessageResponse.setSenderId(messageChatForReplyMessage.getUser().getId() + "");
                 List<FileData> files = new ArrayList<>();
-                FileData fileData = new FileData();
-//                replyMessageResponse.setFiles(replyMessageChat.getFiles().stream()
-//                        .map(file -> "http://localhost:8181/media/" + (file.getResourceType().equals(ResourceType.Video) ? "getVideo/" : "getImage/") + file.getResourceValue())
-//                        .collect(Collectors.toList()));
-                fileData.setName("hq720");
-                fileData.setSize(Long.valueOf(2200));
-                fileData.setAudio(false);
-                fileData.setType("jpg");
-                fileData.setDuration(Float.valueOf(0));
-                fileData.setPreview("data:image/jpg;base64");
-                fileData.setProgress(Long.valueOf(88));
-                fileData.setUrl("http://localhost:8181/media/getImage/" + fileData.getName() + "." + fileData.getType());
-                files.add(fileData);
+                for (Resource resource : messageChatForReplyMessage.getFiles()) {
+                    FileData fileData = new FileData();
+                    fileData.setProgress(Long.valueOf(100));
+                    fileData.setAudio(false);
+                    fileData.setSize(Long.valueOf(2200));
+                    fileData.setDuration(Float.valueOf(0));
+                    fileData.setUrl("http://localhost:8181/media/" + (resource.getResourceType().equals(ResourceType.Video) ? "getVideo/" : "getImage/") + resource.getResourceValue());
+                    String[] parts = resource.getResourceValue().split("\\.(?=[^\\.]+$)");
+                    String namePart = "";
+                    String extensionPart = "";
+                    if (parts.length == 2) {
+                        namePart += parts[0];
+                        extensionPart += parts[1];
+                    }
+                    fileData.setName(namePart);
+                    fileData.setType(extensionPart);
+                    fileData.setPreview("data" + resource.getResourceType() + "/" + extensionPart + ";base64");
+                    files.add(fileData);
+                }
                 replyMessageResponse.setFiles(files);
-
-                parentResponse.setReplyMessage(replyMessageResponse);
+                response.setReplyMessage(replyMessageResponse);
             }
+
+            List<FileData> files = new ArrayList<>();
+            for (Resource resource : messageChat.getFiles()) {
+                FileData fileData = new FileData();
+                fileData.setProgress(Long.valueOf(100));
+                fileData.setAudio(false);
+                fileData.setSize(Long.valueOf(2200));
+                fileData.setDuration(Float.valueOf(0));
+                fileData.setUrl("http://localhost:8181/media/" + (resource.getResourceType().equals(ResourceType.Video) ? "getVideo/" : "getImage/") + resource.getResourceValue());
+                String[] parts = resource.getResourceValue().split("\\.(?=[^\\.]+$)");
+                String namePart = "";
+                String extensionPart = "";
+                if (parts.length == 2) {
+                    namePart += parts[0];
+                    extensionPart += parts[1];
+                }
+                fileData.setName(namePart);
+                fileData.setType(extensionPart);
+                fileData.setPreview("data:" + resource.getResourceType() + "/" + extensionPart + ";base64");
+                files.add(fileData);
+            }
+            response.setFiles(files);
+
+            responseMap.put(messageChat.getId(), response);
+            responses.add(response);
+
         }
 
         Collections.reverse(responses);
@@ -331,6 +354,63 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         } catch (Exception e) {
             System.out.println(e.toString());
             return "Có lỗi trong quá trình thực thi. Vui lòng thử lại!";
+        }
+    }
+
+    @Override
+    public String createChatMessage(Long userId, AddNewChatMessageRequest addNewChatMessageRequest) {
+        try {
+            User user = userRepository.findById(userId);
+            List<GroupChatUser> groupChatUsers = groupChatUserRepository.findAllByGroupId(addNewChatMessageRequest.getRoomId());
+            if (groupChatUsers.isEmpty()) {
+                return "Mã phòng không tồn tại!";
+            }
+            Boolean check = false;
+            for (GroupChatUser groupChatUser : groupChatUsers) {
+                if (groupChatUser.getId().getPhoneNumberUser().equals(user.getPhoneNumber())) {
+                    check = true;
+                    break;
+                }
+            }
+            if (!check) {
+                return "Người dùng không có quyền gửi tin nhắn trong phòng này!";
+            }
+
+            MessageChat messageChat = new MessageChat();
+            messageChat.setUser(user);
+            messageChat.setContent(addNewChatMessageRequest.getContent());
+            messageChat.setDisableActions(addNewChatMessageRequest.getDisableActions());
+            messageChat.setDisableReactions(addNewChatMessageRequest.getDisableReactions());
+            messageChat.setDistributed(addNewChatMessageRequest.getDistributed());
+            messageChat.setFailure(addNewChatMessageRequest.getFailure());
+            messageChat.setIsSystem(addNewChatMessageRequest.getSystem());
+            messageChat.setSaved(addNewChatMessageRequest.getSaved());
+            messageChat.setSeen(addNewChatMessageRequest.getSeen());
+            messageChat.setSendAt(new Date(new Date().getTime()));
+            messageChat.setUpdatedAt(new Date(new Date().getTime()));
+
+            GroupChat groupChat = groupChatRepository.findById(addNewChatMessageRequest.getRoomId()).get();
+            messageChat.setGroupChat(groupChat);
+
+            if (addNewChatMessageRequest.getReplyMessageId() != null) {
+                Optional<MessageChat> repliedMessageOptional = messageChatRepository.findById(addNewChatMessageRequest.getReplyMessageId());
+                if (repliedMessageOptional.isEmpty()) {
+                    return "Tin nhắn được trả lời không tồn tại!";
+                }
+                MessageChat repliedMessage = repliedMessageOptional.get();
+                messageChat.setReplyMessage(repliedMessage);
+            }
+
+            List<Resource> resourceList = new ArrayList<>();
+            if (addNewChatMessageRequest.getFiles() != null && !addNewChatMessageRequest.getFiles()[0].isEmpty()) {
+                resourceList = Arrays.stream(addNewChatMessageRequest.getFiles()).map(p -> new Resource(fileStorageService.storeFile(p), p.getContentType().contains("video") ? ResourceType.Video : ResourceType.Image)).collect(Collectors.toList());
+            }
+            messageChat.setFiles(resourceList);
+            messageChatRepository.save(messageChat);
+            return "Tin nhắn đã được gửi!";
+        } catch (Exception e) {
+            System.out.println(e.toString());
+            return "Đã xảy ra lỗi trong quá trình thực hiện, vui lòng thử lại sau!";
         }
     }
 

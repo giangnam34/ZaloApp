@@ -12,11 +12,8 @@ import java.util.Optional;
 
 public interface MessageChatRepository extends JpaRepository<MessageChat, Long> {
 
-    @Query("SELECT m FROM MessageChat m WHERE m.groupChat.id = :groupId AND m.deleted = false AND m.replyMessage IS NULL ORDER BY m.sendAt DESC")
+    @Query("SELECT m FROM MessageChat m WHERE m.groupChat.id = :groupId AND m.deleted = false ORDER BY m.sendAt DESC")
     Page<MessageChat> findAllByGroupId(@Param("groupId") Long groupId, Pageable pageable);
-
-    @Query("SELECT m FROM MessageChat m WHERE m.groupChat.id = :groupId AND m.deleted = false AND m.replyMessage IS NOT NULL ORDER BY m.sendAt DESC")
-    Page<MessageChat> findAllByGroupIdAndReplyMessage(@Param("groupId") Long groupId, Pageable pageable);
 
     @Query("SELECT COUNT(m) FROM MessageChat m WHERE m.seen = false AND m.groupChat.id = :groupId AND m.user.phoneNumber = :phoneNumberUser")
     int countBySeenFalseAndGroupId(@Param("groupId") Long groupId, @Param("phoneNumberUser") String phoneNumberUser);
@@ -32,4 +29,7 @@ public interface MessageChatRepository extends JpaRepository<MessageChat, Long> 
 
     @Query("SELECT m FROM MessageChat m WHERE m.id = :messageId AND m.deleted = false")
     Optional<MessageChat> findByIdAndNotDeleted(@Param("messageId") Long messageId);
+
+    @Query("SELECT mc FROM MessageChat mc LEFT JOIN FETCH mc.reactions WHERE mc.id = :messageChatId")
+    MessageChat findByIdWithReactions(@Param("messageChatId") Long messageChatId);
 }

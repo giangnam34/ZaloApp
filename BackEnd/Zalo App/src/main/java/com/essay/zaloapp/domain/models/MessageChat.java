@@ -35,6 +35,7 @@ public class MessageChat {
 
 	private Boolean seen = false;
 
+	@Column(name = "deleted", nullable = false, columnDefinition = "boolean default false")
 	private Boolean deleted = false;
 
 	private Boolean failure = false;
@@ -51,20 +52,15 @@ public class MessageChat {
 	@JoinColumn(name = "user_id")
 	private User user;
 
-	@ManyToOne
-	@JoinColumn(name = "message_type")
-	private MessageType messageType;
-
-//	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-//	@JoinColumn(name = "reply_message_id")
-//	private ReplyMessage replyMessage;
-
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "reply_message_id")
 	private MessageChat replyMessage;
 
 	@OneToMany(mappedBy="replyMessage")
 	private List<MessageChat> replyMessageList;
+
+	@OneToMany(mappedBy = "messageChat", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Reaction> reactions;
 
 	@ManyToMany(cascade = CascadeType.ALL)
 	@JoinTable(name = "message_resource", joinColumns = @JoinColumn(name = "message_id"), inverseJoinColumns = @JoinColumn(name = "resource_id"))

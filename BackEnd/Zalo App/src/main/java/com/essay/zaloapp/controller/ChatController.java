@@ -1,6 +1,7 @@
 package com.essay.zaloapp.controller;
 
 import com.essay.zaloapp.domain.models.User;
+import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewChatMessageRequest;
 import com.essay.zaloapp.secruity.StompPrincipal;
 import com.essay.zaloapp.secruity.UserPrincipal;
 import com.essay.zaloapp.services.ChatMessageService;
@@ -97,6 +98,13 @@ public class ChatController {
     public ResponseEntity<?> deleteMessage(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long messageId){
         String result = chatMessageService.deleteMessage(userPrincipal.getId(), messageId);
         return result.equals("Xóa tin nhắn thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
+    }
+
+    @PostMapping("/create-message")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> createMessage(@AuthenticationPrincipal UserPrincipal userPrincipal, @ModelAttribute AddNewChatMessageRequest addNewChatMessageRequest){
+        String result = chatMessageService.createChatMessage(userPrincipal.getId(), addNewChatMessageRequest);
+        return result.equals("Tin nhắn đã được gửi!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
     @MessageMapping("/hello")
