@@ -27,21 +27,28 @@ public class MessageChat {
 
 	private String content;
 
+	@Column(name = "isSystem", nullable = false, columnDefinition = "boolean default false")
 	private Boolean isSystem = false;
 
+	@Column(name = "saved", nullable = false, columnDefinition = "boolean default true")
 	private Boolean saved = true;
 
+	@Column(name = "distributed", nullable = false, columnDefinition = "boolean default false")
 	private Boolean distributed = false;
 
+	@Column(name = "seen", nullable = false, columnDefinition = "boolean default false")
 	private Boolean seen = false;
 
 	@Column(name = "deleted", nullable = false, columnDefinition = "boolean default false")
 	private Boolean deleted = false;
 
+	@Column(name = "failure", nullable = false, columnDefinition = "boolean default false")
 	private Boolean failure = false;
 
+	@Column(name = "disableActions", nullable = false, columnDefinition = "boolean default false")
 	private Boolean disableActions = false;
 
+	@Column(name = "disableReactions", nullable = false, columnDefinition = "boolean default false")
 	private Boolean disableReactions = false;
 
 	@ManyToOne

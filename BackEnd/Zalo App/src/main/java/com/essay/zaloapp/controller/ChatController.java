@@ -2,6 +2,7 @@ package com.essay.zaloapp.controller;
 
 import com.essay.zaloapp.domain.models.User;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewChatMessageRequest;
+import com.essay.zaloapp.domain.payload.request.ChatMessage.UpdateChatMessageRequest;
 import com.essay.zaloapp.secruity.StompPrincipal;
 import com.essay.zaloapp.secruity.UserPrincipal;
 import com.essay.zaloapp.services.ChatMessageService;
@@ -65,9 +66,9 @@ public class ChatController {
     @GetMapping("/get-messages/{roomId}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getAllMessages(@AuthenticationPrincipal UserPrincipal userPrincipal,
-                                         @PathVariable Long roomId,
-                                         @RequestParam(defaultValue = "0") int page,
-                                         @RequestParam(defaultValue = "5") int size) throws Exception {
+                                            @PathVariable Long roomId,
+                                            @RequestParam(defaultValue = "0") int page,
+                                            @RequestParam(defaultValue = "5") int size) throws Exception {
         ChatMessageServiceImpl.GetAllMessages result = chatMessageService.getAllMessages(roomId, userPrincipal.getId(), page, size);
         return result.getMessage().equals("Thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
@@ -81,30 +82,37 @@ public class ChatController {
 
     @DeleteMapping("/delete-room/{roomId}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> deleteRoom(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long roomId){
+    public ResponseEntity<?> deleteRoom(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long roomId) {
         String result = chatMessageService.deleteRoom(userPrincipal.getId(), roomId);
         return result.equals("Xóa hội thoại thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
     @PostMapping("/create-room/{receiverId}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> createRoom(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long receiverId){
+    public ResponseEntity<?> createRoom(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long receiverId) {
         String result = chatMessageService.createRoom(userPrincipal.getId(), receiverId);
         return result.equals("Tạo cuộc hội thoại thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
     @DeleteMapping("/delete-message/{messageId}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> deleteMessage(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long messageId){
+    public ResponseEntity<?> deleteMessage(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long messageId) {
         String result = chatMessageService.deleteMessage(userPrincipal.getId(), messageId);
         return result.equals("Xóa tin nhắn thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
     @PostMapping("/create-message")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> createMessage(@AuthenticationPrincipal UserPrincipal userPrincipal, @ModelAttribute AddNewChatMessageRequest addNewChatMessageRequest){
+    public ResponseEntity<?> createMessage(@AuthenticationPrincipal UserPrincipal userPrincipal, @ModelAttribute AddNewChatMessageRequest addNewChatMessageRequest) {
         String result = chatMessageService.createChatMessage(userPrincipal.getId(), addNewChatMessageRequest);
         return result.equals("Tin nhắn đã được gửi!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
+    }
+
+    @PutMapping("/update-message")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> updateMessage(@AuthenticationPrincipal UserPrincipal userPrincipal, @ModelAttribute UpdateChatMessageRequest updateChatMessageRequest) {
+        String result = chatMessageService.updateChatMessage(userPrincipal.getId(), updateChatMessageRequest);
+        return result.equals("Cập nhật tin nhắn thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
     @MessageMapping("/hello")

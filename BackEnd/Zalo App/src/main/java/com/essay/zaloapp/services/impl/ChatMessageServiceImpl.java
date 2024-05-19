@@ -4,6 +4,7 @@ import com.essay.zaloapp.domain.enums.ResourceType;
 import com.essay.zaloapp.domain.models.*;
 import com.essay.zaloapp.domain.models.Composite.GroupChatUserId;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewChatMessageRequest;
+import com.essay.zaloapp.domain.payload.request.ChatMessage.UpdateChatMessageRequest;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.ChatMessageResponse;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.FileData;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.ReplyMessageResponse;
@@ -24,6 +25,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -331,6 +333,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
             GroupChat groupChat = new GroupChat();
             User sender = userRepository.findById(senderId);
+            if (!userRepository.existsUserById(receiverId)) return "Người nhận không tồn tại!";
             User receiver = userRepository.findById(receiverId);
             groupChat.setGroupName(receiver.getFullName());
             groupChat.setAvatar(receiver.getImageAvatarUrl());
@@ -378,17 +381,36 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
             MessageChat messageChat = new MessageChat();
             messageChat.setUser(user);
-            messageChat.setContent(addNewChatMessageRequest.getContent());
-            messageChat.setDisableActions(addNewChatMessageRequest.getDisableActions());
-            messageChat.setDisableReactions(addNewChatMessageRequest.getDisableReactions());
-            messageChat.setDistributed(addNewChatMessageRequest.getDistributed());
-            messageChat.setFailure(addNewChatMessageRequest.getFailure());
-            messageChat.setIsSystem(addNewChatMessageRequest.getSystem());
-            messageChat.setSaved(addNewChatMessageRequest.getSaved());
-            messageChat.setSeen(addNewChatMessageRequest.getSeen());
+            if (addNewChatMessageRequest.getContent() != null) {
+                messageChat.setContent(addNewChatMessageRequest.getContent());
+            }
+            if (addNewChatMessageRequest.getDisableActions() != null) {
+                messageChat.setDisableActions(addNewChatMessageRequest.getDisableActions());
+            }
+            if (addNewChatMessageRequest.getDisableReactions() != null) {
+                messageChat.setDisableReactions(addNewChatMessageRequest.getDisableReactions());
+            }
+            if (addNewChatMessageRequest.getDistributed() != null) {
+                messageChat.setDistributed(addNewChatMessageRequest.getDistributed());
+            }
+            if (addNewChatMessageRequest.getFailure() != null) {
+                messageChat.setFailure(addNewChatMessageRequest.getFailure());
+            }
+            if (addNewChatMessageRequest.getSystem() != null) {
+                messageChat.setIsSystem(addNewChatMessageRequest.getSystem());
+            }
+            if (addNewChatMessageRequest.getSaved() != null) {
+                messageChat.setSaved(addNewChatMessageRequest.getSaved());
+            }
+            if (addNewChatMessageRequest.getSeen() != null) {
+                messageChat.setSeen(addNewChatMessageRequest.getSeen());
+            }
             messageChat.setSendAt(new Date(new Date().getTime()));
             messageChat.setUpdatedAt(new Date(new Date().getTime()));
 
+            if (!groupChatRepository.existsById(addNewChatMessageRequest.getRoomId())) {
+                return "Phòng chat này không tồn tại!";
+            }
             GroupChat groupChat = groupChatRepository.findById(addNewChatMessageRequest.getRoomId()).get();
             messageChat.setGroupChat(groupChat);
 
@@ -411,6 +433,94 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         } catch (Exception e) {
             System.out.println(e.toString());
             return "Đã xảy ra lỗi trong quá trình thực hiện, vui lòng thử lại sau!";
+        }
+    }
+
+    @Override
+    public String updateChatMessage(Long userId, UpdateChatMessageRequest updateChatMessageRequest) {
+        try {
+            User user = userRepository.findById(userId);
+            Optional<MessageChat> messageChatOptional = messageChatRepository.findById(updateChatMessageRequest.getMessageId());
+            if (messageChatOptional.isEmpty()) {
+                return "Tin nhắn không tồn tại!";
+            }
+            MessageChat messageChat = messageChatOptional.get();
+            if (user.getId() != messageChat.getUser().getId()) {
+                return "Người dùng không có quyền cập nhật tin nhắn này!";
+            }
+
+            if (updateChatMessageRequest.getContent() != null) {
+                messageChat.setContent(updateChatMessageRequest.getContent());
+            }
+            if (updateChatMessageRequest.getDisableActions() != null) {
+                messageChat.setDisableActions(updateChatMessageRequest.getDisableActions());
+            }
+            if (updateChatMessageRequest.getDisableReactions() != null) {
+                messageChat.setDisableReactions(updateChatMessageRequest.getDisableReactions());
+            }
+            if (updateChatMessageRequest.getDistributed() != null) {
+                messageChat.setDistributed(updateChatMessageRequest.getDistributed());
+            }
+            if (updateChatMessageRequest.getFailure() != null) {
+                messageChat.setFailure(updateChatMessageRequest.getFailure());
+            }
+            if (updateChatMessageRequest.getSystem() != null) {
+                messageChat.setIsSystem(updateChatMessageRequest.getSystem());
+            }
+            if (updateChatMessageRequest.getSaved() != null) {
+                messageChat.setSaved(updateChatMessageRequest.getSaved());
+            }
+            if (updateChatMessageRequest.getSeen() != null) {
+                messageChat.setSeen(updateChatMessageRequest.getSeen());
+            }
+            messageChat.setUpdatedAt(new Date(new Date().getTime()));
+
+            if (updateChatMessageRequest.getFiles() != null) {
+                if (updateChatMessageRequest.getFiles()[0].isEmpty()) messageChat.setFiles(new ArrayList<>());
+                else {
+                    List<Resource> resourceList = Arrays.stream(updateChatMessageRequest.getFiles()).map(p -> new Resource(fileStorageService.storeFile(p), p.getContentType().contains("video") ? ResourceType.Video : ResourceType.Image)).collect(Collectors.toList());
+                    messageChat.setFiles(resourceList);
+                }
+            }
+
+            if (updateChatMessageRequest.getReplyMessageId() != null) {
+                Optional<MessageChat> repliedMessageOptional = messageChatRepository.findById(updateChatMessageRequest.getReplyMessageId());
+                if (repliedMessageOptional.isEmpty()) {
+                    return "Tin nhắn được trả lời không tồn tại!";
+                }
+                MessageChat repliedMessage = repliedMessageOptional.get();
+                messageChat.setReplyMessage(repliedMessage);
+            }
+
+            if (updateChatMessageRequest.getReactions() != null) {
+                Map<String, List<String>> reactionsMap = updateChatMessageRequest.getReactionsMap();
+                reactionRepository.deleteByMessageChat(messageChat);
+                List<Reaction> newReactions = new ArrayList<>();
+                for (Map.Entry<String, List<String>> entry : reactionsMap.entrySet()) {
+                    String emoji = entry.getKey();
+                    for (String userIdStr : entry.getValue()) {
+                        Long reactingUserId = Long.valueOf(userIdStr);
+                        if (!userRepository.existsUserById(reactingUserId)) {
+                            return "Người dùng không tồn tại!";
+                        }
+                        User reactingUser = userRepository.findById(reactingUserId);
+                        if (user != null) {
+                            Reaction reaction = new Reaction();
+                            reaction.setEmoji(emoji);
+                            reaction.setUser(reactingUser);
+                            reaction.setMessageChat(messageChat);
+                            newReactions.add(reaction);
+                        }
+                    }
+                }
+                reactionRepository.saveAll(newReactions);
+            }
+
+            messageChatRepository.save(messageChat);
+            return "Cập nhật tin nhắn thành công!";
+        } catch (Exception e) {
+            System.out.println(e.toString());
+            return "Đã xảy ra lỗi trong quá trình thực thi, vui lòng kiểm tra lại!";
         }
     }
 
