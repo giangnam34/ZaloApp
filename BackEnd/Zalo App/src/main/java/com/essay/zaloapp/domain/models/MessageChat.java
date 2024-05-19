@@ -48,7 +48,7 @@ public class MessageChat {
 	private GroupChat groupChat;
 
 	@ManyToOne
-	@JoinColumn(name = "phone_number_user")
+	@JoinColumn(name = "user_id")
 	private User user;
 
 	@ManyToOne

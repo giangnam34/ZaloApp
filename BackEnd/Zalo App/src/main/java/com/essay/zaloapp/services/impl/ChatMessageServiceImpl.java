@@ -250,6 +250,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Override
     public String deleteRoom(Long userId, Long roomId) {
         try {
+            if (!groupChatRepository.existsById(roomId)) return "Nhóm chat này không tồn tại!";
             User user = userRepository.findById(userId);
             GroupChatUser groupChatUser = new GroupChatUser();
             List<GroupChatUser> groupChatUserList = groupChatUserRepository.findAllByGroupId(roomId);
@@ -289,11 +290,17 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Override
     public String createRoom(Long senderId, Long receiverId) {
         try {
-            List<GroupChatUser> testSender = groupChatUserRepository.findByIdPhoneNumberUser(userRepository.findById(senderId).getPhoneNumber());
-            List<GroupChatUser> testReceiver = groupChatUserRepository.findByIdPhoneNumberUser(userRepository.findById(receiverId).getPhoneNumber());
+            List<GroupChatUser> testSender = groupChatUserRepository.findAllByPhoneNumberUser(userRepository.findById(senderId).getPhoneNumber());
+            List<GroupChatUser> testReceiver = groupChatUserRepository.findAllByPhoneNumberUser(userRepository.findById(receiverId).getPhoneNumber());
             for (GroupChatUser sender : testSender) {
                 for (GroupChatUser receiver : testReceiver) {
                     if (sender.getId().getGroupId() == receiver.getId().getGroupId()) {
+                        if (sender.getIsDeleted()) {
+                            sender.setIsDeleted(false);
+                            GroupChat groupChatSender = groupChatRepository.findById(sender.getId().getGroupId()).get();
+                            groupChatSender.setDeletedCount(groupChatSender.getDeletedCount() - 1);
+                            groupChatRepository.save(groupChatSender);
+                        }
                         return "Tạo cuộc hội thoại thành công!";
                     }
                 }
@@ -324,6 +331,23 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         } catch (Exception e) {
             System.out.println(e.toString());
             return "Có lỗi trong quá trình thực thi. Vui lòng thử lại!";
+        }
+    }
+
+    @Override
+    public String deleteMessage(Long userId, Long messageId) {
+        try {
+            if (!messageChatRepository.existsByIdAndNotDeleted(messageId)) return "Tin nhắn không tồn tại!";
+            MessageChat messageChat = messageChatRepository.findByIdAndNotDeleted(messageId).get();
+            if (messageChat.getUser().getId() != userId) {
+                return "Bạn không có quyền xóa tin nhắn này!";
+            }
+            messageChat.setDeleted(true);
+            messageChatRepository.save(messageChat);
+            return "Xóa tin nhắn thành công!";
+        } catch (Exception e) {
+            System.out.println(e.toString());
+            return "Đã xảy ra lỗi trong quá trình thực thi, vui lòng thử lại sau!";
         }
     }
 

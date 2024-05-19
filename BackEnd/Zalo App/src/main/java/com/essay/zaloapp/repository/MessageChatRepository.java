@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MessageChatRepository extends JpaRepository<MessageChat, Long> {
 
@@ -25,4 +26,10 @@ public interface MessageChatRepository extends JpaRepository<MessageChat, Long> 
 
     @Query("SELECT m FROM MessageChat m WHERE m.groupChat.id = :groupId AND m.user.phoneNumber = :phoneNumberUser")
     List<MessageChat> findAllByGroupIdAndUserPhoneNumber(@Param("groupId") Long groupId, @Param("phoneNumberUser") String phoneNumberUser);
+
+    @Query("SELECT CASE WHEN COUNT(m) > 0 THEN true ELSE false END FROM MessageChat m WHERE m.id = :messageId AND m.deleted = false")
+    boolean existsByIdAndNotDeleted(@Param("messageId") Long messageId);
+
+    @Query("SELECT m FROM MessageChat m WHERE m.id = :messageId AND m.deleted = false")
+    Optional<MessageChat> findByIdAndNotDeleted(@Param("messageId") Long messageId);
 }

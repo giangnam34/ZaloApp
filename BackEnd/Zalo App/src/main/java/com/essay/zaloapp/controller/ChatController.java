@@ -92,6 +92,13 @@ public class ChatController {
         return result.equals("Tạo cuộc hội thoại thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
+    @DeleteMapping("/delete-message/{messageId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> deleteMessage(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long messageId){
+        String result = chatMessageService.deleteMessage(userPrincipal.getId(), messageId);
+        return result.equals("Xóa tin nhắn thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
+    }
+
     @MessageMapping("/hello")
     @SendToUser("/topic/hello")
     public void handleHello(SimpMessageHeaderAccessor sha, Map<String, Object> message) {
