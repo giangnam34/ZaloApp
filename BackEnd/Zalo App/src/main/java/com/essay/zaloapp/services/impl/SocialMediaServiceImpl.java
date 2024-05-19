@@ -80,7 +80,7 @@ public class SocialMediaServiceImpl implements SocialMediaService {
             if (createNewPostRequest.getFiles() != null && !createNewPostRequest.getFiles()[0].isEmpty()) {
                 resourceList = Arrays.stream(createNewPostRequest.getFiles()).map(p -> new Resource(fileStorageService.storeFile(p), p.getContentType().contains("video") ? ResourceType.Video : ResourceType.Image)).collect(Collectors.toList());
             }
-            Post post = new Post(new Date(new Date().getTime() + 7 * 60 * 60*1000), new Date(new Date().getTime() + 7 * 60 * 60*1000), createNewPostRequest.getContent(),createNewPostRequest.getAudience() != null ? Audience.findByName(createNewPostRequest.getAudience()) : Audience.Public,user, resourceList);
+            Post post = new Post(new Date(new Date().getTime()), new Date(new Date().getTime()), createNewPostRequest.getContent(),createNewPostRequest.getAudience() != null ? Audience.findByName(createNewPostRequest.getAudience()) : Audience.Public,user, resourceList);
             if (createNewPostRequest.getPostTopId() != null) {
                 Post postTop = postRepository.findById(createNewPostRequest.getPostTopId()).get();
                 if (postTop == null) return "Bài viết chia sẻ đã không còn tồn tại!";

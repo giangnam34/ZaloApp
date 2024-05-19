@@ -205,6 +205,12 @@ export default {
     },
     emitOpenDialogEvent() {
       this.showPopup = true;
+      const userString = localStorage.getItem('user');
+
+      // Chuyển đổi chuỗi JSON thành đối tượng JavaScript
+      if (userString) {
+        this.user = JSON.parse(userString);
+      }
     },
     onHover(name) {
       this.isHover = true;

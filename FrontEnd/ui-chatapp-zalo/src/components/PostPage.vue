@@ -1155,6 +1155,9 @@ export default {
         },
         formatTimeDifference(date) {
             const now = new Date();
+
+            console.log("post time: " + date)
+            console.log("time now: "+ now)
             const timeDiff = Math.abs(now - date);
 
             const seconds = Math.floor(timeDiff / 1000);

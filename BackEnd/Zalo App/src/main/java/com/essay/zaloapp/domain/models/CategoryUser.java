@@ -19,7 +19,7 @@ public class CategoryUser{
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
+	private Long id;
 
 	private String name;
 

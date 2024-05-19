@@ -286,15 +286,15 @@ export default {
                     this.checkUser();
                     this.showUserInfoDialog(userTemp);
                 } else {
-                    console.error(responseUser.data);
+                    console.error(responseUser.data.msg);
                     this.toast.error(responseUser.data || 'Đã xảy ra lỗi!', { timeout: 1500 });
                 }
             } catch (error) {
                 if (error.response) {
                     if (error.response.status === 400) {
-                        this.toast.error(error.response.body, { timeout: 1500 });
+                        this.toast.error(error.response.data, { timeout: 1500 });
                     } else {
-                        this.toast.error(error.response.body, { timeout: 1500 });
+                        this.toast.error(error.response.data, { timeout: 1500 });
                     }
                 } else if (error.request) {
                     this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
@@ -410,26 +410,29 @@ export default {
                 }
             }
         },
-        checkUser() {
-            if (this.listOfFriends.length === 0) {
-                this.isFriend = false;
-                if (this.inviteList.length === 0) {
-                    this.sended = false;
-                } else {
-                    const temp = this.inviteList.find(friend => friend.phoneNumber === this.searchPhoneNumber);
-                    this.sended = temp !== undefined;
-                }
-            } else {
-                const temp2 = this.listOfFriends.find(friend => friend.phoneNumber === this.searchPhoneNumber);
-                if (temp2 !== undefined) {
-                    this.isFriend = true;
-                    this.sended = false;
-                } else {
-                    this.isFriend = false;
+        async checkUser() {
+            await this.getInviteFriend();
+            await this.getListOfFriends();
+            const isFriend = this.listOfFriends.some(friend => friend.phoneNumber === this.searchPhoneNumber);
+            const isInvited = this.inviteList.some(friend => friend.phoneNumber === this.searchPhoneNumber);
 
-                    const temp = this.inviteList.find(friend => friend.phoneNumber === this.searchPhoneNumber);
-                    this.sended = temp !== undefined;
+            if (isFriend) {
+                this.isFriend = true;
+                this.sended = false;
+            } else {
+                this.isFriend = false;
+
+                if (isInvited) {
+                    this.sended = true;
+                } else {
+                    this.sended = false;
                 }
+            }
+
+            // Additional checks
+            if (this.listOfFriends.length === 0 && this.inviteList.length === 0) {
+                this.isFriend = false;
+                this.sended = false;
             }
         },
         async getListOfFriends() {

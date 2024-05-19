@@ -14,6 +14,7 @@ import com.essay.zaloapp.repository.UserRepository;
 import com.essay.zaloapp.secruity.CustomUserDetailsService;
 import com.essay.zaloapp.secruity.UserPrincipal;
 import com.essay.zaloapp.services.AuthenticationService;
+import com.essay.zaloapp.services.ChatService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +42,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
+    @Autowired
+    private ChatService chatService;
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
@@ -61,7 +65,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         );
 
         System.out.println("Authentication: " + authentication.toString());
-
         SecurityContextHolder.getContext().setAuthentication(authentication);
         return ResponseEntity.ok(new LoginResponse(tokenProvider.createToken(authentication)));
     }

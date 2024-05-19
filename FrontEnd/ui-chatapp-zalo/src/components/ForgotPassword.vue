@@ -136,12 +136,12 @@ export default {
                 // Kiểm tra trạng thái phản hồi
                 if (response.status === 200) {
 
-                    this.toast.info(response.data, { timeout: 3000 });
+                    this.toast.info(response.data.msg, { timeout: 3000 });
 
                 } else {
                     console.error('Xác thực không thành công:', response.statusText);
                     this.isError = true;
-                    this.validationError = response.data;
+                    this.validationError = response.data.msg;
                 }
             } catch (error) {
                 if (error.response) {

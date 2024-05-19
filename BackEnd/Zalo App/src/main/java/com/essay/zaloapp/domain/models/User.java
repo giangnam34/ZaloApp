@@ -1,6 +1,7 @@
 package com.essay.zaloapp.domain.models;
 
 import com.essay.zaloapp.domain.enums.Sex;
+import com.essay.zaloapp.domain.enums.Status;
 import lombok.*;
 
 import javax.persistence.*;
@@ -42,6 +43,9 @@ public class User {
     private Date updatedAt;
 
     private Date lastActive;
+
+    @Enumerated(EnumType.STRING)
+    private Status status = Status.OFFLINE;
 
     private Boolean isLocked;
 
