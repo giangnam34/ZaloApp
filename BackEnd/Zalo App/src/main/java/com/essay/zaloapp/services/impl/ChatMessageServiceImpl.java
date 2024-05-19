@@ -1,10 +1,7 @@
 package com.essay.zaloapp.services.impl;
 
-import com.essay.zaloapp.domain.enums.ResourceType;
-import com.essay.zaloapp.domain.models.GroupChat;
-import com.essay.zaloapp.domain.models.GroupChatUser;
-import com.essay.zaloapp.domain.models.MessageChat;
-import com.essay.zaloapp.domain.models.User;
+import com.essay.zaloapp.domain.models.*;
+import com.essay.zaloapp.domain.models.Composite.GroupChatUserId;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.ChatMessageResponse;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.FileData;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.ReplyMessageResponse;
@@ -33,7 +30,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -57,14 +53,23 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         if (!groupChatRepository.existsById(roomId)) throw new Exception("Nhóm chat này không tồn tại!");
         User user = userRepository.findById(userId);
         List<GroupChatUser> groupChatUsersList = groupChatUserRepository.findAllByGroupId(roomId);
+        User receiver = new User();
         Boolean check = false;
         for (GroupChatUser gcu : groupChatUsersList) {
             if (gcu.getId().getPhoneNumberUser().equals(user.getPhoneNumber())) {
                 check = true;
+            } else {
+                receiver = userRepository.findByPhoneNumber(gcu.getId().getPhoneNumberUser());
             }
         }
         if (!check) {
             throw new Exception("Người dùng không có quyền xem tin nhắn của nhóm chat này!");
+        }
+
+        List<MessageChat> messageChatsForUpdate = messageChatRepository.findAllByGroupIdAndUserPhoneNumber(roomId, receiver.getPhoneNumber());
+        for (MessageChat messageChat : messageChatsForUpdate) {
+            messageChat.setSeen(true);
+            messageChatRepository.save(messageChat);
         }
 
         Pageable pageable = PageRequest.of(page, size);
@@ -152,76 +157,174 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             }
         }
 
+        Collections.reverse(responses);
         GetAllMessages result = new GetAllMessages("Thành công!", responses, messageChatPage.getTotalPages(), page);
         return result;
     }
 
     @Override
     public GetAllRooms getAllRooms(Long userId, String sortOrder) throws Exception {
-        User user = userRepository.findById(userId);
-        List<GroupChatUser> groupChatUsers = groupChatUserRepository.findByIdPhoneNumberUser(user.getPhoneNumber());
         List<GetAllRoomResponse> responses = new ArrayList<>();
+        try {
+            User user = userRepository.findById(userId);
+            List<GroupChatUser> groupChatUsers = groupChatUserRepository.findByIdPhoneNumberUser(user.getPhoneNumber());
 
-        Comparator<GetAllRoomResponse> groupNameComparator = Comparator.comparing(GetAllRoomResponse::getRoomName);
+            Comparator<GetAllRoomResponse> groupNameComparator = Comparator.comparing(GetAllRoomResponse::getRoomName);
 
-        for (GroupChatUser groupChatUser : groupChatUsers) {
-            GetAllRoomResponse response = new GetAllRoomResponse();
+            for (GroupChatUser groupChatUser : groupChatUsers) {
+                GetAllRoomResponse response = new GetAllRoomResponse();
 
-            GroupChat groupChat = groupChatRepository.findById(groupChatUser.getId().getGroupId()).get();
-            response.setRoomId(groupChat.getId() + "");
-            response.setRoomName(groupChat.getGroupName());
-            response.setAvatar("http://localhost:8181/media/getImage/" + groupChat.getAvatar());
-            response.setUnreadCount(messageChatRepository.countBySeenFalseAndGroupId(groupChat.getId()));
+                GroupChat groupChat = groupChatRepository.findById(groupChatUser.getId().getGroupId()).get();
+                response.setRoomId(groupChat.getId() + "");
+                List<GroupChatUser> groupChatUsersForGetGroupName = groupChatUserRepository.findAllByGroupId(groupChatUser.getId().getGroupId());
+                for (GroupChatUser gcu : groupChatUsersForGetGroupName) {
+                    User tester = userRepository.findByPhoneNumber(gcu.getId().getPhoneNumberUser());
+                    if (tester.getId() != userId) {
+                        response.setRoomName(tester.getFullName());
+                    }
+                }
+                response.setAvatar("http://localhost:8181/media/getImage/" + groupChat.getAvatar());
 
-            List<MessageChat> messages = messageChatRepository.findLatestMessageByGroupId(groupChat.getId());
-            MessageChat lastMessage = messages.get(0);
-            LastMessage lastMessageResponse = new LastMessage();
-            lastMessageResponse.set_id(lastMessage.getId() + "");
-            lastMessageResponse.setContent(lastMessage.getContent());
-            lastMessageResponse.setSenderId(lastMessage.getUser().getId() + "");
-            lastMessageResponse.setUsername(lastMessage.getUser().getFullName());
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(lastMessage.getSendAt());
-            calendar.add(Calendar.HOUR_OF_DAY, -7);
-            Date adjustedDate = calendar.getTime();
-            lastMessageResponse.setTimestamp(extractTime(adjustedDate));
-            lastMessageResponse.setSaved(lastMessage.getSaved());
-            lastMessageResponse.setDistributed(lastMessage.getDistributed());
-            lastMessageResponse.setSeen(lastMessage.getSeen());
-            lastMessageResponse.setIsNew(true);
-            response.setLastMessage(lastMessageResponse);
-
-            List<GroupChatUser> groupChatUserForGetUser = groupChatUserRepository.findAllByGroupId(groupChatUser.getId().getGroupId());
-            List<UserOfRoom> userOfRooms = new ArrayList<>();
-            for (GroupChatUser gcu : groupChatUserForGetUser) {
-                User userFound = userRepository.findByPhoneNumber(gcu.getId().getPhoneNumberUser());
-                UserOfRoom userOfRoom = new UserOfRoom();
-                userOfRoom.set_id(userFound.getId() + "");
-                userOfRoom.setUsername(userFound.getFullName());
-                userOfRoom.setAvatar("http://localhost:8181/media/getImage/" + userFound.getImageAvatarUrl());
-
-                StatusOfUser statusOfUser = new StatusOfUser();
-                statusOfUser.setState(userFound.getStatus() + "");
-                calendar.setTime(userFound.getLastActive());
+                List<MessageChat> messages = messageChatRepository.findLatestMessageByGroupId(groupChat.getId());
+                MessageChat lastMessage = messages.get(0);
+                LastMessage lastMessageResponse = new LastMessage();
+                lastMessageResponse.set_id(lastMessage.getId() + "");
+                lastMessageResponse.setContent(lastMessage.getContent());
+                lastMessageResponse.setSenderId(lastMessage.getUser().getId() + "");
+                lastMessageResponse.setUsername(lastMessage.getUser().getFullName());
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(lastMessage.getSendAt());
                 calendar.add(Calendar.HOUR_OF_DAY, -7);
-                adjustedDate = calendar.getTime();
-                statusOfUser.setLastChanged(formatDateTime(adjustedDate));
-                userOfRoom.setStatus(statusOfUser);
+                Date adjustedDate = calendar.getTime();
+                lastMessageResponse.setTimestamp(extractTime(adjustedDate));
+                lastMessageResponse.setSaved(lastMessage.getSaved());
+                lastMessageResponse.setDistributed(lastMessage.getDistributed());
+                lastMessageResponse.setSeen(lastMessage.getSeen());
+                lastMessageResponse.setIsNew(true);
+                response.setLastMessage(lastMessageResponse);
 
-                userOfRooms.add(userOfRoom);
+                List<GroupChatUser> groupChatUserForGetUser = groupChatUserRepository.findAllByGroupId(groupChatUser.getId().getGroupId());
+                List<UserOfRoom> userOfRooms = new ArrayList<>();
+                User receiver = new User();
+                for (GroupChatUser gcu : groupChatUserForGetUser) {
+                    User userFound = userRepository.findByPhoneNumber(gcu.getId().getPhoneNumberUser());
+                    if (userFound.getId() != userId) {
+                        receiver = userFound;
+                    }
+                    UserOfRoom userOfRoom = new UserOfRoom();
+                    userOfRoom.set_id(userFound.getId() + "");
+                    userOfRoom.setUsername(userFound.getFullName());
+                    userOfRoom.setAvatar("http://localhost:8181/media/getImage/" + userFound.getImageAvatarUrl());
+
+                    StatusOfUser statusOfUser = new StatusOfUser();
+                    statusOfUser.setState(userFound.getStatus() + "");
+                    calendar.setTime(userFound.getLastActive());
+                    calendar.add(Calendar.HOUR_OF_DAY, -7);
+                    adjustedDate = calendar.getTime();
+                    statusOfUser.setLastChanged(formatDateTime(adjustedDate));
+                    userOfRoom.setStatus(statusOfUser);
+
+                    userOfRooms.add(userOfRoom);
+                }
+
+                response.setUnreadCount(messageChatRepository.countBySeenFalseAndGroupId(groupChat.getId(), receiver.getPhoneNumber()));
+
+                response.setUsers(userOfRooms);
+                List<String> typingUsers = new ArrayList<>();
+                response.setTypingUsers(typingUsers);
+                responses.add(response);
+            }
+            if ("desc".equalsIgnoreCase(sortOrder)) {
+                responses.sort(groupNameComparator.reversed());
+            } else {
+                responses.sort(groupNameComparator);
+            }
+            return new GetAllRooms("Thành công!", responses);
+        } catch (Exception e) {
+            System.out.println(e.toString());
+            return new GetAllRooms("Có lỗi xảy ra trong quá trình thực thi, vui lòng thử lại!", responses);
+        }
+
+    }
+
+    @Override
+    public String deleteRoom(Long userId, Long roomId) {
+        try {
+            User user = userRepository.findById(userId);
+            GroupChatUser groupChatUser = new GroupChatUser();
+            List<GroupChatUser> groupChatUserList = groupChatUserRepository.findAllByGroupId(roomId);
+            boolean check = false;
+            for (GroupChatUser gcu : groupChatUserList) {
+                if (gcu.getId().getPhoneNumberUser().equals(user.getPhoneNumber())) {
+                    check = true;
+                    groupChatUser = gcu;
+                    break;
+                }
+            }
+            if (!check) {
+                return "Người dùng không có quyền thực hiện hành động này!";
+            }
+            if (!groupChatUser.getIsDeleted()) {
+                groupChatUser.setIsDeleted(true);
+                groupChatUserRepository.save(groupChatUser);
+
+                Optional<GroupChat> groupChatOptional = groupChatRepository.findById(groupChatUser.getId().getGroupId());
+                if (groupChatOptional.isPresent()) {
+                    GroupChat groupChat = groupChatOptional.get();
+                    groupChat.setDeletedCount(groupChat.getDeletedCount() + 1);
+                    if (groupChat.getDeletedCount() == 2) {
+                        groupChat.setIsDeleted(true);
+                    }
+                    groupChatRepository.save(groupChat);
+                }
+                return "Xóa hội thoại thành công!";
+            }
+            return "Hành động không hợp lệ!";
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return "Có lỗi xảy ra. Vui lòng thử lại!";
+        }
+    }
+
+    @Override
+    public String createRoom(Long senderId, Long receiverId) {
+        try {
+            List<GroupChatUser> testSender = groupChatUserRepository.findByIdPhoneNumberUser(userRepository.findById(senderId).getPhoneNumber());
+            List<GroupChatUser> testReceiver = groupChatUserRepository.findByIdPhoneNumberUser(userRepository.findById(receiverId).getPhoneNumber());
+            for (GroupChatUser sender : testSender) {
+                for (GroupChatUser receiver : testReceiver) {
+                    if (sender.getId().getGroupId() == receiver.getId().getGroupId()) {
+                        return "Tạo cuộc hội thoại thành công!";
+                    }
+                }
             }
 
-            response.setUsers(userOfRooms);
-            List<String> typingUsers = new ArrayList<>();
-            response.setTypingUsers(typingUsers);
-            responses.add(response);
+            GroupChat groupChat = new GroupChat();
+            User sender = userRepository.findById(senderId);
+            User receiver = userRepository.findById(receiverId);
+            groupChat.setGroupName(receiver.getFullName());
+            groupChat.setAvatar(receiver.getImageAvatarUrl());
+            groupChat = groupChatRepository.save(groupChat);
+
+            GroupChatUser groupChatSender = new GroupChatUser();
+            GroupChatUserId groupChatSenderId = new GroupChatUserId();
+            groupChatSenderId.setGroupId(groupChat.getId());
+            groupChatSenderId.setPhoneNumberUser(sender.getPhoneNumber());
+            groupChatSender.setId(groupChatSenderId);
+            groupChatUserRepository.save(groupChatSender);
+
+            GroupChatUser groupChatReceiver = new GroupChatUser();
+            GroupChatUserId groupChatReceiverId = new GroupChatUserId();
+            groupChatReceiverId.setGroupId(groupChat.getId());
+            groupChatReceiverId.setPhoneNumberUser(receiver.getPhoneNumber());
+            groupChatReceiver.setId(groupChatReceiverId);
+            groupChatUserRepository.save(groupChatReceiver);
+
+            return "Tạo cuộc hội thoại thành công!";
+        } catch (Exception e) {
+            System.out.println(e.toString());
+            return "Có lỗi trong quá trình thực thi. Vui lòng thử lại!";
         }
-        if ("desc".equalsIgnoreCase(sortOrder)) {
-            responses.sort(groupNameComparator.reversed());
-        } else {
-            responses.sort(groupNameComparator);
-        }
-        return new GetAllRooms("Thành công!", responses);
     }
 
     public String formatDate(Date date) {

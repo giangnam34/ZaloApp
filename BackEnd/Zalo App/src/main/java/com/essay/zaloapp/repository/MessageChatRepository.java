@@ -11,15 +11,18 @@ import java.util.List;
 
 public interface MessageChatRepository extends JpaRepository<MessageChat, Long> {
 
-    @Query("SELECT m FROM MessageChat m WHERE m.groupChat.id = :groupId AND m.deleted = false AND m.replyMessage IS NULL ORDER BY m.sendAt ASC")
+    @Query("SELECT m FROM MessageChat m WHERE m.groupChat.id = :groupId AND m.deleted = false AND m.replyMessage IS NULL ORDER BY m.sendAt DESC")
     Page<MessageChat> findAllByGroupId(@Param("groupId") Long groupId, Pageable pageable);
 
-    @Query("SELECT m FROM MessageChat m WHERE m.groupChat.id = :groupId AND m.deleted = false AND m.replyMessage IS NOT NULL ORDER BY m.sendAt ASC")
+    @Query("SELECT m FROM MessageChat m WHERE m.groupChat.id = :groupId AND m.deleted = false AND m.replyMessage IS NOT NULL ORDER BY m.sendAt DESC")
     Page<MessageChat> findAllByGroupIdAndReplyMessage(@Param("groupId") Long groupId, Pageable pageable);
 
-    @Query("SELECT COUNT(m) FROM MessageChat m WHERE m.seen = false AND m.groupChat.id = :groupId")
-    int countBySeenFalseAndGroupId(@Param("groupId") Long groupId);
+    @Query("SELECT COUNT(m) FROM MessageChat m WHERE m.seen = false AND m.groupChat.id = :groupId AND m.user.phoneNumber = :phoneNumberUser")
+    int countBySeenFalseAndGroupId(@Param("groupId") Long groupId, @Param("phoneNumberUser") String phoneNumberUser);
 
     @Query("SELECT m FROM MessageChat m WHERE m.groupChat.id = :groupId ORDER BY m.sendAt DESC")
     List<MessageChat> findLatestMessageByGroupId(@Param("groupId") Long groupId);
+
+    @Query("SELECT m FROM MessageChat m WHERE m.groupChat.id = :groupId AND m.user.phoneNumber = :phoneNumberUser")
+    List<MessageChat> findAllByGroupIdAndUserPhoneNumber(@Param("groupId") Long groupId, @Param("phoneNumberUser") String phoneNumberUser);
 }

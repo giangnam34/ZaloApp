@@ -22,17 +22,28 @@ public class GroupChat {
 
 	private String groupName;
 
-	private Boolean isChangeNameAndAvatar;
+	@Column(name = "isChangeNameAndAvatar", nullable = false, columnDefinition = "boolean default false")
+	private Boolean isChangeNameAndAvatar = false;
 
-	private Boolean isPinMessage;
+	@Column(name = "isPinMessage", nullable = false, columnDefinition = "boolean default false")
+	private Boolean isPinMessage = false;
 
-	private Boolean isCreateNewNote;
+	@Column(name = "isCreateNewNote", nullable = false, columnDefinition = "boolean default false")
+	private Boolean isCreateNewNote = false;
 
-	private Boolean isCreateNewPoll;
+	@Column(name = "isCreateNewPoll", nullable = false, columnDefinition = "boolean default false")
+	private Boolean isCreateNewPoll = false;
 
-	private Boolean isSendMessage;
+	@Column(name = "isSendMessage", nullable = false, columnDefinition = "boolean default false")
+	private Boolean isSendMessage = false;
 
 	private String avatar;
+
+	@Column(name = "deletedCount", nullable = false, columnDefinition = "int default 0")
+	private Integer deletedCount = 0;
+
+	@Column(name = "isDeleted", nullable = false, columnDefinition = "boolean default false")
+	private Boolean isDeleted = false;
 
 	@OneToMany(mappedBy = "groupChat")
 	private List<MessageChat> messageChatList;
