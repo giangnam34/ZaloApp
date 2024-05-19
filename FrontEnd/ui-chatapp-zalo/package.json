@@ -26,6 +26,7 @@
     "v-img": "^0.2.0",
     "v-viewer": "^1.6.4",
     "vue": "^3.2.13",
+    "vue-advanced-chat": "^2.0.10",
     "vue-awesome-swiper": "^5.0.1",
     "vue-gallery": "^2.0.5",
     "vue-jwt-decode": "^0.1.0",

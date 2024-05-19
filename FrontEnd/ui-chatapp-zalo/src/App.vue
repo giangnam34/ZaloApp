@@ -1,14 +1,15 @@
 <template>
   <div v-if="loading" class="width-100">
   </div>
-  <div v-else-if="!userIsValid" class="width-100">
+  <!-- <div v-else-if="!userIsValid" class="width-100">
     <SignIn @userLoggedIn="updateJWT"></SignIn>
-  </div>
+  </div> -->
   <div v-else class="width-100" style="display: flex;">
     <MainSidebarNav @pageSelected="updateChosenPage" @userLoggedIn="updateJWT"></MainSidebarNav>
     <div v-if="chosenPage === 1" class="width-100">
-      <ChatSidebarNav></ChatSidebarNav>
-      <HomeChat></HomeChat>
+      <!-- <ChatSidebarNav></ChatSidebarNav> -->
+      <!-- <HomeChat></HomeChat> -->
+      <TestChat></TestChat>
     </div>
     <div v-if="chosenPage === 2" class="width-100">
       <ContactNav></ContactNav>
@@ -40,7 +41,8 @@ import HomeChat from './components/HomeChat.vue'
 import ChatSidebarNav from './components/ChatSidebarNav.vue';
 import ContactNav from './components/ContactNav.vue';
 import ToDo from './components/ToDo.vue';
-import SignIn from './components/SignIn.vue';
+import TestChat from './components/TestChat.vue';
+//import SignIn from './components/SignIn.vue';
 import PostPage from './components/PostPage.vue';
 import VueJwtDecode from 'vue-jwt-decode';
 import axios from 'axios';
@@ -49,7 +51,7 @@ export default {
   data() {
     return {
       loading: true,
-      chosenPage: 10,
+      chosenPage: 1,
       userIsValid: false,
       jwt: '',
     }
@@ -58,7 +60,8 @@ export default {
     MainSidebarNav,
     HomeChat,
     ChatSidebarNav,
-    SignIn,
+    // SignIn,
+    TestChat,
     ContactNav,
     ToDo, 
     PostPage

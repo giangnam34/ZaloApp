@@ -1,0 +1,9 @@
+--- To do list ----
+Hôm nay: gửi api nhắn tin
+Chưa cập nhật tin nhắn được
+Chưa thả react tin nhắn được
+Các tính năng của room chưa thực hiện được (Invite, Remove, Delete -> Các tính năng sẽ được thay đổi lại tùy theo tin nhắn nhóm hay tin nhắn riêng)
+Tag người dùng trong tin nhắn
+Chưa reply tin nhắn được
+Chưa gửi ảnh, video được
+Chưa gửi âm thanh được

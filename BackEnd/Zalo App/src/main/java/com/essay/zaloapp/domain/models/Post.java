@@ -25,7 +25,7 @@ public class Post {
 
     private Date updatedAt;
 
-    // Nội dung comment
+    // Nội dung
     private String contentPost;
 
     @Enumerated(EnumType.STRING)
