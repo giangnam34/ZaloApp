@@ -105,8 +105,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 //            Date adjustedDate = calendar.getTime();
 //            response.setDate(formatDate(adjustedDate));
 //            response.setTimestamp(extractTime(adjustedDate));
-            response.setDate(formatDate(messageChat.getUpdatedAt()));
-            response.setTimestamp(extractTime(messageChat.getUpdatedAt()));
+            response.setDate(formatDate(messageChat.getSendAt()));
+            response.setTimestamp(extractTime(messageChat.getSendAt()));
 
             response.setSystem(messageChat.getIsSystem());
             response.setSaved(messageChat.getSaved());
@@ -504,7 +504,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                             return "Người dùng không tồn tại!";
                         }
                         User reactingUser = userRepository.findById(reactingUserId);
-                        if (user != null) {
+                        if (reactingUser != null) {
                             Reaction reaction = new Reaction();
                             reaction.setEmoji(emoji);
                             reaction.setUser(reactingUser);
