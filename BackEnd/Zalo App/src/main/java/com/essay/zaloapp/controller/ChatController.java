@@ -111,7 +111,10 @@ public class ChatController {
     @PutMapping("/update-message")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> updateMessage(@AuthenticationPrincipal UserPrincipal userPrincipal, @ModelAttribute UpdateChatMessageRequest updateChatMessageRequest) {
+//        System.out.println(updateChatMessageRequest.toString());
+//        return null;
         String result = chatMessageService.updateChatMessage(userPrincipal.getId(), updateChatMessageRequest);
+        System.out.println(result);
         return result.equals("Cập nhật tin nhắn thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 

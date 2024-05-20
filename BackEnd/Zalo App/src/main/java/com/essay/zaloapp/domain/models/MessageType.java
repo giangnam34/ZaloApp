@@ -22,6 +22,6 @@ public class MessageType {
 
 	private String messageTypeName;
 
-	@OneToMany(mappedBy = "messageType")
-	private List<MessageChat> messageChatList;
+//	@OneToMany(mappedBy = "messageType")
+//	private List<MessageChat> messageChatList;
 }
