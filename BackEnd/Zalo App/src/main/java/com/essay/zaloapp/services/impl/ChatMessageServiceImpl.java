@@ -468,12 +468,13 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     }
 
     @Override
-    public String createChatMessage(Long userId, AddNewChatMessageRequest addNewChatMessageRequest) {
+    public GetAMessage createChatMessage(Long userId, AddNewChatMessageRequest addNewChatMessageRequest) {
         try {
             User user = userRepository.findById(userId);
             List<GroupChatUser> groupChatUsers = groupChatUserRepository.findAllByGroupId(addNewChatMessageRequest.getRoomId());
             if (groupChatUsers.isEmpty()) {
-                return "Mã phòng không tồn tại!";
+
+                return new GetAMessage("Mã phòng không tồn tại!", new ChatMessageResponse());
             }
             Boolean check = false;
             for (GroupChatUser groupChatUser : groupChatUsers) {
@@ -483,7 +484,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 }
             }
             if (!check) {
-                return "Người dùng không có quyền gửi tin nhắn trong phòng này!";
+                return new GetAMessage("Người dùng không có quyền gửi tin nhắn trong phòng này!", new ChatMessageResponse());
             }
 
             MessageChat messageChat = new MessageChat();
@@ -516,7 +517,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             messageChat.setUpdatedAt(new Date(new Date().getTime()));
 
             if (!groupChatRepository.existsById(addNewChatMessageRequest.getRoomId())) {
-                return "Phòng chat này không tồn tại!";
+                return new GetAMessage("Phòng chat này không tồn tại!", new ChatMessageResponse());
             }
             GroupChat groupChat = groupChatRepository.findById(addNewChatMessageRequest.getRoomId()).get();
             messageChat.setGroupChat(groupChat);
@@ -524,7 +525,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             if (addNewChatMessageRequest.getReplyMessageId() != null) {
                 Optional<MessageChat> repliedMessageOptional = messageChatRepository.findById(addNewChatMessageRequest.getReplyMessageId());
                 if (repliedMessageOptional.isEmpty()) {
-                    return "Tin nhắn được trả lời không tồn tại!";
+                    return new GetAMessage("Tin nhắn được trả lời không tồn tại!", new ChatMessageResponse());
                 }
                 MessageChat repliedMessage = repliedMessageOptional.get();
                 messageChat.setReplyMessage(repliedMessage);
@@ -535,11 +536,84 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 resourceList = Arrays.stream(addNewChatMessageRequest.getFiles()).map(p -> new Resource(fileStorageService.storeFile(p), p.getContentType().contains("video") ? ResourceType.Video : ResourceType.Image)).collect(Collectors.toList());
             }
             messageChat.setFiles(resourceList);
-            messageChatRepository.save(messageChat);
-            return "Tin nhắn đã được gửi!";
+            messageChat = messageChatRepository.save(messageChat);
+
+            ChatMessageResponse response = new ChatMessageResponse();
+            response.set_id(messageChat.getId() + "");
+            response.setContent(messageChat.getContent());
+            User sender = userRepository.findById(messageChat.getUser().getId());
+            response.setSenderId(sender.getId() + "");
+            response.setUsername(sender.getFullName());
+            response.setAvatar("http://localhost:8181/media/getImage/" + sender.getImageAvatarUrl());
+            response.setDate(formatDate(messageChat.getSendAt()));
+            response.setTimestamp(extractTime(messageChat.getSendAt()));
+
+            response.setSystem(messageChat.getIsSystem());
+            response.setSaved(messageChat.getSaved());
+            response.setDistributed(messageChat.getDistributed());
+            response.setSeen(messageChat.getSeen());
+            response.setDeleted(messageChat.getDeleted());
+            response.setFailure(messageChat.getFailure());
+            response.setDisableActions(messageChat.getDisableActions());
+            response.setDisableReactions(messageChat.getDisableReactions());
+            response.setReactions(null);
+            
+            if (messageChat.getReplyMessage() == null) {
+                response.setReplyMessage(null);
+            } else {
+                MessageChat messageChatForReplyMessage = messageChatRepository.findById(messageChat.getReplyMessage().getId()).get();
+                ReplyMessageResponse replyMessageResponse = new ReplyMessageResponse();
+                replyMessageResponse.setContent(messageChatForReplyMessage.getContent());
+                replyMessageResponse.setSenderId(messageChatForReplyMessage.getUser().getId() + "");
+                List<FileData> files = new ArrayList<>();
+                for (Resource resource : messageChatForReplyMessage.getFiles()) {
+                    FileData fileData = new FileData();
+                    fileData.setProgress(Long.valueOf(100));
+                    fileData.setAudio(false);
+                    fileData.setSize(Long.valueOf(2200));
+                    fileData.setDuration(Float.valueOf(0));
+                    fileData.setUrl("http://localhost:8181/media/" + (resource.getResourceType().equals(ResourceType.Video) ? "getVideo/" : "getImage/") + resource.getResourceValue());
+                    String[] parts = resource.getResourceValue().split("\\.(?=[^\\.]+$)");
+                    String namePart = "";
+                    String extensionPart = "";
+                    if (parts.length == 2) {
+                        namePart += parts[0];
+                        extensionPart += parts[1];
+                    }
+                    fileData.setName(namePart);
+                    fileData.setType(extensionPart);
+                    fileData.setPreview("data" + resource.getResourceType() + "/" + extensionPart + ";base64");
+                    files.add(fileData);
+                }
+                replyMessageResponse.setFiles(files);
+                response.setReplyMessage(replyMessageResponse);
+            }
+
+            List<FileData> files = new ArrayList<>();
+            for (Resource resource : messageChat.getFiles()) {
+                FileData fileData = new FileData();
+                fileData.setProgress(Long.valueOf(100));
+                fileData.setAudio(false);
+                fileData.setSize(Long.valueOf(2200));
+                fileData.setDuration(Float.valueOf(0));
+                fileData.setUrl("http://localhost:8181/media/" + (resource.getResourceType().equals(ResourceType.Video) ? "getVideo/" : "getImage/") + resource.getResourceValue());
+                String[] parts = resource.getResourceValue().split("\\.(?=[^\\.]+$)");
+                String namePart = "";
+                String extensionPart = "";
+                if (parts.length == 2) {
+                    namePart += parts[0];
+                    extensionPart += parts[1];
+                }
+                fileData.setName(namePart);
+                fileData.setType(extensionPart);
+                fileData.setPreview("data:" + resource.getResourceType() + "/" + extensionPart + ";base64");
+                files.add(fileData);
+            }
+            response.setFiles(files);
+            return new GetAMessage("Tin nhắn đã được gửi!", response);
         } catch (Exception e) {
             System.out.println(e.toString());
-            return "Đã xảy ra lỗi trong quá trình thực hiện, vui lòng thử lại sau!";
+            return new GetAMessage("Đã xảy ra lỗi trong quá trình thực hiện, vui lòng thử lại sau!", new ChatMessageResponse());
         }
     }
 
@@ -553,6 +627,31 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             }
             MessageChat messageChat = messageChatOptional.get();
             if (user.getId() != messageChat.getUser().getId()) {
+                if (updateChatMessageRequest.getReactions() != null) {
+                    Map<String, List<String>> reactionsMap = updateChatMessageRequest.getReactionsMap();
+                    reactionRepository.deleteByMessageChat(messageChat);
+                    List<Reaction> newReactions = new ArrayList<>();
+                    for (Map.Entry<String, List<String>> entry : reactionsMap.entrySet()) {
+                        String emoji = entry.getKey();
+                        for (String userIdStr : entry.getValue()) {
+                            Long reactingUserId = Long.valueOf(userIdStr);
+                            if (!userRepository.existsUserById(reactingUserId)) {
+                                return "Người dùng không tồn tại!";
+                            }
+                            User reactingUser = userRepository.findById(reactingUserId);
+                            if (reactingUser != null) {
+                                Reaction reaction = new Reaction();
+                                reaction.setEmoji(emoji);
+                                reaction.setUser(reactingUser);
+                                reaction.setMessageChat(messageChat);
+                                newReactions.add(reaction);
+                            }
+                        }
+                    }
+                    reactionRepository.saveAll(newReactions);
+                    messageChatRepository.save(messageChat);
+                    return "Cập nhật tin nhắn thành công!";
+                }
                 return "Người dùng không có quyền cập nhật tin nhắn này!";
             }
 
@@ -680,6 +779,14 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         private List<ChatMessageResponse> chatMessageResponses;
         private int totalPages;
         private int currentPage;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public class GetAMessage{
+        private String message;
+        private ChatMessageResponse chatMessageResponse;
     }
 
     @Data

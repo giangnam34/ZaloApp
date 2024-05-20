@@ -16,10 +16,10 @@ public interface ChatMessageService {
 
     String deleteRoom(Long userId, Long roomId);
 
-
     String createRoom(Long senderId, List<Long> receiverIds);
 
-    String createChatMessage(Long userId, AddNewChatMessageRequest addNewChatMessageRequest);
+
+    ChatMessageServiceImpl.GetAMessage createChatMessage(Long userId, AddNewChatMessageRequest addNewChatMessageRequest);
 
     String updateChatMessage(Long userId, UpdateChatMessageRequest updateChatMessageRequest);
 
