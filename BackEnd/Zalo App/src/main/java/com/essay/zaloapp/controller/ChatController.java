@@ -87,10 +87,10 @@ public class ChatController {
         return result.equals("Xóa hội thoại thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
-    @PostMapping("/create-room/{receiverId}")
+    @PostMapping("/create-room")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> createRoom(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long receiverId) {
-        String result = chatMessageService.createRoom(userPrincipal.getId(), receiverId);
+    public ResponseEntity<?> createRoom(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody List<Long> receiverIds) {
+        String result = chatMessageService.createRoom(userPrincipal.getId(), receiverIds);
         return result.equals("Tạo cuộc hội thoại thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
@@ -104,8 +104,8 @@ public class ChatController {
     @PostMapping("/create-message")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> createMessage(@AuthenticationPrincipal UserPrincipal userPrincipal, @ModelAttribute AddNewChatMessageRequest addNewChatMessageRequest) {
-        String result = chatMessageService.createChatMessage(userPrincipal.getId(), addNewChatMessageRequest);
-        return result.equals("Tin nhắn đã được gửi!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
+        ChatMessageServiceImpl.GetAMessage result = chatMessageService.createChatMessage(userPrincipal.getId(), addNewChatMessageRequest);
+        return result.getMessage().equals("Tin nhắn đã được gửi!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
     @PutMapping("/update-message")
