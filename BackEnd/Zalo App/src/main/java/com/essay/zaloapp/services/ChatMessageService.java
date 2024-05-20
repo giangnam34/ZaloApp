@@ -16,8 +16,8 @@ public interface ChatMessageService {
 
     String deleteRoom(Long userId, Long roomId);
 
-    String createRoom(Long senderId, Long receiverId);
 
+    String createRoom(Long senderId, List<Long> receiverIds);
 
     String createChatMessage(Long userId, AddNewChatMessageRequest addNewChatMessageRequest);
 

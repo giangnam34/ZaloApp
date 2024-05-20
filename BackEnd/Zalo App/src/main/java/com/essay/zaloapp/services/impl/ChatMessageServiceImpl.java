@@ -25,7 +25,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -298,7 +297,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 if (groupChatOptional.isPresent()) {
                     GroupChat groupChat = groupChatOptional.get();
                     groupChat.setDeletedCount(groupChat.getDeletedCount() + 1);
-                    if (groupChat.getDeletedCount() == 2) {
+                    if (groupChat.getDeletedCount() == groupChatUserList.size()) {
                         groupChat.setIsDeleted(true);
                     }
                     groupChatRepository.save(groupChat);
@@ -313,7 +312,52 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     }
 
     @Override
-    public String createRoom(Long senderId, Long receiverId) {
+    public String createRoom(Long senderId, List<Long> receiverIds) {
+        try {
+            if (receiverIds.size() == 0) {
+                return "Vui lòng gửi danh sách thành viên của phòng!";
+            }
+
+
+            User sender = userRepository.findById(senderId);
+            if (sender == null) return "Người gửi không tồn tại!";
+
+            for (Long receiverId : receiverIds) {
+
+                if (receiverId == senderId) {
+                    return "Không thể tự tạo phòng với chính bản thân!";
+                }
+                if (!userRepository.existsUserById(receiverId)) {
+                    return "Người nhận với ID " + receiverId + " không tồn tại!";
+                }
+            }
+
+            if (receiverIds.size() == 1) {
+                Long receiverId = receiverIds.get(0);
+                String result = checkAndUpdateExistingChat(senderId, receiverId);
+                return result;
+
+            }
+
+            List<GroupChatUser> testSender = groupChatUserRepository.findAllByPhoneNumberUser(sender.getPhoneNumber());
+            GroupChat groupChat = findExistingGroupChat(testSender, receiverIds);
+            boolean existingChat = groupChat != null;
+
+            if (!existingChat) {
+                groupChat = createNewGroupChat(receiverIds);
+            }
+
+            addUsersToGroupChat(groupChat, sender, receiverIds, existingChat);
+            return "Tạo cuộc hội thoại thành công!";
+
+        } catch (
+                Exception e) {
+            e.printStackTrace();
+            return "Có lỗi trong quá trình thực thi. Vui lòng thử lại!";
+        }
+    }
+
+    private String checkAndUpdateExistingChat(Long senderId, Long receiverId) {
         try {
             List<GroupChatUser> testSender = groupChatUserRepository.findAllByPhoneNumberUser(userRepository.findById(senderId).getPhoneNumber());
             List<GroupChatUser> testReceiver = groupChatUserRepository.findAllByPhoneNumberUser(userRepository.findById(receiverId).getPhoneNumber());
@@ -333,7 +377,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
             GroupChat groupChat = new GroupChat();
             User sender = userRepository.findById(senderId);
-            if (!userRepository.existsUserById(receiverId)) return "Người nhận không tồn tại!";
             User receiver = userRepository.findById(receiverId);
             groupChat.setGroupName(receiver.getFullName());
             groupChat.setAvatar(receiver.getImageAvatarUrl());
@@ -358,6 +401,70 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             System.out.println(e.toString());
             return "Có lỗi trong quá trình thực thi. Vui lòng thử lại!";
         }
+    }
+
+    private GroupChat findExistingGroupChat(List<GroupChatUser> testSender, List<Long> receiverIds) {
+        outerLoop:
+        for (GroupChatUser senderChatUser : testSender) {
+            GroupChat groupChatSender = groupChatRepository.findById(senderChatUser.getId().getGroupId()).orElse(null);
+            if (groupChatSender == null) continue;
+
+            for (Long receiverId : receiverIds) {
+                User receiver = userRepository.findById(receiverId);
+                if (receiver == null) continue;
+
+                List<GroupChatUser> testReceiver = groupChatUserRepository.findAllByPhoneNumberUser(receiver.getPhoneNumber());
+                boolean receiverInChat = testReceiver.stream()
+                        .anyMatch(receiverChatUser -> receiverChatUser.getId().getGroupId().equals(groupChatSender.getId()));
+
+                if (!receiverInChat) {
+                    continue outerLoop;
+                }
+            }
+
+            return groupChatSender;
+        }
+        return null;
+    }
+
+    private GroupChat createNewGroupChat(List<Long> receiverIds) {
+        GroupChat groupChat = new GroupChat();
+        User firstReceiver = userRepository.findById(receiverIds.get(0));
+        if (firstReceiver == null) throw new IllegalArgumentException("Người nhận đầu tiên không tồn tại!");
+
+        groupChat.setGroupName(firstReceiver.getFullName());
+        groupChat.setAvatar(firstReceiver.getImageAvatarUrl());
+        return groupChatRepository.save(groupChat);
+    }
+
+    private void addUsersToGroupChat(GroupChat groupChat, User sender, List<Long> receiverIds, boolean existingChat) {
+        if (!existingChat || !isUserInGroupChat(sender.getPhoneNumber(), groupChat.getId())) {
+            GroupChatUser groupChatSender = new GroupChatUser();
+            GroupChatUserId groupChatSenderId = new GroupChatUserId();
+            groupChatSenderId.setGroupId(groupChat.getId());
+            groupChatSenderId.setPhoneNumberUser(sender.getPhoneNumber());
+            groupChatSender.setId(groupChatSenderId);
+            groupChatUserRepository.save(groupChatSender);
+        }
+
+        for (Long receiverId : receiverIds) {
+            User receiver = userRepository.findById(receiverId);
+            if (receiver == null) continue;
+
+            if (!isUserInGroupChat(receiver.getPhoneNumber(), groupChat.getId())) {
+                GroupChatUser groupChatReceiver = new GroupChatUser();
+                GroupChatUserId groupChatReceiverId = new GroupChatUserId();
+                groupChatReceiverId.setGroupId(groupChat.getId());
+                groupChatReceiverId.setPhoneNumberUser(receiver.getPhoneNumber());
+                groupChatReceiver.setId(groupChatReceiverId);
+                groupChatUserRepository.save(groupChatReceiver);
+            }
+        }
+    }
+
+    private boolean isUserInGroupChat(String phoneNumber, Long groupId) {
+        List<GroupChatUser> users = groupChatUserRepository.findAllByPhoneNumberUser(phoneNumber);
+        return users.stream().anyMatch(user -> user.getId().getGroupId().equals(groupId));
     }
 
     @Override
