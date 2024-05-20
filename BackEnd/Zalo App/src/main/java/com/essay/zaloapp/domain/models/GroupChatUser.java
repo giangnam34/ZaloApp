@@ -17,11 +17,17 @@ public class GroupChatUser {
 	@EmbeddedId
 	private GroupChatUserId id;
 
-	private Boolean isUserCreateGroup;
+	@Column(name = "isUserCreateGroup", nullable = false, columnDefinition = "boolean default true")
+	private Boolean isUserCreateGroup = true;
 
-	private Boolean isOwner;
+	@Column(name = "isOwner", nullable = false, columnDefinition = "boolean default true")
+	private Boolean isOwner = true;
 
-	private Boolean isAdmin;
+	@Column(name = "isAdmin", nullable = false, columnDefinition = "boolean default false")
+	private Boolean isAdmin = false;
+
+	@Column(name = "isDeleted", nullable = false, columnDefinition = "boolean default false")
+	private Boolean isDeleted = false;
 
 	@ManyToOne
 	@JoinColumn(name = "category_id")

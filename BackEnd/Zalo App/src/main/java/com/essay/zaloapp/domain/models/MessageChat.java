@@ -27,20 +27,28 @@ public class MessageChat {
 
 	private String content;
 
+	@Column(name = "isSystem", nullable = false, columnDefinition = "boolean default false")
 	private Boolean isSystem = false;
 
+	@Column(name = "saved", nullable = false, columnDefinition = "boolean default true")
 	private Boolean saved = true;
 
+	@Column(name = "distributed", nullable = false, columnDefinition = "boolean default false")
 	private Boolean distributed = false;
 
+	@Column(name = "seen", nullable = false, columnDefinition = "boolean default false")
 	private Boolean seen = false;
 
+	@Column(name = "deleted", nullable = false, columnDefinition = "boolean default false")
 	private Boolean deleted = false;
 
+	@Column(name = "failure", nullable = false, columnDefinition = "boolean default false")
 	private Boolean failure = false;
 
+	@Column(name = "disableActions", nullable = false, columnDefinition = "boolean default false")
 	private Boolean disableActions = false;
 
+	@Column(name = "disableReactions", nullable = false, columnDefinition = "boolean default false")
 	private Boolean disableReactions = false;
 
 	@ManyToOne
@@ -48,16 +56,8 @@ public class MessageChat {
 	private GroupChat groupChat;
 
 	@ManyToOne
-	@JoinColumn(name = "phone_number_user")
+	@JoinColumn(name = "user_id")
 	private User user;
-
-	@ManyToOne
-	@JoinColumn(name = "message_type")
-	private MessageType messageType;
-
-//	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-//	@JoinColumn(name = "reply_message_id")
-//	private ReplyMessage replyMessage;
 
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "reply_message_id")
@@ -65,6 +65,9 @@ public class MessageChat {
 
 	@OneToMany(mappedBy="replyMessage")
 	private List<MessageChat> replyMessageList;
+
+	@OneToMany(mappedBy = "messageChat", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Reaction> reactions;
 
 	@ManyToMany(cascade = CascadeType.ALL)
 	@JoinTable(name = "message_resource", joinColumns = @JoinColumn(name = "message_id"), inverseJoinColumns = @JoinColumn(name = "resource_id"))

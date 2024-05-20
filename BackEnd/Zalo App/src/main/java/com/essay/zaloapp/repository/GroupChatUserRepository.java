@@ -16,8 +16,12 @@ public interface GroupChatUserRepository extends JpaRepository<GroupChatUser, Gr
             "AND gu2.id.phoneNumberUser = :receiverPhoneNumber")
     List<Long> findGroupChatIdsBySenderAndReceiverPhoneNumbers(@Param("senderPhoneNumber") String senderPhoneNumber, @Param("receiverPhoneNumber") String receiverPhoneNumber);
 
-    @Query("SELECT gcu FROM GroupChatUser gcu WHERE gcu.id.groupId = :groupId")
+    @Query("SELECT gcu FROM GroupChatUser gcu WHERE gcu.id.groupId = :groupId AND gcu.isDeleted = false")
     List<GroupChatUser> findAllByGroupId(@Param("groupId") Long groupId);
 
-    List<GroupChatUser> findByIdPhoneNumberUser(String phoneNumberUser);
+    @Query("SELECT gcu FROM GroupChatUser gcu WHERE gcu.id.phoneNumberUser = :phoneNumberUser AND gcu.isDeleted = false")
+    List<GroupChatUser> findByIdPhoneNumberUser(@Param("phoneNumberUser") String phoneNumberUser);
+
+    @Query("SELECT gcu FROM GroupChatUser gcu WHERE gcu.id.phoneNumberUser = :phoneNumberUser")
+    List<GroupChatUser> findAllByPhoneNumberUser(@Param("phoneNumberUser") String phoneNumberUser);
 }
