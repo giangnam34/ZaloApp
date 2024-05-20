@@ -5,8 +5,9 @@
 			:room-actions="JSON.stringify(roomActions)" :menu-actions="JSON.stringify(menuActions)"
 			:messages="JSON.stringify(messages)" :messages-loaded="messagesLoaded" :load-first-room="loadFirstRoom"
 			:show-footer="showFooter" @send-message="sendMessage($event.detail[0])"
-			@fetch-messages="fetchMessages($event.detail[0])"
-			:templates-text="JSON.stringify(templatesText)" :theme="theme" :emoji-data-source="emojiDataSource" />
+			@fetch-messages="fetchMessages($event.detail[0])" :templates-text="JSON.stringify(templatesText)"
+			@send-message-reaction="sendMessageReaction($event.detail[0])" :theme="theme"
+			:emoji-data-source="emojiDataSource" />
 	</div>
 </template>
 
@@ -19,131 +20,12 @@ register()
 export default {
 	data() {
 		return {
-			currentUserId: '1234',
+			currentUserId: null,
 			theme: 'light',
-			// rooms: [
-			// 	{
-			// 		roomId: '1',
-			// 		roomName: 'Room 1',
-			// 		avatar: 'https://66.media.tumblr.com/avatar_c6a8eae4303e_512.pnj',
-			// 		users: [
-			// 			{ _id: '1234', username: 'John Doe' },
-			// 			{ _id: '4321', username: 'John Snow' }
-			// 		]
-			// 	},
-			// 	{
-			// 		roomId: '2',
-			// 		roomName: 'Room 2',
-			// 		avatar: 'https://66.media.tumblr.com/avatar_c6a8eae4303e_512.pnj',
-			// 		users: [
-			// 			{ _id: '1234', username: 'John Doe' },
-			// 			{ _id: '4321', username: 'John Snow' }
-			// 		]
-			// 	},
-			// 	{
-			// 		roomId: '3',
-			// 		roomName: 'Room 3',
-			// 		avatar: 'https://66.media.tumblr.com/avatar_c6a8eae4303e_512.pnj',
-			// 		users: [
-			// 			{ _id: '1234', username: 'John Doe' },
-			// 			{ _id: '4321', username: 'John Snow' }
-			// 		]
-			// 	},
-			// 	{
-			// 		roomId: '1',
-			// 		roomName: 'Room 1',
-			// 		avatar: 'https://66.media.tumblr.com/avatar_c6a8eae4303e_512.pnj',
-			// 		users: [
-			// 			{ _id: '1234', username: 'John Doe' },
-			// 			{ _id: '4321', username: 'John Snow' }
-			// 		]
-			// 	},
-			// 	{
-			// 		roomId: '1',
-			// 		roomName: 'Room 1',
-			// 		avatar: 'https://66.media.tumblr.com/avatar_c6a8eae4303e_512.pnj',
-			// 		users: [
-			// 			{ _id: '1234', username: 'John Doe' },
-			// 			{ _id: '4321', username: 'John Snow' }
-			// 		]
-			// 	},
-			// 	{
-			// 		roomId: '1',
-			// 		roomName: 'Room 1',
-			// 		avatar: 'https://66.media.tumblr.com/avatar_c6a8eae4303e_512.pnj',
-			// 		users: [
-			// 			{ _id: '1234', username: 'John Doe' },
-			// 			{ _id: '4321', username: 'John Snow' }
-			// 		]
-			// 	},
-			// 	{
-			// 		roomId: '1',
-			// 		roomName: 'Room 1',
-			// 		avatar: 'https://66.media.tumblr.com/avatar_c6a8eae4303e_512.pnj',
-			// 		users: [
-			// 			{ _id: '1234', username: 'John Doe' },
-			// 			{ _id: '4321', username: 'John Snow' }
-			// 		]
-			// 	},
-			// 	{
-			// 		roomId: '1',
-			// 		roomName: 'Room 1',
-			// 		avatar: 'https://66.media.tumblr.com/avatar_c6a8eae4303e_512.pnj',
-			// 		users: [
-			// 			{ _id: '1234', username: 'John Doe' },
-			// 			{ _id: '4321', username: 'John Snow' }
-			// 		]
-			// 	},
-			// 	{
-			// 		roomId: '1',
-			// 		roomName: 'Room 1',
-			// 		avatar: 'https://66.media.tumblr.com/avatar_c6a8eae4303e_512.pnj',
-			// 		users: [
-			// 			{ _id: '1234', username: 'John Doe' },
-			// 			{ _id: '4321', username: 'John Snow' }
-			// 		]
-			// 	},
-			// 	{
-			// 		roomId: '1',
-			// 		roomName: 'Room 1',
-			// 		avatar: 'https://66.media.tumblr.com/avatar_c6a8eae4303e_512.pnj',
-			// 		users: [
-			// 			{ _id: '1234', username: 'John Doe' },
-			// 			{ _id: '4321', username: 'John Snow' }
-			// 		]
-			// 	},
-			// 	{
-			// 		roomId: '1',
-			// 		roomName: 'Room 1',
-			// 		avatar: 'https://66.media.tumblr.com/avatar_c6a8eae4303e_512.pnj',
-			// 		users: [
-			// 			{ _id: '1234', username: 'John Doe' },
-			// 			{ _id: '4321', username: 'John Snow' }
-			// 		]
-			// 	},
-			// 	{
-			// 		roomId: '1',
-			// 		roomName: 'Room 1',
-			// 		avatar: 'https://66.media.tumblr.com/avatar_c6a8eae4303e_512.pnj',
-			// 		users: [
-			// 			{ _id: '1234', username: 'John Doe' },
-			// 			{ _id: '4321', username: 'John Snow' }
-			// 		]
-			// 	},
-			// 	{
-			// 		roomId: '1',
-			// 		roomName: 'Room 1',
-			// 		avatar: 'https://66.media.tumblr.com/avatar_c6a8eae4303e_512.pnj',
-			// 		users: [
-			// 			{ _id: '1234', username: 'John Doe' },
-			// 			{ _id: '4321', username: 'John Snow' }
-			// 		]
-			// 	}
-			// ],
 			rooms: [],
 			roomsLoaded: false,
 			loadingRooms: true,
-			loadFirstRoom: false,
+			loadFirstRoom: true,
 			roomActions: [
 				{ name: 'inviteUser', title: 'Invite User' },
 				{ name: 'removeUser', title: 'Remove User' },
@@ -155,6 +37,7 @@ export default {
 				{ name: 'deleteRoom', title: 'Delete Room' },
 			],
 			messages: [],
+			messagePage: 0,
 			messagesLoaded: false,
 			templatesText: [
 				{
@@ -172,127 +55,147 @@ export default {
 	},
 
 	created() {
+		this.getCurrentUserId();
 		this.fetchMoreRooms();
 	},
 
 	methods: {
 		async fetchMessages({ room = {}, options = {} }) {
+			console.log("Call fetchMessages");
 			console.log("Option messages: ");
 			console.log(options);
+			console.log("Room info: ");
 			console.log(room);
+			room.unreadCount = 0;
+			const roomId = room.roomId;
 			this.messagesLoaded = false;
 			try {
 				if (options.reset) {
 					console.log("Options is reset");
-					const result = await axios.get('http://localhost/FakeApiChatApp/message.json');
-					// console.log("Log first");
-					console.log("Result: ");
-					console.log(result.data);
-					this.messages = [...result.data, ...this.messages];
-					// this.messagesLoaded = true;
+					this.messagePage = 0;
+					this.messages = []
+
 				} else {
 					console.log("Options is not reset");
 					// Not done
-					this.messages = [...this.addMessages(), ...this.messages]
-					this.messagesLoaded = true
+
 				}
 			} catch (err) {
 				console.log(err.toString())
 			}
+			const result = await axios.get(`http://localhost:8181/v1/chat/get-messages/${roomId}`, {
+				params: {
+					page: this.messagePage++
+				}
+			});
+			// console.log("Log first");
+			console.log("Result: ");
+			console.log(result.data);
+			const messages = result.data.chatMessageResponses;
+			messages.forEach(element => {
+				element.files.forEach(file => {
+					delete file.progress;
+				})
+			});
+			console.log(messages);
+			this.messages = [...messages, ...this.messages];
+			if (result.data.totalPages === result.data.currentPage + 1) {
+				this.messagesLoaded = true;
+			}
+			// console.log(this.messages)
+		},
+
+		async fetchMessagesFromFakeServer({ room = {}, options = {} }) {
+			console.log("Call fetchMessages");
+			console.log("Option messages: ");
+			console.log(options);
+			console.log("Room info: ");
+			console.log(room);
+			room.unreadCount = 0;
+			this.messagesLoaded = false;
+			try {
+				if (options.reset) {
+					console.log("Options is reset");
+					this.messagePage = 0;
+					this.messages = []
+
+				} else {
+					console.log("Options is not reset");
+					// Not done
+
+				}
+			} catch (err) {
+				console.log(err.toString())
+			}
+			const result = await axios.get(`http://localhost/FakeApiChatApp/message.json`);
+			// console.log("Log first");
+			console.log("Result: ");
+			console.log(result.data);
+			const messages = result.data;
+			// console.log(messages);
+			this.messages = [...messages, ...this.messages];
+			this.messagesLoaded = true;
 			// console.log(this.messages)
 		},
 
 		async fetchMoreRooms() {
-			// setTimeout(() => {
-			// 	this.loadingRooms = true;
-			// }, 1000);
-			this.loadingRooms = true;
 			console.log("Call fetchRooms");
-			const rooms = this.rooms;
-			const room = {
-				roomId: '2',
-				roomName: 'Room 2',
-				avatar: 'https://66.media.tumblr.com/avatar_c6a8eae4303e_512.pnj',
-				users: [
-					{ _id: '1234', username: 'John Doe' },
-					{ _id: '4321', username: 'John Snow' }
-				]
+			this.rooms = [];
+			this.roomsLoaded = false;
+			this.loadingRooms = true;
+			try {
+				const result = await axios.get('http://localhost:8181/v1/chat/get-rooms');
+				// console.log("Log first");
+				console.log("Result: ");
+				console.log(result.data);
+				this.rooms = [...this.rooms, ...result.data.getAllRoomResponses];
+			} catch (err) {
+				console.log(err.toString())
 			}
-			rooms.push(room);
-			this.rooms = rooms;
 			this.loadingRooms = false;
-			// this.roomsLoaded = true;
-			// console.log(event);
-			// this.rooms = [];
-			// this.roomsLoaded = true;
-			// try {
-			// 	// if (options.reset) {
-			// 	// 	console.log("Options is reset");
-			// 	// 	const result = await axios.get('http://localhost/FakeApiChatApp/message.json');
-			// 	// 	// console.log("Log first");
-			// 	// 	console.log("Result: ");
-			// 	// 	console.log(result.data);
-			// 	// 	this.messages = [...result.data, ...this.messages];
-			// 	// 	// this.messagesLoaded = true;
-			// 	// } else {
-			// 	// 	console.log("Options is not reset");
-			// 	// 	// Not done
-			// 	// 	this.messages = [...this.addMessages(), ...this.messages]
-			// 	// 	this.messagesLoaded = true
-			// 	// }
-			// } catch (err) {
-			// 	console.log(err.toString())
-			// }
-			// console.log(this.messages)
-		},
-
-		addMessages(reset) {
-			const messages = []
-
-			for (let i = 0; i < 30; i++) {
-				messages.push({
-					_id: reset ? i : this.messages.length + i,
-					content: `${reset ? '' : 'paginated'} message ${i + 1}`,
-					senderId: '4321',
-					username: 'John Doe',
-					date: '13 November',
-					avatar: 'https://dfstudio-d420.kxcdn.com/wordpress/wp-content/uploads/2019/06/digital_camera_photo-1080x675.jpg',
-					system: false,
-					timestamp: '10:20'
-				})
-			}
-
-			return messages
-		},
-
-		addNewMessage() {
-			setTimeout(() => {
-				this.messages = [
-					...this.messages,
-					{
-						_id: this.messages.length,
-						content: 'NEW MESSAGE',
-						senderId: '1234',
-						timestamp: new Date().toString().substring(16, 21),
-						date: new Date().toDateString()
-					}
-				]
-			}, 2000)
+			this.roomsLoaded = true;
 		},
 
 		sendMessage(message) {
-			this.messages = [
-				...this.messages,
-				{
-					_id: this.messages.length,
-					content: message.content,
-					senderId: this.currentUserId,
-					timestamp: new Date().toString().substring(16, 21),
-					date: new Date().toDateString()
-				}
-			]
+			console.log("Call send message");
+			console.log(message);
+			// this.messages = [
+			// 	...this.messages,
+			// 	{
+			// 		_id: this.messages.length,
+			// 		content: message.content,
+			// 		senderId: this.currentUserId,
+			// 		timestamp: new Date().toString().substring(16, 21),
+			// 		date: new Date().toDateString()
+			// 	}
+			// ]
 
 		},
+
+		sendMessageReaction({ roomId, messageId, reaction, remove }) {
+			console.log("Call send message reaction");
+			console.log("Room Id: ", roomId);
+			console.log("Message Id: ", messageId);
+			console.log("Reaction: ", reaction);
+			console.log("Remove: ", remove);
+			const message = this.messages.find(message => message._id == messageId);
+			console.log(message);
+			const reactionUser = Object.prototype.hasOwnProperty.call(message.reactions,reaction.unicode) ? message.reactions[reaction.unicode] : [];
+			console.log(reactionUser);
+			if (!reactionUser.includes(this.currentUserId))
+				reactionUser.push(this.currentUserId);
+			else if (remove === false){
+				const index = reactionUser.indexOf(this.currentUserId);
+				reactionUser.splice(index,1);
+			}
+			message.reactions[reaction.unicode] = reactionUser;
+		},
+
+		getCurrentUserId() {
+			const user = JSON.parse(localStorage.getItem('user'));
+			this.currentUserId = user.id;
+			console.log(this.currentUserId);
+		}
 	}
 }
 </script>
