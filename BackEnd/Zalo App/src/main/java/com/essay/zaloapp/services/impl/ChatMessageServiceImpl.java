@@ -557,7 +557,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             response.setDisableActions(messageChat.getDisableActions());
             response.setDisableReactions(messageChat.getDisableReactions());
             response.setReactions(null);
-            
+
             if (messageChat.getReplyMessage() == null) {
                 response.setReplyMessage(null);
             } else {
