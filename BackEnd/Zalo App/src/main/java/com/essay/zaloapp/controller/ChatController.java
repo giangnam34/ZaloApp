@@ -104,6 +104,7 @@ public class ChatController {
     @PostMapping("/create-message")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> createMessage(@AuthenticationPrincipal UserPrincipal userPrincipal, @ModelAttribute AddNewChatMessageRequest addNewChatMessageRequest) {
+        System.out.println(addNewChatMessageRequest.toString());
         ChatMessageServiceImpl.GetAMessage result = chatMessageService.createChatMessage(userPrincipal.getId(), addNewChatMessageRequest);
         return result.getMessage().equals("Tin nhắn đã được gửi!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
