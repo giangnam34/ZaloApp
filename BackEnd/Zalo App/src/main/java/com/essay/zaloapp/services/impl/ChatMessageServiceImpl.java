@@ -228,24 +228,29 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                     }
                 }
                 response.setAvatar("http://localhost:8181/media/getImage/" + groupChat.getAvatar());
-
-                List<MessageChat> messages = messageChatRepository.findLatestMessageByGroupId(groupChat.getId());
-                MessageChat lastMessage = messages.get(0);
-                LastMessage lastMessageResponse = new LastMessage();
-                lastMessageResponse.set_id(lastMessage.getId() + "");
-                lastMessageResponse.setContent(lastMessage.getContent());
-                lastMessageResponse.setSenderId(lastMessage.getUser().getId() + "");
-                lastMessageResponse.setUsername(lastMessage.getUser().getFullName());
                 Calendar calendar = Calendar.getInstance();
-                calendar.setTime(lastMessage.getSendAt());
-                calendar.add(Calendar.HOUR_OF_DAY, -7);
-                Date adjustedDate = calendar.getTime();
-                lastMessageResponse.setTimestamp(extractTime(adjustedDate));
-                lastMessageResponse.setSaved(lastMessage.getSaved());
-                lastMessageResponse.setDistributed(lastMessage.getDistributed());
-                lastMessageResponse.setSeen(lastMessage.getSeen());
-                lastMessageResponse.setIsNew(true);
-                response.setLastMessage(lastMessageResponse);
+                Date adjustedDate;
+                List<MessageChat> messages = messageChatRepository.findLatestMessageByGroupId(groupChat.getId());
+                if (!messages.isEmpty()) {
+                    MessageChat lastMessage = messages.get(0);
+                    LastMessage lastMessageResponse = new LastMessage();
+                    lastMessageResponse.set_id(lastMessage.getId() + "");
+                    lastMessageResponse.setContent(lastMessage.getContent());
+                    lastMessageResponse.setSenderId(lastMessage.getUser().getId() + "");
+                    lastMessageResponse.setUsername(lastMessage.getUser().getFullName());
+                    calendar.setTime(lastMessage.getSendAt());
+                    calendar.add(Calendar.HOUR_OF_DAY, -7);
+                    adjustedDate = calendar.getTime();
+                    lastMessageResponse.setTimestamp(extractTime(adjustedDate));
+                    lastMessageResponse.setSaved(lastMessage.getSaved());
+                    lastMessageResponse.setDistributed(lastMessage.getDistributed());
+                    lastMessageResponse.setSeen(lastMessage.getSeen());
+                    lastMessageResponse.setIsNew(true);
+                    response.setLastMessage(lastMessageResponse);
+                } else {
+                    response.setLastMessage(null);
+                }
+
 
                 List<GroupChatUser> groupChatUserForGetUser = groupChatUserRepository.findAllByGroupId(groupChatUser.getId().getGroupId());
                 List<UserOfRoom> userOfRooms = new ArrayList<>();

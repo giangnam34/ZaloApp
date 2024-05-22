@@ -20,5 +20,4 @@ public class GetAllRoomResponse {
     private LastMessage lastMessage;
     private List<UserOfRoom> users;
     private List<String> typingUsers;
-
 }
