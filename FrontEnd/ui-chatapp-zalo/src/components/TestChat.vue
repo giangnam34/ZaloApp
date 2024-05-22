@@ -4,7 +4,7 @@
 			:loading-rooms="loadingRooms" @fetch-more-rooms="fetchMoreRooms" :rooms-loaded="roomsLoaded"
 			:room-actions="JSON.stringify(roomActions)" :menu-actions="JSON.stringify(menuActions)"
 			:messages="JSON.stringify(messages)" :messages-loaded="messagesLoaded" :load-first-room="loadFirstRoom"
-			:show-footer="showFooter" @send-message="sendMessage($event.detail[0])"
+			:show-footer="showFooter" @send-message="sendMessage($event.detail[0])" :room-info-enabled="roomInfo"
 			@fetch-messages="fetchMessages($event.detail[0])" :templates-text="JSON.stringify(templatesText)"
 			@send-message-reaction="sendMessageReaction($event.detail[0])" :theme="theme"
 			:emoji-data-source="emojiDataSource" />
@@ -26,6 +26,7 @@ export default {
 			roomsLoaded: false,
 			loadingRooms: true,
 			loadFirstRoom: true,
+			roomInfo: true,
 			roomActions: [
 				{ name: 'inviteUser', title: 'Invite User' },
 				{ name: 'removeUser', title: 'Remove User' },
@@ -156,23 +157,78 @@ export default {
 			this.roomsLoaded = true;
 		},
 
-		sendMessage(message) {
+		async callApiUpdateMessage(roomId, message) {
+			// const form = new FormData();
+			// form.append('roomId', 1);
+			console.log("Message reactions: ");
+			console.log(message.reactions);
+			const result = await axios.put(`http://localhost:8181/v1/chat/update-message`, {
+				'roomId': roomId,
+				'messageId': message._id,
+				'content': message.content,
+				'system': message.system,
+				'saved': message.saved,
+				'distributed': message.distributed,
+				'seen': message.seen,
+				'failure': message.failure,
+				'disableActions': message.disableActions,
+				'disableReactions': message.disableReactions,
+				'files': message.files,
+				'reactions': JSON.stringify(message.reactions),
+				'replyMessageId': message.replyMessage,
+			}, {
+				headers: {
+					'Content-Type': 'multipart/form-data'
+				}
+			});
+			return result;
+		},
+		async sendMessage({ roomId, content, files, replyMessage, usersTag }) {
 			console.log("Call send message");
-			console.log(message);
-			// this.messages = [
-			// 	...this.messages,
-			// 	{
-			// 		_id: this.messages.length,
-			// 		content: message.content,
-			// 		senderId: this.currentUserId,
-			// 		timestamp: new Date().toString().substring(16, 21),
-			// 		date: new Date().toDateString()
-			// 	}
-			// ]
-
+			console.log("RoomId: ", roomId);
+			console.log("Content: ", content);
+			console.log("Files: ", files[0]);
+			console.log("ReplyMessage: ", replyMessage);
+			console.log("User tag:", usersTag);
+			const form = new FormData();
+			form.append('roomId', roomId);
+			form.append('content', content);
+			form.append('system', false);
+			form.append('saved', false);
+			form.append('distributed', false);
+			form.append('seen', false);
+			form.append('failure', false);
+			form.append('disableActions', false);
+			files.forEach(file => {
+				const convertFile = new File([file.blob], file.name.concat('.').concat(file.extension),{
+					type: file.type
+				}
+				);
+				form.append('files', convertFile);
+			});
+			// form.append('replyMessageId', replyMessage ? parseInt(replyMessage._id) : null);
+			console.log("Form");
+			console.log(form.get('files'));
+			try {
+				const result = await axios.post(`http://localhost:8181/v1/chat/create-message`, form, {
+					headers: {
+						'Content-Type': 'multipart/form-data'
+					}
+				});
+				if (result.status === 200) {
+					console.log(result);
+				} else {
+					result.data.chatMessageResponse.failure = true;
+				}
+				this.messages = [...this.messages, result.data.chatMessageResponse];
+				// const room 
+			} catch (exception) {
+				console.log("Loi roi");
+				console.log(exception);
+			}
 		},
 
-		sendMessageReaction({ roomId, messageId, reaction, remove }) {
+		async sendMessageReaction({ roomId, messageId, reaction, remove }) {
 			console.log("Call send message reaction");
 			console.log("Room Id: ", roomId);
 			console.log("Message Id: ", messageId);
@@ -180,15 +236,23 @@ export default {
 			console.log("Remove: ", remove);
 			const message = this.messages.find(message => message._id == messageId);
 			console.log(message);
-			const reactionUser = Object.prototype.hasOwnProperty.call(message.reactions,reaction.unicode) ? message.reactions[reaction.unicode] : [];
+			const reactionUser = Object.prototype.hasOwnProperty.call(message.reactions, reaction.unicode) ? message.reactions[reaction.unicode] : [];
 			console.log(reactionUser);
-			if (!reactionUser.includes(this.currentUserId))
-				reactionUser.push(this.currentUserId);
-			else if (remove === false){
-				const index = reactionUser.indexOf(this.currentUserId);
-				reactionUser.splice(index,1);
+
+			if (!reactionUser.includes(this.currentUserId.toString()))
+				reactionUser.push(this.currentUserId.toString());
+			else if (remove === true) {
+				const index = reactionUser.indexOf(this.currentUserId.toString());
+				reactionUser.splice(index, 1);
 			}
-			message.reactions[reaction.unicode] = reactionUser;
+			try {
+				const result = await this.callApiUpdateMessage(roomId, message);
+				if (result.status === 200) {
+					message.reactions[reaction.unicode] = reactionUser;
+				}
+			} catch (error) {
+				console.log(error);
+			}
 		},
 
 		getCurrentUserId() {

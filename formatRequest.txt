@@ -1,0 +1,62 @@
+------createMessage
+
+newMessage="
+  {
+    content: 'Message 1',
+    system: false,
+    saved: true,
+    distributed: true,
+    seen: true,
+    failure: true,
+    disableActions: false,
+    disableReactions: false,
+    files: [
+        Object file1,
+	Object file2
+    ],
+    replyMessageId: 1
+  }",
+
+------createRoom
+newRoom="
+  {
+    receiverId: 2
+  }"
+
+
+------deleteMessage
+deleteMessage="
+  {
+    messageId: 2
+  }"
+
+------deleteRoom
+deleteRoom="
+  {
+    roomId: 2
+  }"
+
+------updateMessage
+updateMessage="
+  {
+    messageId: 1
+    content: 'Message Update',
+    system: false,
+    saved: true,
+    distributed: true,
+    seen: true,
+    failure: true,
+    disableActions: false,
+    disableReactions: false,
+    files: [
+        Object file1,
+	Object file2
+    ],
+    replyMessageId: 1
+  }"
+
+------updateRoom
+updateRoom="
+  {
+    roomId: 1
+  }"
