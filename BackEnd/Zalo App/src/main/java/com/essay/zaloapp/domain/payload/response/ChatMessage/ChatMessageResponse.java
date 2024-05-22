@@ -1,5 +1,6 @@
 package com.essay.zaloapp.domain.payload.response.ChatMessage;
 
+import com.essay.zaloapp.domain.payload.response.RoomChat.UserOfRoom;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,4 +33,5 @@ public class ChatMessageResponse {
     private List<FileData> files;
     private Map<String, List<String>> reactions;
     private ReplyMessageResponse replyMessage;
+    private List<UserOfRoom> taggedUser;
 }

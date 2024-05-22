@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -22,4 +24,5 @@ public class AddNewChatMessageRequest {
     private Boolean disableReactions;
     private MultipartFile[] files;
     private Long replyMessageId;
+    private List<Long> taggedUserId;
 }

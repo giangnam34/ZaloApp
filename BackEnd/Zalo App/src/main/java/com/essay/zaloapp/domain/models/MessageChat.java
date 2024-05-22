@@ -72,4 +72,8 @@ public class MessageChat {
 	@ManyToMany(cascade = CascadeType.ALL)
 	@JoinTable(name = "message_resource", joinColumns = @JoinColumn(name = "message_id"), inverseJoinColumns = @JoinColumn(name = "resource_id"))
 	private List<Resource> files;
+
+	@ManyToMany(cascade = CascadeType.ALL)
+	@JoinTable(name = "message_tagUser", joinColumns = @JoinColumn(name = "message_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
+	private List<User> tagUsers;
 }

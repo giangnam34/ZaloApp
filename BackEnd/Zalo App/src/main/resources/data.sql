@@ -31,6 +31,7 @@ INSERT ignore INTO `zaloapp`.`group_chat_user` (`group_id`, `phone_number_user`,
 INSERT ignore INTO `zaloapp`.`group_chat_user` (`group_id`, `phone_number_user`, `is_admin`, `is_owner`, `is_user_create_group`, `category_id`) VALUES ('1', '0968322555', b'0', b'0', b'0', b'1');
 INSERT ignore INTO `zaloapp`.`group_chat_user` (`group_id`, `phone_number_user`, `is_admin`, `is_owner`, `is_user_create_group`, `category_id`) VALUES ('2', '0968322444', b'0', b'0', b'0', b'1');
 INSERT ignore INTO `zaloapp`.`group_chat_user` (`group_id`, `phone_number_user`, `is_admin`, `is_owner`, `is_user_create_group`, `category_id`) VALUES ('2', '0968322666', b'0', b'0', b'0', b'1');
+INSERT ignore INTO `zaloapp`.`group_chat_user` (`group_id`, `phone_number_user`, `is_admin`, `is_deleted`, `is_owner`, `is_user_create_group`, `category_id`) VALUES ('3', '0968322444', '0', '0', '0', '0', '1');
 INSERT ignore INTO `zaloapp`.`group_chat_user` (`group_id`, `phone_number_user`, `is_admin`, `is_deleted`, `is_owner`, `is_user_create_group`, `category_id`) VALUES ('3', '0968322777', '0', '0', '0', '0', '1');
 INSERT ignore INTO `zaloapp`.`group_chat_user` (`group_id`, `phone_number_user`, `is_admin`, `is_deleted`, `is_owner`, `is_user_create_group`, `category_id`) VALUES ('3', '0968322666', '0', '0', '0', '0', '1');
 
