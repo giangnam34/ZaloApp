@@ -3,28 +3,23 @@ package com.essay.zaloapp.controller;
 import com.essay.zaloapp.domain.models.User;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewChatMessageRequest;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.UpdateChatMessageRequest;
-import com.essay.zaloapp.secruity.StompPrincipal;
+import com.essay.zaloapp.domain.payload.response.ChatMessage.ChatNotification;
 import com.essay.zaloapp.secruity.UserPrincipal;
 import com.essay.zaloapp.services.ChatMessageService;
 import com.essay.zaloapp.services.ChatService;
 import com.essay.zaloapp.services.impl.ChatMessageServiceImpl;
-import com.essay.zaloapp.services.impl.SocialMediaServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.simp.annotation.SendToUser;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/v1/chat/")
@@ -35,6 +30,9 @@ public class ChatController {
 
     @Autowired
     private ChatMessageService chatMessageService;
+
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
 
     @MessageMapping("/user.addUser")
     @SendTo("/user/topic")
@@ -105,23 +103,49 @@ public class ChatController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> createMessage(@AuthenticationPrincipal UserPrincipal userPrincipal, @ModelAttribute AddNewChatMessageRequest addNewChatMessageRequest) {
         ChatMessageServiceImpl.GetAMessage result = chatMessageService.createChatMessage(userPrincipal.getId(), addNewChatMessageRequest);
-        return result.getMessage().equals("Tin nhắn đã được gửi!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
+        if (result.getMessage().equals("Tin nhắn đã được gửi!")) {
+            sendChatNotification(userPrincipal, result);
+            return ResponseEntity.ok(result);
+        } else {
+            return ResponseEntity.badRequest().body(result);
+        }
     }
 
     @PutMapping("/update-message")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> updateMessage(@AuthenticationPrincipal UserPrincipal userPrincipal, @ModelAttribute UpdateChatMessageRequest updateChatMessageRequest) {
-        String result = chatMessageService.updateChatMessage(userPrincipal.getId(), updateChatMessageRequest);
-        return result.equals("Cập nhật tin nhắn thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
+        ChatMessageServiceImpl.GetAMessage result = chatMessageService.updateChatMessage(userPrincipal.getId(), updateChatMessageRequest);
+        return result.getMessage().equals("Cập nhật tin nhắn thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
-    @MessageMapping("/hello")
-    @SendToUser("/topic/hello")
-    public void handleHello(SimpMessageHeaderAccessor sha, Map<String, Object> message) {
-        Principal principal = sha.getUser();
-        if (principal != null) {
-            String username = principal.getName();
-            // Process the message
-        }
+//    @MessageMapping("/chat")
+//    @PreAuthorize("hasRole('USER')")
+//    public void processMessage(@AuthenticationPrincipal UserPrincipal userPrincipal, AddNewChatMessageRequest addNewChatMessageRequest) {
+//        ChatMessageServiceImpl.GetAMessage result = chatMessageService.createChatMessage(userPrincipal.getId(), addNewChatMessageRequest);
+//        String receiverPhoneNumber = chatMessageService.getUserPhoneNumber(userPrincipal.getId(), Long.valueOf(result.getChatMessageResponse().get_id()));
+//        simpMessagingTemplate.convertAndSendToUser(
+//                receiverPhoneNumber,
+//                "/queue/messages",
+//                ChatNotification.builder()
+//                        .id(result.getChatMessageResponse().get_id())
+//                        .senderPhoneNumber(userPrincipal.getPhoneNumber())
+//                        .recipientPhoneNumber(receiverPhoneNumber)
+//                        .chatMessageResponse(result.getChatMessageResponse())
+//                        .build()
+//        );
+//    }
+
+    private void sendChatNotification(UserPrincipal userPrincipal, ChatMessageServiceImpl.GetAMessage result) {
+        String receiverPhoneNumber = chatMessageService.getUserPhoneNumber(userPrincipal.getId(), Long.valueOf(result.getChatMessageResponse().get_id()));
+        simpMessagingTemplate.convertAndSendToUser(
+                receiverPhoneNumber,
+                "/queue/messages",
+                ChatNotification.builder()
+                        .id(result.getChatMessageResponse().get_id())
+                        .senderPhoneNumber(userPrincipal.getPhoneNumber())
+                        .recipientPhoneNumber(receiverPhoneNumber)
+                        .chatMessageResponse(result.getChatMessageResponse())
+                        .build()
+        );
     }
 }

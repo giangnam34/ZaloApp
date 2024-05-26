@@ -612,7 +612,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             response.setFailure(messageChat.getFailure());
             response.setDisableActions(messageChat.getDisableActions());
             response.setDisableReactions(messageChat.getDisableReactions());
-            response.setReactions(null);
+            Map<String, List<String>> reactions = new HashMap<>();
+            response.setReactions(reactions);
 
             if (messageChat.getReplyMessage() == null) {
                 response.setReplyMessage(null);
@@ -693,12 +694,12 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     }
 
     @Override
-    public String updateChatMessage(Long userId, UpdateChatMessageRequest updateChatMessageRequest) {
+    public GetAMessage updateChatMessage(Long userId, UpdateChatMessageRequest updateChatMessageRequest) {
         try {
             User user = userRepository.findById(userId);
             Optional<MessageChat> messageChatOptional = messageChatRepository.findById(updateChatMessageRequest.getMessageId());
             if (messageChatOptional.isEmpty()) {
-                return "Tin nhắn không tồn tại!";
+                return new GetAMessage("Tin nhắn không tồn tại!", new ChatMessageResponse());
             }
             MessageChat messageChat = messageChatOptional.get();
             if (user.getId() != messageChat.getUser().getId()) {
@@ -711,7 +712,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                         for (String userIdStr : entry.getValue()) {
                             Long reactingUserId = Long.valueOf(userIdStr);
                             if (!userRepository.existsUserById(reactingUserId)) {
-                                return "Người dùng không tồn tại!";
+                                return new GetAMessage("Người dùng không tồn tại!", new ChatMessageResponse());
                             }
                             User reactingUser = userRepository.findById(reactingUserId);
                             if (reactingUser != null) {
@@ -724,10 +725,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                         }
                     }
                     reactionRepository.saveAll(newReactions);
-                    messageChatRepository.save(messageChat);
-                    return "Cập nhật tin nhắn thành công!";
+                    return getAMessageToSend(messageChat);
                 }
-                return "Người dùng không có quyền cập nhật tin nhắn này!";
+                return new GetAMessage("Người dùng không có quyền cập nhật tin nhắn này!", new ChatMessageResponse());
             }
 
             if (updateChatMessageRequest.getContent() != null) {
@@ -767,7 +767,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             if (updateChatMessageRequest.getReplyMessageId() != null) {
                 Optional<MessageChat> repliedMessageOptional = messageChatRepository.findById(updateChatMessageRequest.getReplyMessageId());
                 if (repliedMessageOptional.isEmpty()) {
-                    return "Tin nhắn được trả lời không tồn tại!";
+                    return new GetAMessage("Tin nhắn được trả lời không tồn tại!", new ChatMessageResponse());
                 }
                 MessageChat repliedMessage = repliedMessageOptional.get();
                 messageChat.setReplyMessage(repliedMessage);
@@ -782,7 +782,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                     for (String userIdStr : entry.getValue()) {
                         Long reactingUserId = Long.valueOf(userIdStr);
                         if (!userRepository.existsUserById(reactingUserId)) {
-                            return "Người dùng không tồn tại!";
+                            return new GetAMessage("Người dùng không tồn tại!", new ChatMessageResponse());
                         }
                         User reactingUser = userRepository.findById(reactingUserId);
                         if (reactingUser != null) {
@@ -797,12 +797,114 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 reactionRepository.saveAll(newReactions);
             }
 
-            messageChatRepository.save(messageChat);
-            return "Cập nhật tin nhắn thành công!";
+            return getAMessageToSend(messageChat);
         } catch (Exception e) {
             System.out.println(e.toString());
-            return "Đã xảy ra lỗi trong quá trình thực thi, vui lòng kiểm tra lại!";
+            return new GetAMessage("Đã xảy ra lỗi trong quá trình thực thi, vui lòng kiểm tra lại!", new ChatMessageResponse());
         }
+    }
+
+    private GetAMessage getAMessageToSend(MessageChat messageChat) {
+        MessageChat updatedMessage = messageChatRepository.save(messageChat);
+        ChatMessageResponse response = new ChatMessageResponse();
+        response.set_id(updatedMessage.getId() + "");
+        response.setContent(updatedMessage.getContent());
+        User sender = userRepository.findById(updatedMessage.getUser().getId());
+        response.setSenderId(sender.getId() + "");
+        response.setUsername(sender.getFullName());
+        response.setAvatar("http://localhost:8181/media/getImage/" + sender.getImageAvatarUrl());
+        response.setDate(formatDate(updatedMessage.getSendAt()));
+        response.setTimestamp(extractTime(updatedMessage.getSendAt()));
+
+        response.setSystem(updatedMessage.getIsSystem());
+        response.setSaved(updatedMessage.getSaved());
+        response.setDistributed(updatedMessage.getDistributed());
+        response.setSeen(updatedMessage.getSeen());
+        response.setDeleted(updatedMessage.getDeleted());
+        response.setFailure(updatedMessage.getFailure());
+        response.setDisableActions(updatedMessage.getDisableActions());
+        response.setDisableReactions(updatedMessage.getDisableReactions());
+
+        MessageChat messageChatForGetReactions = messageChatRepository.findByIdWithReactions(updatedMessage.getId());
+        Map<String, List<String>> reactions = messageChatForGetReactions.getReactions().stream()
+                .collect(Collectors.groupingBy(
+                        Reaction::getEmoji,
+                        Collectors.mapping(reaction -> reaction.getUser().getId().toString(), Collectors.toList())
+                ));
+        response.setReactions(reactions);
+        if (updatedMessage.getReplyMessage() == null) {
+            response.setReplyMessage(null);
+        } else {
+            MessageChat messageChatForReplyMessage = messageChatRepository.findById(updatedMessage.getReplyMessage().getId()).get();
+            ReplyMessageResponse replyMessageResponse = new ReplyMessageResponse();
+            replyMessageResponse.setContent(messageChatForReplyMessage.getContent());
+            replyMessageResponse.setSenderId(messageChatForReplyMessage.getUser().getId() + "");
+            List<FileData> files = new ArrayList<>();
+            for (Resource resource : messageChatForReplyMessage.getFiles()) {
+                FileData fileData = new FileData();
+                fileData.setProgress(Long.valueOf(100));
+                fileData.setAudio(false);
+                fileData.setSize(Long.valueOf(2200));
+                fileData.setDuration(Float.valueOf(0));
+                fileData.setUrl("http://localhost:8181/media/" + (resource.getResourceType().equals(ResourceType.Video) ? "getVideo/" : "getImage/") + resource.getResourceValue());
+                String[] parts = resource.getResourceValue().split("\\.(?=[^\\.]+$)");
+                String namePart = "";
+                String extensionPart = "";
+                if (parts.length == 2) {
+                    namePart += parts[0];
+                    extensionPart += parts[1];
+                }
+                fileData.setName(namePart);
+                fileData.setType(extensionPart);
+                fileData.setPreview("data" + resource.getResourceType() + "/" + extensionPart + ";base64");
+                files.add(fileData);
+            }
+            replyMessageResponse.setFiles(files);
+            response.setReplyMessage(replyMessageResponse);
+        }
+
+        List<FileData> files = new ArrayList<>();
+        for (Resource resource : updatedMessage.getFiles()) {
+            FileData fileData = new FileData();
+            fileData.setProgress(Long.valueOf(100));
+            fileData.setAudio(false);
+            fileData.setSize(Long.valueOf(2200));
+            fileData.setDuration(Float.valueOf(0));
+            fileData.setUrl("http://localhost:8181/media/" + (resource.getResourceType().equals(ResourceType.Video) ? "getVideo/" : "getImage/") + resource.getResourceValue());
+            String[] parts = resource.getResourceValue().split("\\.(?=[^\\.]+$)");
+            String namePart = "";
+            String extensionPart = "";
+            if (parts.length == 2) {
+                namePart += parts[0];
+                extensionPart += parts[1];
+            }
+            fileData.setName(namePart);
+            fileData.setType(extensionPart);
+            fileData.setPreview("data:" + resource.getResourceType() + "/" + extensionPart + ";base64");
+            files.add(fileData);
+        }
+        response.setFiles(files);
+
+        List<UserOfRoom> taggedUsers = new ArrayList<>();
+        if (updatedMessage.getTagUsers() != null) {
+            for (User taggedUser : updatedMessage.getTagUsers()) {
+                UserOfRoom getTaggedUser = new UserOfRoom();
+                getTaggedUser.set_id(taggedUser.getId() + "");
+                getTaggedUser.setAvatar("http://localhost:8181/media/getImage/" + taggedUser.getImageAvatarUrl());
+                StatusOfUser status = new StatusOfUser();
+                status.setState(taggedUser.getStatus() + "");
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(taggedUser.getLastActive());
+                calendar.add(Calendar.HOUR_OF_DAY, -7);
+                Date adjustedDate = calendar.getTime();
+                status.setLastChanged(formatDateTime(adjustedDate));
+                getTaggedUser.setStatus(status);
+                getTaggedUser.setUsername(taggedUser.getFullName());
+                taggedUsers.add(getTaggedUser);
+            }
+        }
+        response.setTaggedUser(taggedUsers);
+        return new GetAMessage("Cập nhật tin nhắn thành công!", response);
     }
 
     @Override
@@ -844,6 +946,20 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             DateTimeFormatter otherFormat = DateTimeFormatter.ofPattern("dd MMMM, HH:mm");
             return dateTime.format(otherFormat);
         }
+    }
+
+    @Override
+    public String getUserPhoneNumber(Long userId, Long roomId) {
+        List<GroupChatUser> groupChatUsers = groupChatUserRepository.findAllByGroupId(roomId);
+
+        User userForCheck = userRepository.findById(userId);
+        for (GroupChatUser groupChatUser : groupChatUsers) {
+            if (!userForCheck.getPhoneNumber().equals(groupChatUser.getId().getPhoneNumberUser())) {
+                return groupChatUser.getId().getPhoneNumberUser();
+            }
+
+        }
+        return null;
     }
 
     @Data

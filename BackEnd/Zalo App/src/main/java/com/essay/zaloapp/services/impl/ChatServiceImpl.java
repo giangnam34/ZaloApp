@@ -69,18 +69,47 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public Long createChatRoom(String senderPhoneNumber, String receiverPhoneNumber) {
-        User sender = userRepository.findByPhoneNumber(senderPhoneNumber);
-        User receiver = userRepository.findByPhoneNumber(receiverPhoneNumber);
-        GroupChat groupChat = new GroupChat();
-        groupChat.setGroupName(sender.getFullName() + "_" + receiver.getFullName());
-        GroupChat groupChatSaved = groupChatRepository.save(groupChat);
-        GroupChatUser gcu1 = new GroupChatUser();
-        gcu1.setId(new GroupChatUserId(groupChatSaved.getId(), senderPhoneNumber));
-        groupChatUserRepository.save(gcu1);
-        GroupChatUser gcu2 = new GroupChatUser();
-        gcu2.setId(new GroupChatUserId(groupChatSaved.getId(), receiverPhoneNumber));
-        groupChatUserRepository.save(gcu2);
-        return groupChatSaved.getId();
+        try {
+            User sender = userRepository.findByPhoneNumber(senderPhoneNumber);
+            if (sender == null) return null;
+
+            if (senderPhoneNumber.equals(receiverPhoneNumber)) {
+                return null;
+            }
+            if (!userRepository.existsUserByPhoneNumber(receiverPhoneNumber)) {
+                return null;
+            }
+
+            GroupChat groupChat = new GroupChat();
+            User firstReceiver = userRepository.findByPhoneNumber(receiverPhoneNumber);
+            if (firstReceiver == null) throw new IllegalArgumentException("Người nhận đầu tiên không tồn tại!");
+            groupChat.setGroupName(firstReceiver.getFullName());
+            groupChat.setAvatar(firstReceiver.getImageAvatarUrl());
+            groupChat = groupChatRepository.save(groupChat);
+
+            GroupChatUser groupChatSender = new GroupChatUser();
+            GroupChatUserId groupChatSenderId = new GroupChatUserId();
+            groupChatSenderId.setGroupId(groupChat.getId());
+            groupChatSenderId.setPhoneNumberUser(sender.getPhoneNumber());
+            groupChatSender.setId(groupChatSenderId);
+            groupChatUserRepository.save(groupChatSender);
+
+
+            User receiver = userRepository.findByPhoneNumber(receiverPhoneNumber);
+            GroupChatUser groupChatReceiver = new GroupChatUser();
+            GroupChatUserId groupChatReceiverId = new GroupChatUserId();
+            groupChatReceiverId.setGroupId(groupChat.getId());
+            groupChatReceiverId.setPhoneNumberUser(receiver.getPhoneNumber());
+            groupChatReceiver.setId(groupChatReceiverId);
+            groupChatUserRepository.save(groupChatReceiver);
+
+            return groupChat.getId();
+
+        } catch (
+                Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 
