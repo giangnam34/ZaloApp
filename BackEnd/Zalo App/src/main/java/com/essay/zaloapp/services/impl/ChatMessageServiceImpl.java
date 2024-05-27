@@ -24,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -759,6 +760,10 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             if (updateChatMessageRequest.getFiles() != null) {
                 if (updateChatMessageRequest.getFiles()[0].isEmpty()) messageChat.setFiles(new ArrayList<>());
                 else {
+                    System.out.println("Files:");
+                    for (MultipartFile file: updateChatMessageRequest.getFiles()) {
+                        System.out.println(file);
+                    }
                     List<Resource> resourceList = Arrays.stream(updateChatMessageRequest.getFiles()).map(p -> new Resource(fileStorageService.storeFile(p), p.getContentType().contains("video") ? ResourceType.Video : ResourceType.Image)).collect(Collectors.toList());
                     messageChat.setFiles(resourceList);
                 }
