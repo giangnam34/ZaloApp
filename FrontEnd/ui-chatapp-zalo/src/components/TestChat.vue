@@ -6,18 +6,26 @@
 			:messages="JSON.stringify(messages)" :messages-loaded="messagesLoaded" :load-first-room="loadFirstRoom"
 			:show-footer="showFooter" @send-message="sendMessage($event.detail[0])" :room-info-enabled="roomInfo"
 			@fetch-messages="fetchMessages($event.detail[0])" :templates-text="JSON.stringify(templatesText)"
+			@delete-message="deleteMessage($event.detail[0])"
 			@send-message-reaction="sendMessageReaction($event.detail[0])" :theme="theme"
+			@room-info="showRoomInfo($event.detail[0])" @edit-message="editMessage($event.detail[0])"
 			:emoji-data-source="emojiDataSource" />
+		<UserInfo v-model:showPopup="showPopUpInfoRoom"></UserInfo>
+
 	</div>
 </template>
 
 <script>
 import { register } from 'vue-advanced-chat'
 import axios from "axios";
+import UserInfo from './UserInfo.vue';
 // import { register } from '../../vue-advanced-chat/dist/vue-advanced-chat.es.js'
 register()
 
 export default {
+	components: {
+		UserInfo
+	},
 	data() {
 		return {
 			currentUserId: null,
@@ -51,6 +59,7 @@ export default {
 				}
 			],
 			showFooter: true,
+			showPopUpInfoRoom: false,
 			emojiDataSource: "https://cdn.jsdelivr.net/npm/emoji-picker-element-data@%5E1/en/emojibase/data.json"
 		}
 	},
@@ -100,7 +109,7 @@ export default {
 			});
 			console.log(messages);
 			this.messages = [...messages, ...this.messages];
-			if (result.data.totalPages === result.data.currentPage + 1) {
+			if (result.data.totalPages === result.data.currentPage + 1 || result.data.totalPages === 0) {
 				this.messagesLoaded = true;
 			}
 			// console.log(this.messages)
@@ -157,37 +166,98 @@ export default {
 			this.roomsLoaded = true;
 		},
 
+		async editMessage({ roomId, messageId, newContent, files, replyMessage, usersTag }) {
+			console.log("Call edit message");
+			console.log("RoomId", roomId);
+			console.log("MessageId", messageId);
+			console.log("New Content", newContent);
+			console.log("Files", files);
+			console.log("Reply Message", replyMessage);
+			console.log("Users Tag", usersTag);
+			const message = this.messages.find(message => message._id == messageId);
+			const oldMessage = message;
+			if (newContent) {
+				message.content = newContent;
+			}
+			if (files) {
+				console.log(files);
+				message.files = files;
+			}
+			if (usersTag) {
+				message.taggedUser = usersTag;
+			}
+			try {
+				const result = await this.callApiUpdateMessage(roomId, message);
+				console.log(result);
+				if (result.status === 200) {
+					console.log("Update message successfully");
+				} else {
+					message.content = oldMessage.content;
+					message.files = oldMessage.files;
+					message.taggedUser = oldMessage.taggedUser;
+				}
+			} catch (exception) {
+				console.log(exception);
+			}
+		},
+
 		async callApiUpdateMessage(roomId, message) {
 			// const form = new FormData();
 			// form.append('roomId', 1);
-			console.log("Message reactions: ");
-			console.log(message.reactions);
-			const result = await axios.put(`http://localhost:8181/v1/chat/update-message`, {
-				'roomId': roomId,
-				'messageId': message._id,
-				'content': message.content,
-				'system': message.system,
-				'saved': message.saved,
-				'distributed': message.distributed,
-				'seen': message.seen,
-				'failure': message.failure,
-				'disableActions': message.disableActions,
-				'disableReactions': message.disableReactions,
-				'files': message.files,
-				'reactions': JSON.stringify(message.reactions),
-				'replyMessageId': message.replyMessage,
-			}, {
+			// console.log("Message reactions: ");
+			// console.log(message.reactions);
+			console.log("Message ");
+			console.log(message);
+			console.log("Reply Message Id", message.replyMessage);
+			console.log("Files", message.files);
+			const form = new FormData();
+			form.append('roomId', roomId);
+			form.append('messageId', message._id);
+			form.append('content', message.content);
+			form.append('system', message.system);
+			form.append('saved', message.saved);
+			form.append('distributed', message.distributed);
+			form.append('seen', message.seen);
+			form.append('failure', message.failure);
+			form.append('disableActions', message.disableActions);
+			form.append('disableReactions', message.disableReactions);
+			form.append('reactions', JSON.stringify(message.reactions));
+			console.log("Form");
+			console.log(form.get('replyMessageId'));
+			const files = message.files;
+			if (files) {
+				console.log("Test file");
+				for (const file of files) {
+					console.log("File");
+					console.log(file);
+					const blob = !file.blob ? await fetch(file.url).then(r => r.blob()) : [];
+					console.log(blob);
+					const convertFile = new File([file.blob ? file.blob : blob], file.type === 'audio/mp3' ? file.name : (file.extension ? file.name.concat('.').concat(file.extension) : file.name.concat('.').concat(file.type)), {
+						type: file.type
+					});
+					console.log("Convert file");
+					console.log(convertFile);
+					form.append('files', convertFile);
+				}
+			} else {
+				form.append('files', null);
+			}
+
+			console.log("File form");
+			console.log(form.get('files'));
+			const result = await axios.put(`http://localhost:8181/v1/chat/update-message`, form, {
 				headers: {
 					'Content-Type': 'multipart/form-data'
 				}
 			});
+			console.log(result.data);
 			return result;
 		},
 		async sendMessage({ roomId, content, files, replyMessage, usersTag }) {
 			console.log("Call send message");
 			console.log("RoomId: ", roomId);
 			console.log("Content: ", content);
-			console.log("Files: ", files[0]);
+			console.log("Files: ", files);
 			console.log("ReplyMessage: ", replyMessage);
 			console.log("User tag:", usersTag);
 			const form = new FormData();
@@ -199,14 +269,17 @@ export default {
 			form.append('seen', false);
 			form.append('failure', false);
 			form.append('disableActions', false);
-			files.forEach(file => {
-				const convertFile = new File([file.blob], file.name.concat('.').concat(file.extension),{
-					type: file.type
-				}
-				);
-				form.append('files', convertFile);
-			});
-			// form.append('replyMessageId', replyMessage ? parseInt(replyMessage._id) : null);
+			if (files) {
+				files.forEach(file => {
+					const convertFile = new File([file.blob], file.type === 'audio/mp3' ? file.name : (file.extension ? file.name.concat('.').concat(file.extension) : file.name.concat('.').concat(file.type)), {
+						type: file.type
+					}
+					);
+					form.append('files', convertFile);
+				});
+			}
+			if (replyMessage)
+				form.append('replyMessageId', replyMessage ? parseInt(replyMessage._id) : null);
 			console.log("Form");
 			console.log(form.get('files'));
 			try {
@@ -217,6 +290,13 @@ export default {
 				});
 				if (result.status === 200) {
 					console.log(result);
+					result.data.chatMessageResponse.saved = true;
+					result.data.chatMessageResponse.distributed = true;
+					if (files) {
+						result.data.chatMessageResponse.files.forEach(file => {
+							delete file.progress;
+						});
+					}
 				} else {
 					result.data.chatMessageResponse.failure = true;
 				}
@@ -236,7 +316,9 @@ export default {
 			console.log("Remove: ", remove);
 			const message = this.messages.find(message => message._id == messageId);
 			console.log(message);
+			if (!message) return;
 			const reactionUser = Object.prototype.hasOwnProperty.call(message.reactions, reaction.unicode) ? message.reactions[reaction.unicode] : [];
+			console.log("Reaction");
 			console.log(reactionUser);
 
 			if (!reactionUser.includes(this.currentUserId.toString()))
@@ -253,6 +335,32 @@ export default {
 			} catch (error) {
 				console.log(error);
 			}
+		},
+
+		async deleteMessage({ roomId, message }) {
+			console.log("Call delete message");
+			console.log("RoomId:", roomId)
+			console.log("Message: ", message);
+			try {
+				const result = await axios.delete(`http://localhost:8181/v1/chat/delete-message/${message._id}`).catch(function (error) {
+					console.log(error);
+				})
+				if (result.status === 200) {
+					console.log("Set message deleted");
+					// message.deleted = true;
+					console.log(this.messages);
+					const currentMessage = this.messages.find(currentMessage => currentMessage._id == message._id);
+					currentMessage.deleted = true;
+				}
+			} catch (exception) {
+				console.log(exception);
+			}
+		},
+
+		showRoomInfo(room) {
+			console.log("Call show room info");
+			console.log(room);
+			this.showPopUpInfoRoom = true;
 		},
 
 		getCurrentUserId() {
