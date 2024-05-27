@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface MessageChatRepository extends JpaRepository<MessageChat, Long> {
 
-    @Query("SELECT m FROM MessageChat m WHERE m.groupChat.id = :groupId AND m.deleted = false ORDER BY m.sendAt DESC")
+    @Query("SELECT m FROM MessageChat m WHERE m.groupChat.id = :groupId ORDER BY m.sendAt DESC")
     Page<MessageChat> findAllByGroupId(@Param("groupId") Long groupId, Pageable pageable);
 
     @Query("SELECT COUNT(m) FROM MessageChat m WHERE m.seen = false AND m.groupChat.id = :groupId AND m.user.phoneNumber = :phoneNumberUser")

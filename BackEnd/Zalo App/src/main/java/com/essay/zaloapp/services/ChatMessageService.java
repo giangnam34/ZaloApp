@@ -21,7 +21,10 @@ public interface ChatMessageService {
 
     ChatMessageServiceImpl.GetAMessage createChatMessage(Long userId, AddNewChatMessageRequest addNewChatMessageRequest);
 
-    String updateChatMessage(Long userId, UpdateChatMessageRequest updateChatMessageRequest);
+
+    ChatMessageServiceImpl.GetAMessage updateChatMessage(Long userId, UpdateChatMessageRequest updateChatMessageRequest);
 
     String deleteMessage(Long userId, Long messageId);
+
+    String getUserPhoneNumber(Long userId, Long roomId);
 }

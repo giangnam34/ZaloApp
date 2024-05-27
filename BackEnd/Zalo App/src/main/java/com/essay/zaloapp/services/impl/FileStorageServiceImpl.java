@@ -34,26 +34,57 @@ public class FileStorageServiceImpl implements FileStorageService {
         }
     }
 
+//    @Override
+//    public String storeFile(MultipartFile file) {
+//        // Normalize file name
+//        String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
+//
+//        try {
+//            // Check if the file's name contains invalid characters
+//            if (fileName.contains(".."))
+//                throw new RuntimeException("Invalid");
+//
+//            // Copy file to the target location (Replacing existing file with the same name)
+//            Path targetLocation = this.fileStorageLocation.resolve(fileName);
+////            System.out.println(this.fileStorageLocation);
+//            String filePath = this.fileStorageLocation + "\\" + fileName;
+//            ((MultipartFile) file).transferTo(new File(filePath));
+//            System.out.println(filePath);
+//            return fileName;
+//        } catch (IOException ex) {
+//            System.out.println(ex.getMessage());
+//            throw new RuntimeException("Invalid");
+//        }
+//    }
+
     @Override
     public String storeFile(MultipartFile file) {
-        // Normalize file name
-        String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
+        String originalFileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
+        String fileName = originalFileName;
 
         try {
-            // Check if the file's name contains invalid characters
-            if (fileName.contains(".."))
-                throw new RuntimeException("Invalid");
+            if (fileName.contains("..")) {
+                throw new RuntimeException("Invalid file path");
+            }
 
-            // Copy file to the target location (Replacing existing file with the same name)
             Path targetLocation = this.fileStorageLocation.resolve(fileName);
-//            System.out.println(this.fileStorageLocation);
-            String filePath = this.fileStorageLocation + "\\" + fileName;
+            int counter = 0;
+
+            while (Files.exists(targetLocation)) {
+                counter++;
+                String name = originalFileName.substring(0, originalFileName.lastIndexOf('.'));
+                String extension = originalFileName.substring(originalFileName.lastIndexOf('.'));
+                fileName = name + "(" + counter + ")" + extension;
+                targetLocation = this.fileStorageLocation.resolve(fileName);
+            }
+
+            String filePath = targetLocation.toString();
             ((MultipartFile) file).transferTo(new File(filePath));
-            System.out.println(filePath);
+            System.out.println("File stored at: " + filePath);
             return fileName;
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
-            throw new RuntimeException("Invalid");
+            throw new RuntimeException("Could not store file. Please try again!", ex);
         }
     }
 
