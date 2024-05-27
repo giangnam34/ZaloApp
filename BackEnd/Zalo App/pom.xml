@@ -169,6 +169,11 @@
 			<artifactId>jackson-databind</artifactId>
 			<version>2.13.3</version> <!-- Make sure to use the latest version -->
 		</dependency>
+		<dependency>
+			<groupId>com.corundumstudio.socketio</groupId>
+			<artifactId>netty-socketio</artifactId>
+			<version>1.7.23</version>
+		</dependency>
 	</dependencies>
 
 	<build>

@@ -9,6 +9,7 @@ import com.essay.zaloapp.services.ChatMessageService;
 import com.essay.zaloapp.services.ChatService;
 import com.essay.zaloapp.services.impl.ChatMessageServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -147,5 +148,12 @@ public class ChatController {
                         .chatMessageResponse(result.getChatMessageResponse())
                         .build()
         );
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handle(Exception ex) {
+        ex.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ex.getMessage());
     }
 }
