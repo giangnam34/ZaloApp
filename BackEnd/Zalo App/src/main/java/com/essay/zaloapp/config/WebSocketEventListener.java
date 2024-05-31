@@ -22,5 +22,6 @@ public class WebSocketEventListener {
     void handleSessionConnectedEvent(SessionConnectedEvent event) {
         // Get Accessor
         StompHeaderAccessor sha = StompHeaderAccessor.wrap(event.getMessage());
+        System.out.println("User connect");
     }
 }

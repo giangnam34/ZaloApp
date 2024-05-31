@@ -10,15 +10,24 @@ import com.essay.zaloapp.services.ChatService;
 import com.essay.zaloapp.services.impl.ChatMessageServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessagingException;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+
+import java.security.Principal;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -33,6 +42,28 @@ public class ChatController {
 
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
+
+    @MessageMapping("/chat")
+    @SendTo("/topic/messages")
+    public String sendToGroup(Message message) throws Exception {
+        System.out.println("There have a message");
+        System.out.println(message.getPayload().toString());
+        String time = new SimpleDateFormat("HH:mm").format(new Date());
+        return "Test";
+    }
+
+    @MessageMapping("/room")
+    public String sendSpecific(Principal user, @Header("userId") String userId) throws Exception {
+        System.out.println("There have a message to specific user");
+        System.out.println("UserId " +userId);
+        try {
+            simpMessagingTemplate.convertAndSendToUser(userId ,"/topic/specific-user", "Test" + user.getName());
+        } catch (MessagingException exception){
+            System.out.println("Have some error");
+            System.out.println(exception.toString());
+        }
+        return "Test " + user.getName();
+    }
 
     @MessageMapping("/user.addUser")
     @SendTo("/user/topic")
@@ -105,7 +136,7 @@ public class ChatController {
         System.out.println(addNewChatMessageRequest.toString());
         ChatMessageServiceImpl.GetAMessage result = chatMessageService.createChatMessage(userPrincipal.getId(), addNewChatMessageRequest);
         if (result.getMessage().equals("Tin nhắn đã được gửi!")) {
-            sendChatNotification(userPrincipal, result);
+            //sendChatNotification(userPrincipal, result);
             return ResponseEntity.ok(result);
         } else {
             return ResponseEntity.badRequest().body(result);

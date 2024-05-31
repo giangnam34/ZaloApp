@@ -20,6 +20,8 @@
     "date-fns": "^2.30.0",
     "jsonwebtoken": "^9.0.2",
     "mitt": "^3.0.1",
+    "sockjs": "^0.3.24",
+    "sockjs-client": "^1.6.1",
     "stream-browserify": "^3.0.0",
     "swiper": "^8.4.7",
     "util": "^0.12.5",
@@ -35,7 +37,8 @@
     "vue-toastification": "^2.0.0-rc.5",
     "vuejs-jwt": "^1.1.0",
     "vuetify": "^3.4.3",
-    "vuex": "^4.1.0"
+    "vuex": "^4.1.0",
+    "webstomp-client": "^1.2.6"
   },
   "devDependencies": {
     "@babel/core": "^7.23.0",

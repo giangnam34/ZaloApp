@@ -7,7 +7,7 @@
   <div v-else class="width-100" style="display: flex;">
     <MainSidebarNav @pageSelected="updateChosenPage" @userLoggedIn="updateJWT"></MainSidebarNav>
     <div v-if="chosenPage === 1" class="width-100">
-       <!-- <ChatSidebarNav></ChatSidebarNav>
+      <!-- <ChatSidebarNav></ChatSidebarNav>
       <HomeChat></HomeChat> -->
       <TestChat></TestChat>
     </div>
@@ -46,6 +46,8 @@ import SignIn from './components/SignIn.vue';
 import PostPage from './components/PostPage.vue';
 import VueJwtDecode from 'vue-jwt-decode';
 import axios from 'axios';
+import SockJS from 'sockjs-client';
+import Stomp from "webstomp-client";
 export default {
   name: 'App',
   data() {
@@ -63,7 +65,7 @@ export default {
     SignIn,
     TestChat,
     ContactNav,
-    ToDo, 
+    ToDo,
     PostPage
   },
   async mounted() {
@@ -79,9 +81,52 @@ export default {
     updateChosenPage(page) {
       this.chosenPage = page;
     },
+
+    async subcribeTopicWebSocket() {
+      console.log("Call function subcribeWebsocket");
+      var socket = new SockJS('http://localhost:8181/chat/');
+      var stompClient = Stomp.over(socket);
+      stompClient.connect({}, function (frame) {
+        console.log('Connected: ' + frame);
+        stompClient.subscribe('/topic/messages', function (messageOutput) {
+          console.log("Message");
+          console.log(messageOutput);
+        });
+        stompClient.send("/app/chat", "Hehe");
+      });
+    },
+
+    async subcribeSpecificUserWebSocket() {
+      var socket = new SockJS('http://localhost:8181/room');
+      var stompClient = Stomp.over(socket);
+      var sessionId = "";
+      var userId = JSON.parse(localStorage.getItem('user'))['id'];
+      console.log(userId);
+
+      stompClient.connect({ userId : 'user' + userId},function () {
+        var url = stompClient.ws._transport.url;
+        console.log(url);
+        url = url.replace(
+          "ws://localhost:8181/room/", "");
+        url = url.replace("/websocket", "");
+        url = url.replace(/^[0-9]+\//, "");
+        console.log("Your current session is: " + url);
+        sessionId = url;
+        console.log(sessionId);
+        stompClient.subscribe('/user/topic/specific-user'
+          , function (message) {
+            //handle messages
+            console.log("Message");
+            console.log(message);
+          }
+        )
+        stompClient.send("/app/room", "Hehehe", { userId : 'user' + 2});
+
+      }
+      )
+    },
+
     async checkToken() {
-
-
       const fullToken = localStorage.getItem('token');
 
       if (fullToken) {
@@ -107,6 +152,8 @@ export default {
               this.userIsValid = false;
             } else {
               this.userIsValid = true;
+              // this.subcribeTopicWebSocket();
+              this.subcribeSpecificUserWebSocket();
             }
             localStorage.setItem("isValid", this.userIsValid);
           } catch (error) {
