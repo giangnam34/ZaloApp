@@ -4,13 +4,13 @@
             <div class="max-w-none w-auto mx-auto grid grid-cols-4 gap-4">
                 <div class="main-left col-span-1">
                     <div class="p-4 bg-white border border-gray-200 text-center rounded-lg">
-                        <img :src="user.imageAvatarUrl" class="w-[200px] h-[200px] rounded-full mx-auto mb-6">
-
+                        <img id="general_image" :src="user.imageAvatarUrl"
+                            class="w-[200px] h-[200px] rounded-full mx-auto mb-6 object-cover object-bottom">
                         <p><strong>{{ user.fullName }}</strong></p>
 
-                        <div class="mt-6 flex space-x-8 justify-around">
+                        <div id="display-number" class="mt-6 flex space-x-8 justify-around">
                             <p class="text-xs text-gray-500">{{ listFriends.length }} friends</p>
-                            <p class="text-xs text-gray-500">{{ feeds.length }} posts</p>
+                            <p id="display-number-element-2" class="text-xs text-gray-500">{{ feeds.length }} posts</p>
                         </div>
 
                     </div>
@@ -30,66 +30,66 @@
                             <div class="mb-6 flex items-center justify-between">
                                 <div class="flex items-center space-x-6">
                                     <img :src="feed.userPost.imageAvatar"
-                                        class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4">
+                                        class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4 object-cover object-bottom">
                                     <div class="wrap-title flex">
                                         <div>
                                             <div class="flex">
                                                 <p class="name"><strong>{{ feed.userPost.userName }}</strong></p>
-                                                <p class="text-gray-600 ml-2 date">{{ formatTimeDifference(new
-                                                    Date(feed.updatedAt))
-                                                }}
-                                                </p>
+
                                             </div>
-                                            <div class="wrap-icon">
+                                            <div class="wrap-icon flex">
                                                 <div v-if="feed.audience === 'Public'">
                                                     <font-awesome-icon icon="fa-solid fa-earth-americas" />
-                                                    Công khai
+                                                    <!-- Công khai -->
                                                 </div>
                                                 <div v-if="feed.audience === 'AllFriend'">
                                                     <font-awesome-icon icon="fa-solid fa-user-group" />
-                                                    Bạn bè
+                                                    <!-- Bạn bè -->
                                                 </div>
                                                 <div v-if="feed.audience === 'OnlyMe'">
                                                     <font-awesome-icon icon="fa-solid fa-lock" />
-                                                    Chỉ mình tôi
+                                                    <!-- Chỉ mình tôi -->
                                                 </div>
                                                 <div v-if="feed.audience === 'SomeOneCanSee'">
                                                     <font-awesome-icon icon="fa-solid fa-user" />
-                                                    Một số bạn bè
+                                                    <!-- Một số bạn bè -->
                                                 </div>
                                                 <div v-if="feed.audience === 'AllExceptSomeOne'">
                                                     <font-awesome-icon icon="fa-solid fa-user-minus" />
-                                                    Bạn bè ngoại trừ
+                                                    <!-- Bạn bè ngoại trừ -->
                                                 </div>
+                                                <p class="text-gray-600 ml-2 date"> - {{ formatTimeDifference(new
+                                                    Date(feed.updatedAt)) }}
+                                                </p>
                                             </div>
                                         </div>
-                                        <div style="margin-left: 307px;" id="more-icon">
-                                            <div class="action cursor-pointer">
-                                                <div class="popover-action-container" @click:outside="hidePopover">
-                                                    <a id="ellipsis-icon"
-                                                        @click="(event) => handleClickAction(event, feed)">
-                                                        <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
-                                                    </a>
-                                                    <div class="popoverAction"
-                                                        v-show="showPopupVisible && !showVisibleInfoFeed && clickedFeed.userPost.phoneNumber === user.phoneNumber"
-                                                        :style="{ right: popoverRight, top: popoverTop }">
-                                                        <div class="popover-body">
-                                                            <div class="popover-item" @click="deletePost(clickedFeed.id)">
-                                                                <div>
-                                                                    Xóa bài viết
-                                                                </div>
-                                                            </div>
-                                                            <div class="popover-item" @click="openUpdatePost(clickedFeed)">
-                                                                <div>
-                                                                    Chỉnh sửa bài viết
-                                                                </div>
-                                                            </div>
-                                                            <div class="separator"></div>
-                                                            <div class="popover-item" @click="hidePopover">
-                                                                <div>
-                                                                    Hủy
-                                                                </div>
-                                                            </div>
+
+                                    </div>
+                                </div>
+                                <div id="more-icon">
+                                    <div class="action cursor-pointer">
+                                        <div class="popover-action-container" @click:outside="hidePopover">
+                                            <a id="ellipsis-icon" @click="(event) => handleClickAction(event, feed)">
+                                                <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
+                                            </a>
+                                            <div class="popoverAction"
+                                                v-show="showPopupVisible && !showVisibleInfoFeed && clickedFeed.userPost.phoneNumber === user.phoneNumber"
+                                                :style="{ left: popoverLeft, top: popoverTop }">
+                                                <div class="popover-body">
+                                                    <div class="popover-item" @click="deletePost(clickedFeed.id)">
+                                                        <div>
+                                                            Xóa bài viết
+                                                        </div>
+                                                    </div>
+                                                    <div class="popover-item" @click="openUpdatePost(clickedFeed)">
+                                                        <div>
+                                                            Chỉnh sửa bài viết
+                                                        </div>
+                                                    </div>
+                                                    <div class="separator"></div>
+                                                    <div class="popover-item" @click="hidePopover">
+                                                        <div>
+                                                            Hủy
                                                         </div>
                                                     </div>
                                                 </div>
@@ -188,14 +188,13 @@
                         <div v-else>
                             <div v-if="feed.userLikeList.length === 0">
                                 <div class="mb-6 flex items-center justify-between">
-                                    <div class="flex items-center space-x-6">
+                                    <div class="flex items-center space-x-6 w-full" >
                                         <img :src="feed.userPost.imageAvatar"
-                                            class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4">
-                                        <div class="wrap-title flex">
+                                            class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4 object-cover object-bottom">
+                                        <div class="wrap-title flex justify-between w-full">
                                             <div>
                                                 <div class="flex">
                                                     <p class="name"><strong>{{ feed.userPost.userName }}</strong></p>
-                                                    <p class="text-gray-600 ml-2 date"></p>
                                                 </div>
                                                 <div class="wrap-icon">
                                                     <div>
@@ -204,7 +203,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div style="margin-left: 307px;" id="more-icon">
+                                            <div id="more-icon">
                                                 <div class="action cursor-pointer">
                                                     <div class="popover-action-container" @click:outside="hidePopover">
                                                         <a id="ellipsis-icon"
@@ -213,7 +212,7 @@
                                                         </a>
                                                         <div class="popoverAction"
                                                             v-show="showPopupVisible && !showVisibleInfoFeed && clickedFeed.userPost.phoneNumber === user.phoneNumber"
-                                                            :style="{ right: popoverRight, top: popoverTop }">
+                                                            :style="{ left: popoverLeft, top: popoverTop }">
                                                             <div class="popover-body">
                                                                 <div class="popover-item"
                                                                     @click="deletePost(clickedFeed.id)">
@@ -259,39 +258,39 @@
                                     <div class="mb-6 flex items-center justify-between">
                                         <div class="flex items-center space-x-6">
                                             <img :src="feed.postFather.userPost.imageAvatar"
-                                                class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4">
+                                                class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4 object-cover object-bottom">
                                             <div class="wrap-title flex">
                                                 <div>
                                                     <div class="flex">
                                                         <p class="name"><strong>{{ feed.postFather.userPost.userName
                                                         }}</strong>
                                                         </p>
-                                                        <p class="text-gray-600 ml-2 date">{{ formatTimeDifference(new
-                                                            Date(feed.postFather.updatedAt))
-                                                        }}
-                                                        </p>
                                                     </div>
-                                                    <div class="wrap-icon">
+                                                    <div class="wrap-icon flex">
                                                         <div v-if="feed.postFather.audience === 'Public'">
                                                             <font-awesome-icon icon="fa-solid fa-earth-americas" />
-                                                            Công khai
+                                                            <!-- Công khai -->
                                                         </div>
                                                         <div v-if="feed.postFather.audience === 'AllFriend'">
                                                             <font-awesome-icon icon="fa-solid fa-user-group" />
-                                                            Bạn bè
+                                                            <!-- Bạn bè -->
                                                         </div>
                                                         <div v-if="feed.postFather.audience === 'OnlyMe'">
                                                             <font-awesome-icon icon="fa-solid fa-lock" />
-                                                            Chỉ mình tôi
+                                                            <!-- Chỉ mình tôi -->
                                                         </div>
                                                         <div v-if="feed.postFather.audience === 'SomeOneCanSee'">
                                                             <font-awesome-icon icon="fa-solid fa-user" />
-                                                            Một số bạn bè
+                                                            <!-- Một số bạn bè -->
                                                         </div>
                                                         <div v-if="feed.postFather.audience === 'AllExceptSomeOne'">
                                                             <font-awesome-icon icon="fa-solid fa-user-minus" />
-                                                            Bạn bè ngoại trừ
+                                                            <!-- Bạn bè ngoại trừ -->
                                                         </div>
+                                                        <p class="text-gray-600 ml-2 date"> - {{ formatTimeDifference(new
+                                                            Date(feed.postFather.updatedAt))
+                                                        }}
+                                                        </p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -376,7 +375,7 @@
                     <div class="friend-info">
                         <div class="avatar-container">
                             <div class="avatar-wrapper">
-                                <img :src="user.imageAvatarUrl" class="avatar">
+                                <img :src="user.imageAvatarUrl" class="avatar object-cover object-bottom">
                             </div>
                         </div>
                         <div class="detail">
@@ -554,7 +553,7 @@
                                 <div class="friend-info friend-container" @click="addFriendTag(friend)">
                                     <div class="avatar-container">
                                         <div class="avatar-wrapper">
-                                            <img :src="friend.imageAvatar" class="avatar">
+                                            <img :src="friend.imageAvatar" class="avatar object-cover object-bottom">
                                         </div>
                                     </div>
                                     <div class="detail">
@@ -593,7 +592,7 @@
                                 <div class="friend-info friend-container" @click="addFriendTag(friend)">
                                     <div class="avatar-container">
                                         <div class="avatar-wrapper">
-                                            <img :src="friend.imageAvatar" class="avatar">
+                                            <img :src="friend.imageAvatar" class="avatar object-cover object-bottom">
                                         </div>
                                     </div>
                                     <div class="detail">
@@ -625,19 +624,15 @@
             <v-card-text id="dialog-content" class="dialog-content py-0 px-0 overflow-auto">
                 <div class="bg-white p-4">
                     <div class="mb-6 flex items-center justify-between">
-                        <div class="flex items-center space-x-6">
+                        <div class="flex items-center space-x-6 w-full">
                             <img :src="showingFeed.userPost.imageAvatar"
-                                class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4">
-                            <div class="wrap-title flex">
+                                class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4 object-cover object-bottom">
+                            <div class="flex justify-between w-full">
                                 <div>
                                     <div class="flex">
                                         <p class="name"><strong>{{ showingFeed.userPost.userName }}</strong></p>
-                                        <p class="text-gray-600 ml-2 date">{{ formatTimeDifference(new
-                                            Date(showingFeed.updatedAt))
-                                        }}
-                                        </p>
                                     </div>
-                                    <div class="wrap-icon">
+                                    <div class="wrap-icon flex justify-between">
                                         <div v-if="showingFeed.audience === 'Public'">
                                             <font-awesome-icon icon="fa-solid fa-earth-americas" />
                                             Công khai
@@ -658,9 +653,13 @@
                                             <font-awesome-icon icon="fa-solid fa-user-minus" />
                                             Bạn bè ngoại trừ
                                         </div>
+                                        <p class="text-gray-600 ml-2 date"> - {{ formatTimeDifference(new
+                                            Date(showingFeed.updatedAt))
+                                        }}
+                                        </p>
                                     </div>
                                 </div>
-                                <div style="margin-left: 307px;" id="more-icon">
+                                <div id="more-icon">
                                     <div class="action cursor-pointer">
                                         <div class="popover-action-container" @click:outside="hidePopover">
                                             <a id="ellipsis-icon" @click="(event) => handleClickAction(event, showingFeed)">
@@ -742,7 +741,8 @@
 
                         <!-- Test -->
                         <div v-else class="flex-1 flex items-center mr-2">
-                            <font-awesome-icon v-if="showingFeed.userLikeList !== null && showingFeed.userLikeList.length > 0"
+                            <font-awesome-icon
+                                v-if="showingFeed.userLikeList !== null && showingFeed.userLikeList.length > 0"
                                 icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
                             <span class="text-gray-500 text-lg hover:underline cursor-pointer">
                                 <template v-if="showingFeed.userLikeList.length === 1">
@@ -791,7 +791,7 @@
                         <div class="mb-2 items-center justify-between">
                             <div class="flex items-center">
                                 <img :src="comment.userComment.imageAvatar"
-                                    class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-2">
+                                    class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-2 object-cover object-bottom">
                                 <div class="comment-content rounded-lg bg-gray-200 p-2">
                                     <div>
                                         <p><strong>{{ comment.userComment.userName }}</strong></p>
@@ -927,7 +927,7 @@
                     <div class="friend-info">
                         <div class="avatar-container">
                             <div class="avatar-wrapper">
-                                <img :src="user.imageAvatarUrl" class="avatar">
+                                <img :src="user.imageAvatarUrl" class="avatar object-cover object-bottom">
                             </div>
                         </div>
                         <div class="detail">
@@ -1045,7 +1045,7 @@ export default {
     setup() {
         // Get toast interface
         const toast = useToast(
-            
+
         );
         const onSwiper = (s) => {
             console.log('kjjsnjkanjkdsn', s)
@@ -1088,6 +1088,7 @@ export default {
             selectedItem: '',
             popoverRight: 0,
             popoverTop: 0,
+            popoverLeft: 0,
             posts: [],
             newComment: {
                 postId: null,
@@ -1144,11 +1145,48 @@ export default {
             this.showPopupVisible = false;
         },
         handleClickAction(event, feed) {
+            // const rect = event.target.getBoundingClientRect();
+            // const x = rect.left;
+            // const y = rect.top;
+            // this.popoverRight = x - 680 + 'px';
+            // this.popoverTop = y - 2 + 'px';
+            // this.clickedFeed = feed;
+            // this.showPopupVisible = !this.showPopupVisible;
+            // event.stopPropagation();
             const rect = event.target.getBoundingClientRect();
-            const x = rect.left;
-            const y = rect.top;
-            this.popoverRight = x - 680 + 'px';
-            this.popoverTop = y - 2 + 'px';
+            const mouseX = rect.left;
+            const mouseY = rect.top;
+
+            const windowWidth = window.innerWidth + window.scrollX;
+            const windowHeight = window.innerHeight + window.scrollY;
+
+            const popupWidth = 180;
+            const popupHeight = 120;
+
+            let popupLeft, popupTop;
+
+            if (mouseX + popupWidth > windowWidth) {
+                popupLeft = mouseX - popupWidth;
+            } else {
+                popupLeft = mouseX;
+            }
+
+            if (mouseY + popupHeight > windowHeight) {
+                popupTop = mouseY - popupHeight;
+            } else {
+                popupTop = mouseY;
+            }
+
+            if (popupLeft < window.scrollX) {
+                popupLeft = window.scrollX;
+            }
+
+            if (popupTop < window.scrollY) {
+                popupTop = window.scrollY;
+            }
+
+            this.popoverLeft = popupLeft + 'px';
+            this.popoverTop = popupTop + 'px';
             this.clickedFeed = feed;
             this.showPopupVisible = !this.showPopupVisible;
             event.stopPropagation();
@@ -1157,7 +1195,7 @@ export default {
             const now = new Date();
 
             console.log("post time: " + date)
-            console.log("time now: "+ now)
+            console.log("time now: " + now)
             const timeDiff = Math.abs(now - date);
 
             const seconds = Math.floor(timeDiff / 1000);
@@ -1249,24 +1287,6 @@ export default {
             // Hiển thị ảnh full màn hình và điều hướng qua các ảnh
 
         },
-        // getIconClassPostOption(option){
-        //     console.log("Gọi hàm getIconClassPostOption(option)");
-        //     console.log(option);
-        //     switch (option) {
-        //     case ' Công khai':
-        //         return 'fa-solid fa-earth-americas';
-        //     case ' Bạn bè':
-        //         return 'fa-solid fa-user-group';
-        //     case ' Bạn bè ngoại trừ':
-        //         return 'fa-solid fa-lock';
-        //     case ' Một số bạn bè':
-        //         return 'fa-solid fa-user';
-        //     case ' Chỉ mình tôi':
-        //         return 'fa-solid fa-user-minus';
-        //     default:
-        //         return 'fa-solid fa-earth-americas'; 
-        // }
-        // },
         fetchFeed() {
             console.log("Gọi hàm: fetchFeed()");
             // console.log("User đang đăng nhập: " + this.user);
@@ -1502,6 +1522,7 @@ export default {
         removeFiles() {
             if (this.showUpdatePostVisible) {
                 this.updateFeed = [];
+                // this.updateFeed.files=[];
             } else {
                 this.newFeed.files = [];
             }
@@ -1699,6 +1720,8 @@ export default {
                     this.showPostVisible = false;
                     this.newFeed.content = '';
                     this.fetchFeed();
+                    this.closeUpdatePostOption();
+                    this.closeFeedInfo();
                     this.toast.success(response.data, { timeout: 1000 });
                 } else {
                     this.toast.error(response.data, { timeout: 1000 });
@@ -2019,6 +2042,7 @@ export default {
 
 .container {
     height: 100%;
+    width: 100%;
 }
 
 .dialog-container {
@@ -2554,6 +2578,46 @@ export default {
 }
 
 .date {
-    width: 100px;
+    width: fit-content;
+}
+
+@media only screen and (max-width: 776px) {
+    #display-number {
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    #display-number-element-2 {
+        margin-left: 0;
+    }
+
+    .dialog-container-feed {
+        max-width: 710px !important;
+    }
+}
+
+@media only screen and (min-width:768px) and (max-width:787px) {
+    #general_image {
+        height: 115px;
+    }
+}
+
+@media only screen and (min-width:788px) and (max-width:1023px) {
+    #general_image {
+        height: 130px;
+    }
+}
+
+@media only screen and (min-width:1024px) and (max-width:1070px) {
+    #general_image {
+        height: 180px;
+    }
+}
+
+@media only screen and (min-width: 1280px) {
+    .container {
+        max-width: 1920px;
+    }
+    
 }
 </style>
