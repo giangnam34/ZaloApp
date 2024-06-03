@@ -105,7 +105,7 @@ public class ChatController {
     public ResponseEntity<?> createMessage(@AuthenticationPrincipal UserPrincipal userPrincipal, @ModelAttribute AddNewChatMessageRequest addNewChatMessageRequest) {
         ChatMessageServiceImpl.GetAMessage result = chatMessageService.createChatMessage(userPrincipal.getId(), addNewChatMessageRequest);
         if (result.getMessage().equals("Tin nhắn đã được gửi!")) {
-            sendChatNotification(userPrincipal, result);
+//            sendChatNotification(userPrincipal, result);
             return ResponseEntity.ok(result);
         } else {
             return ResponseEntity.badRequest().body(result);
