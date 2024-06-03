@@ -1,5 +1,6 @@
 package com.essay.zaloapp.domain.payload.response.ChatMessage;
 
+import com.essay.zaloapp.services.impl.ChatMessageServiceImpl;
 import lombok.*;
 import org.springframework.http.ContentDisposition;
 
@@ -9,8 +10,10 @@ import org.springframework.http.ContentDisposition;
 @NoArgsConstructor
 @Builder
 public class ChatNotification {
-    private String id;
-    private String senderPhoneNumber;
-    private String recipientPhoneNumber;
-    private ChatMessageResponse chatMessageResponse;
+    private Long roomId;
+
+    // Update or have new message
+    private String typeNotification;
+
+    private ChatMessageResponse message;
 }

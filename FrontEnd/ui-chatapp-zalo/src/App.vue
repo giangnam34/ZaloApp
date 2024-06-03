@@ -153,7 +153,7 @@ export default {
             } else {
               this.userIsValid = true;
               // this.subcribeTopicWebSocket();
-              this.subcribeSpecificUserWebSocket();
+              // this.subcribeSpecificUserWebSocket();
             }
             localStorage.setItem("isValid", this.userIsValid);
           } catch (error) {

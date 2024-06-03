@@ -6,6 +6,7 @@ import com.essay.zaloapp.domain.models.Composite.GroupChatUserId;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewChatMessageRequest;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.UpdateChatMessageRequest;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.ChatMessageResponse;
+import com.essay.zaloapp.domain.payload.response.ChatMessage.ChatNotification;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.FileData;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.ReplyMessageResponse;
 import com.essay.zaloapp.domain.payload.response.RoomChat.GetAllRoomResponse;
@@ -23,6 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.MessagingException;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -56,6 +59,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
     @Autowired
     private FileStorageService fileStorageService;
+
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
 
     @Override
     public GetAllMessages getAllMessages(Long roomId, Long userId, int page, int size) throws Exception {
@@ -687,6 +693,11 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 }
             }
             response.setTaggedUser(taggedUsers);
+            for (GroupChatUser groupChatUser : groupChatUsers) {
+                if (!groupChatUser.getId().getPhoneNumberUser().equals(user.getPhoneNumber())) {
+                    notifyToUser(userRepository.findByPhoneNumber(groupChatUser.getId().getPhoneNumberUser()).getId(), ChatNotification.builder().roomId(addNewChatMessageRequest.getRoomId()).typeNotification("CREATE").message(response).build());
+                }
+            }
             return new GetAMessage("Tin nhắn đã được gửi!", response);
         } catch (Exception e) {
             System.out.println(e.toString());
@@ -965,6 +976,16 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
         }
         return null;
+    }
+
+    @Override
+    public void notifyToUser(Long userId, ChatNotification chatNotification){
+        try {
+            simpMessagingTemplate.convertAndSendToUser("user" + userId ,"/topic/specific-user", chatNotification);
+        } catch (MessagingException exception){
+            System.out.println("Have some error");
+            System.out.println(exception.toString());
+        }
     }
 
     @Data

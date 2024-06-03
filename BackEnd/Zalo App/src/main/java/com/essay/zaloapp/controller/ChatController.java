@@ -167,17 +167,17 @@ public class ChatController {
 //        );
 //    }
 
-    private void sendChatNotification(UserPrincipal userPrincipal, ChatMessageServiceImpl.GetAMessage result) {
-        String receiverPhoneNumber = chatMessageService.getUserPhoneNumber(userPrincipal.getId(), Long.valueOf(result.getChatMessageResponse().get_id()));
-        simpMessagingTemplate.convertAndSendToUser(
-                receiverPhoneNumber,
-                "/queue/messages",
-                ChatNotification.builder()
-                        .id(result.getChatMessageResponse().get_id())
-                        .senderPhoneNumber(userPrincipal.getPhoneNumber())
-                        .recipientPhoneNumber(receiverPhoneNumber)
-                        .chatMessageResponse(result.getChatMessageResponse())
-                        .build()
-        );
-    }
+//    private void sendChatNotification(UserPrincipal userPrincipal, ChatMessageServiceImpl.GetAMessage result) {
+//        String receiverPhoneNumber = chatMessageService.getUserPhoneNumber(userPrincipal.getId(), Long.valueOf(result.getChatMessageResponse().get_id()));
+//        simpMessagingTemplate.convertAndSendToUser(
+//                receiverPhoneNumber,
+//                "/queue/messages",
+//                ChatNotification.builder()
+//                        .id(result.getChatMessageResponse().get_id())
+//                        .senderPhoneNumber(userPrincipal.getPhoneNumber())
+//                        .recipientPhoneNumber(receiverPhoneNumber)
+//                        .chatMessageResponse(result.getChatMessageResponse())
+//                        .build()
+//        );
+//    }
 }

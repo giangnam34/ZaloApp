@@ -19,6 +19,8 @@
 import { register } from 'vue-advanced-chat'
 import axios from "axios";
 import UserInfo from './UserInfo.vue';
+import SockJS from 'sockjs-client';
+import Stomp from "webstomp-client";
 // import { register } from '../../vue-advanced-chat/dist/vue-advanced-chat.es.js'
 register()
 
@@ -30,6 +32,7 @@ export default {
 		return {
 			currentUserId: null,
 			theme: 'light',
+			currentRoom: null,
 			rooms: [],
 			roomsLoaded: false,
 			loadingRooms: true,
@@ -67,6 +70,9 @@ export default {
 	created() {
 		this.getCurrentUserId();
 		this.fetchMoreRooms();
+		this.subcribeSpecificUserWebSocket();
+		window.onfocus = this.handleUserChangeTab();
+		window.onblur = this.handleUserChangeTab();
 	},
 
 	methods: {
@@ -78,6 +84,7 @@ export default {
 			console.log(room);
 			room.unreadCount = 0;
 			const roomId = room.roomId;
+			this.currentRoom = roomId;
 			this.messagesLoaded = false;
 			try {
 				if (options.reset) {
@@ -95,7 +102,8 @@ export default {
 			}
 			const result = await axios.get(`http://localhost:8181/v1/chat/get-messages/${roomId}`, {
 				params: {
-					page: this.messagePage++
+					page: this.messagePage++,
+					size: 20
 				}
 			});
 			// console.log("Log first");
@@ -367,6 +375,46 @@ export default {
 			const user = JSON.parse(localStorage.getItem('user'));
 			this.currentUserId = user.id;
 			console.log(this.currentUserId);
+		},
+
+		async fetchNewInfoRoom(roomId) {
+			console.log("Call fetchNewInfoRoom " + roomId);
+		},
+
+		async fetchNewInfoMessage(roomId) {
+			console.log("Call fetchNewInfoMessage" + roomId);
+		},
+
+		handleNewUpdate(message) {
+			console.log("Call handle new update");
+			const notification = JSON.parse(message.body);
+			if (notification.typeNotification === "CREATE" && this.currentRoom == notification.roomId){
+				this.messages = [...this.messages, notification.message];
+			}
+		},
+
+		async subcribeSpecificUserWebSocket() {
+			var socket = new SockJS('http://localhost:8181/room');
+			var stompClient = Stomp.over(socket);
+			// var sessionId = "";
+			var userId = JSON.parse(localStorage.getItem('user'))['id'];
+			console.log(userId);
+
+			stompClient.connect({ userId: 'user' + userId }, frame => {
+				console.log("Frame");
+				console.log(frame);
+				stompClient.subscribe('/user/topic/specific-user', this.handleNewUpdate);
+				// stompClient.send("/app/room", "Hehehe", { userId: 'user' + 2 });
+			}, this.handleErrorSubscribe);
+			stompClient.onMessage = message => this.handleNewUpdate(message);
+		},
+
+		handleErrorSubscribe(){
+			console.log("Have error when subscribe websocket");
+		},
+		
+		handleUserChangeTab(){
+			console.log("User is in current tab");
 		}
 	}
 }
