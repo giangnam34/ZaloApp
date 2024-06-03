@@ -1,11 +1,15 @@
 package com.essay.zaloapp.config;
 
+import com.corundumstudio.socketio.SocketIOServer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.converter.*;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.AbstractWebSocketMessageBrokerConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -55,5 +59,18 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer {
 //        messageConverters.add(new ByteArrayMessageConverter());
 //        messageConverters.add(converter);
 //        return false;
+//    @Value("${socket.host}")
+//    private String host;
+//
+//    @Value("${socket.port}")
+//    private int port;
+//
+//    @Bean
+//    public SocketIOServer socketIOServer() throws Exception {
+//        com.corundumstudio.socketio.Configuration config =
+//                new com.corundumstudio.socketio.Configuration();
+//        config.setHostname(host);
+//        config.setPort(port);
+//        return new SocketIOServer(config);
 //    }
 }

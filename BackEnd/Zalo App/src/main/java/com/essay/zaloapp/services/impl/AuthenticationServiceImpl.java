@@ -66,6 +66,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         System.out.println("Authentication: " + authentication.toString());
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        chatService.connect(loginRequest.getUserName());
         return ResponseEntity.ok(new LoginResponse(tokenProvider.createToken(authentication)));
     }
 
@@ -88,7 +89,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             Long statusCode = getStatusSendOTP(result);
             if (statusCode == 2)
                 return ResponseEntity.badRequest().body(new SignUpResponse("Hmm Có lỗi trong quá trình gửi OTP. Vui lòng thử lại"));
-            user.setOtpCode(new OTPCode(user, com.essay.zaloapp.domain.enums.OTP.AuthorizeAccount, otpCode, new Date(new Date().getTime() + 7 * 60 * 60*1000 + 4 * 60000)));
+            user.setOtpCode(new OTPCode(user, com.essay.zaloapp.domain.enums.OTP.AuthorizeAccount, otpCode, new Date(new Date().getTime() + 7 * 60 * 60 * 1000 + 4 * 60000)));
             if (statusCode == 0 || statusCode == -1)
                 return ResponseEntity.ok(new SignUpResponse("Hệ thống đang gửi mã OTP. Xin vui lòng chờ trong ít phút"));
             return ResponseEntity.ok(new SignUpResponse("Hệ thống đã gửi mã OTP tới số điện thoại. Xin vui lòng kiểm tra và nhập mã"));
@@ -194,7 +195,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public ResponseEntity<?> changePassword(ChangePasswordRequest changePasswordRequest, UserPrincipal userDetailsService){
+    public ResponseEntity<?> changePassword(ChangePasswordRequest changePasswordRequest, UserPrincipal userDetailsService) {
         User user = userRepository.findByPhoneNumber(userDetailsService.getPhoneNumber());
         if (!user.getIsConfirmed())
             return ResponseEntity.badRequest().body("Tài khoản chưa kích hoạt!");
@@ -210,7 +211,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
             userRepository.save(user);
             return ResponseEntity.ok("Thay đổi mật khẩu thành công!");
-        } catch(Exception e){
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body("Có lỗi xảy ra! Vui lòng thử lại!");
         }
     }
