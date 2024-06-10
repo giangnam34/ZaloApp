@@ -737,6 +737,13 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                         }
                     }
                     reactionRepository.saveAll(newReactions);
+
+                    List<GroupChatUser> groupChatUsers = groupChatUserRepository.findAllByGroupId(updateChatMessageRequest.getRoomId());
+                    for (GroupChatUser groupChatUser : groupChatUsers) {
+                        if (!groupChatUser.getId().getPhoneNumberUser().equals(user.getPhoneNumber())) {
+                            notifyToUser(userRepository.findByPhoneNumber(groupChatUser.getId().getPhoneNumberUser()).getId(), ChatNotification.builder().roomId(updateChatMessageRequest.getRoomId()).typeNotification("UPDATE").message(getAMessageToSend(messageChat).getChatMessageResponse()).build());
+                        }
+                    }
                     return getAMessageToSend(messageChat);
                 }
                 return new GetAMessage("Người dùng không có quyền cập nhật tin nhắn này!", new ChatMessageResponse());
@@ -812,7 +819,12 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 }
                 reactionRepository.saveAll(newReactions);
             }
-
+            List<GroupChatUser> groupChatUsers = groupChatUserRepository.findAllByGroupId(updateChatMessageRequest.getRoomId());
+            for (GroupChatUser groupChatUser : groupChatUsers) {
+                if (!groupChatUser.getId().getPhoneNumberUser().equals(user.getPhoneNumber())) {
+                    notifyToUser(userRepository.findByPhoneNumber(groupChatUser.getId().getPhoneNumberUser()).getId(), ChatNotification.builder().roomId(updateChatMessageRequest.getRoomId()).typeNotification("UPDATE").message(getAMessageToSend(messageChat).getChatMessageResponse()).build());
+                }
+            }
             return getAMessageToSend(messageChat);
         } catch (Exception e) {
             System.out.println(e.toString());
@@ -933,6 +945,12 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             }
             messageChat.setDeleted(true);
             messageChatRepository.save(messageChat);
+            List<GroupChatUser> groupChatUsers = groupChatUserRepository.findAllByGroupId(messageChat.getGroupChat().getId());
+            for (GroupChatUser groupChatUser : groupChatUsers) {
+                if (!groupChatUser.getId().getPhoneNumberUser().equals(messageChat.getUser().getPhoneNumber())) {
+                    notifyToUser(userRepository.findByPhoneNumber(groupChatUser.getId().getPhoneNumberUser()).getId(), ChatNotification.builder().roomId(messageChat.getGroupChat().getId()).typeNotification("UPDATE").message(getAMessageToSend(messageChat).getChatMessageResponse()).build());
+                }
+            }
             return "Xóa tin nhắn thành công!";
         } catch (Exception e) {
             System.out.println(e.toString());

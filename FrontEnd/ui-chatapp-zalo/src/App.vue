@@ -41,7 +41,7 @@ import HomeChat from './components/HomeChat.vue'
 import ChatSidebarNav from './components/ChatSidebarNav.vue';
 import ContactNav from './components/ContactNav.vue';
 import ToDo from './components/ToDo.vue';
-import TestChat from './components/TestChat.vue';
+import TestChat from './components/ChatComponent.vue';
 import SignIn from './components/SignIn.vue';
 import PostPage from './components/PostPage.vue';
 import VueJwtDecode from 'vue-jwt-decode';

@@ -2,6 +2,7 @@ package com.essay.zaloapp.controller;
 
 import com.essay.zaloapp.domain.models.User;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewChatMessageRequest;
+import com.essay.zaloapp.domain.payload.request.ChatMessage.RTCConnection;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.UpdateChatMessageRequest;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.ChatNotification;
 import com.essay.zaloapp.secruity.UserPrincipal;
@@ -9,16 +10,13 @@ import com.essay.zaloapp.services.ChatMessageService;
 import com.essay.zaloapp.services.ChatService;
 import com.essay.zaloapp.services.impl.ChatMessageServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,7 +27,9 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/v1/chat/")
@@ -48,20 +48,22 @@ public class ChatController {
     @SendTo("/topic/messages")
     public String sendToGroup(Message message) throws Exception {
         System.out.println("There have a message");
-        System.out.println(message.getPayload().toString());
+        System.out.println(message.getPayload());
         String time = new SimpleDateFormat("HH:mm").format(new Date());
         return "Test";
     }
 
     @MessageMapping("/room")
-    public String sendSpecific(Principal user, @Header("userId") String userId) throws Exception {
+    public String sendRTCConnectionToSpecificUser(Principal user, @Header("userId") String userId, RTCConnection message) throws Exception {
         System.out.println("There have a message to specific user");
         System.out.println("UserId " +userId);
+        System.out.println(message.getEvent());
+        ChatNotification chatNotification = ChatNotification.builder().roomId(1L).typeNotification("RTC_CONNECTION").message(message).build();
         try {
-            simpMessagingTemplate.convertAndSendToUser(userId ,"/topic/specific-user", "Test" + user.getName());
+            simpMessagingTemplate.convertAndSendToUser(userId ,"/topic/specific-user", chatNotification);
         } catch (MessagingException exception){
             System.out.println("Have some error");
-            System.out.println(exception.toString());
+            System.out.println(exception);
         }
         return "Test " + user.getName();
     }
@@ -70,8 +72,7 @@ public class ChatController {
     @SendTo("/user/topic")
     public void addUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof UserDetails) {
-            UserDetails userDetails = (UserDetails) principal;
+        if (principal instanceof UserDetails userDetails) {
             System.out.println(userDetails.getUsername());
             chatService.connect(userDetails.getUsername());
         }
@@ -81,8 +82,7 @@ public class ChatController {
     @SendTo("/user/topic")
     public void disconnect() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof UserDetails) {
-            UserDetails userDetails = (UserDetails) principal;
+        if (principal instanceof UserDetails userDetails) {
             System.out.println(userDetails.getUsername());
             chatService.disconnect(userDetails.getUsername());
         }

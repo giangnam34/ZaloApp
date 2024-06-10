@@ -15,5 +15,5 @@ public class ChatNotification {
     // Update or have new message
     private String typeNotification;
 
-    private ChatMessageResponse message;
+    private Object message;
 }

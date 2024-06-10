@@ -9,7 +9,8 @@
 			@delete-message="deleteMessage($event.detail[0])"
 			@send-message-reaction="sendMessageReaction($event.detail[0])" :theme="theme"
 			@room-info="showRoomInfo($event.detail[0])" @edit-message="editMessage($event.detail[0])"
-			:emoji-data-source="emojiDataSource" />
+			@room-action-handler="roomActionHandler($event.detail[0])"
+			@menu-action-handler="menuActionHandler($event.detail[0])" :emoji-data-source="emojiDataSource" />
 		<UserInfo v-model:showPopup="showPopUpInfoRoom"></UserInfo>
 
 	</div>
@@ -30,9 +31,14 @@ export default {
 	},
 	data() {
 		return {
+			peerConnection: null,
+			dataChannel: null,
+			socket: null,
+			stompClient: null,
 			currentUserId: null,
 			theme: 'light',
 			currentRoom: null,
+			RTCConnectionList: [],
 			rooms: [],
 			roomsLoaded: false,
 			loadingRooms: true,
@@ -70,13 +76,36 @@ export default {
 	created() {
 		this.getCurrentUserId();
 		this.fetchMoreRooms();
-		this.subcribeSpecificUserWebSocket();
-		window.onfocus = this.handleUserChangeTab();
-		window.onblur = this.handleUserChangeTab();
+		this.subscribeSpecificUserWebSocket();
+		document.addEventListener("visibilitychange", () => {
+			if (document.hidden) {
+				console.log("Tab is changed");
+				// Not done
+			} else {
+				console.log("Tab is active");
+				// Not done
+			}
+		});
 	},
 
 	methods: {
 		async fetchMessages({ room = {}, options = {} }) {
+			console.log(this.roomActions);
+			var menuActionList = null;
+			if (room.users.length === 2) {
+				console.log("This is private chat");
+				menuActionList = [{ name: 'callUser', title: 'Call User' }];
+			}
+			else {
+				console.log("This is room chat");
+				menuActionList = [
+					{ name: 'inviteUser', title: 'Invite User' },
+					{ name: 'removeUser', title: 'Remove User' },
+					{ name: 'deleteRoom', title: 'Delete Room' },
+				]
+			}
+			this.menuActions = menuActionList;
+
 			console.log("Call fetchMessages");
 			console.log("Option messages: ");
 			console.log(options);
@@ -120,6 +149,8 @@ export default {
 			if (result.data.totalPages === result.data.currentPage + 1 || result.data.totalPages === 0) {
 				this.messagesLoaded = true;
 			}
+			console.log("Room actions");
+			console.log(this.roomActions);
 			// console.log(this.messages)
 		},
 
@@ -336,9 +367,12 @@ export default {
 				reactionUser.splice(index, 1);
 			}
 			try {
+				const oldReactions = message.reactions;
+				message.reactions[reaction.unicode] = reactionUser
 				const result = await this.callApiUpdateMessage(roomId, message);
-				if (result.status === 200) {
-					message.reactions[reaction.unicode] = reactionUser;
+				if (result.status !== 200) {
+					console.log("Error");
+					message.reactions = oldReactions;
 				}
 			} catch (error) {
 				console.log(error);
@@ -371,6 +405,31 @@ export default {
 			this.showPopUpInfoRoom = true;
 		},
 
+		roomActionHandler({ roomId, action }) {
+			console.log("Call roomActionHandler function");
+			console.log("RoomId", roomId);
+			console.log("Action", action);
+		},
+
+		menuActionHandler({ roomId, action }) {
+			console.log("Call menuActionHandler function");
+			console.log("RoomId", roomId);
+			console.log("Action", action);
+			const room = this.rooms.find(room => room.roomId === roomId);
+			if (action.name === 'callUser') {
+				this.callToSpecificUser(room);
+			}
+		},
+
+		callToSpecificUser(room) {
+			console.log("Call function callToSpecificUser");
+			console.log("Room info");
+			console.log(room);
+			const user = room.users.filter(element => element._id != this.currentUserId);
+			this.initializeRTCPeerConnection(user[0]._id);
+			this.createOffer(user[0]._id);
+		},
+
 		getCurrentUserId() {
 			const user = JSON.parse(localStorage.getItem('user'));
 			this.currentUserId = user.id;
@@ -388,33 +447,175 @@ export default {
 		handleNewUpdate(message) {
 			console.log("Call handle new update");
 			const notification = JSON.parse(message.body);
-			if (notification.typeNotification === "CREATE" && this.currentRoom == notification.roomId){
-				this.messages = [...this.messages, notification.message];
+			if (notification.typeNotification === "RTC_CONNECTION") {
+				if (notification.message) {
+					if (notification.message.event === 'offer') {
+						if (this.RTCConnectionList.indexOf(this.currentUserId === 1 ? 2 : 1) === -1)
+							this.initializeRTCPeerConnection(this.currentUserId === 1 ? 2 : 1);
+						this.handleOffer(notification.message.data)
+					} else if (notification.message.event === 'answer') {
+						this.handleAnswer(notification.message.data);
+					} else if (notification.message.event === 'candidate') {
+						this.handleCandidate(notification.message.data);
+					}
+				}
+			} else {
+				if (this.currentRoom == notification.roomId) {
+					if (notification.message.files) {
+						notification.message.files.forEach(file => {
+							delete file.progress;
+						});
+					}
+					if (notification.typeNotification === "CREATE") {
+						this.messages = [...this.messages, notification.message];
+					} else if (notification.typeNotification === "UPDATE") {
+						console.log("Message is update");
+						let message = this.messages.find(message => message._id == notification.message._id);
+						console.log(message);
+						if (message) {
+							const indexMessage = this.messages.indexOf(message);
+							this.messages[indexMessage] = notification.message;
+							this.messages = [...this.messages];
+						}
+					}
+				} else {
+					// fetch new info room
+				}
 			}
 		},
 
-		async subcribeSpecificUserWebSocket() {
-			var socket = new SockJS('http://localhost:8181/room');
-			var stompClient = Stomp.over(socket);
+		// --------------Config web socket--------------
+
+		async subscribeSpecificUserWebSocket() {
+			this.socket = new SockJS('http://localhost:8181/room');
+			this.stompClient = Stomp.over(this.socket);
+
 			// var sessionId = "";
 			var userId = JSON.parse(localStorage.getItem('user'))['id'];
-			console.log(userId);
 
-			stompClient.connect({ userId: 'user' + userId }, frame => {
+			await this.stompClient.connect({ userId: 'user' + userId }, frame => {
 				console.log("Frame");
 				console.log(frame);
-				stompClient.subscribe('/user/topic/specific-user', this.handleNewUpdate);
-				// stompClient.send("/app/room", "Hehehe", { userId: 'user' + 2 });
+				if (this.stompClient.connected) {
+					console.log("Connected success to server");
+					this.stompClient.subscribe('/user/topic/specific-user', this.handleNewUpdate);
+				}
+				console.log(this.stompClient.connected);
+				// this.stompClient.send("/app/room", "Hehehe", { userId: 'user' + 2 });
 			}, this.handleErrorSubscribe);
-			stompClient.onMessage = message => this.handleNewUpdate(message);
+			this.stompClient.onMessage = message => this.handleNewUpdate(message);
 		},
 
-		handleErrorSubscribe(){
+		async initializeRTCPeerConnection(userId) {
+			console.log("Call initializeRTCPeerConnection");
+			var configuration = null;
+
+			this.peerConnection = new RTCPeerConnection(configuration);
+
+			// Setup ice handling
+			this.peerConnection.onicecandidate = event => {
+				if (event.candidate) {
+					this.send(JSON.stringify({
+						event: "candidate",
+						data: event.candidate
+					}), userId);
+				}
+			};
+
+			// creating data channel
+			this.dataChannel = this.peerConnection.createDataChannel("dataChannel", {
+				reliable: true
+			});
+
+			this.dataChannel.onerror = function (error) {
+				console.log("Error occured on datachannel:", error);
+			};
+
+			// when we receive a message from the other peer, printing it on the console
+			this.dataChannel.onmessage = function (event) {
+				console.log("message:", event.data);
+			};
+
+			this.dataChannel.onclose = function () {
+				console.log("data channel is closed");
+			};
+
+			this.peerConnection.ondatachannel = function (event) {
+				this.dataChannel = event.channel;
+			};
+		},
+
+		createOffer(userId) {
+			this.peerConnection.createOffer(offer => {
+				this.send(JSON.stringify({
+					event: "offer",
+					data: offer
+				}), userId);
+				this.peerConnection.setLocalDescription(offer);
+			}, function (error) {
+				console.log(error);
+				alert("Error creating an offer");
+			});
+		},
+
+		handleOffer(offer) {
+			console.log("Call handle offer");
+			console.log("Offer");
+			console.log(offer);
+			this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+
+			// create and send an answer to an offer
+			this.peerConnection.createAnswer(answer => {
+				this.peerConnection.setLocalDescription(answer);
+				this.send(JSON.stringify({
+					event: "answer",
+					data: answer
+				}), 1);
+			}, function (error) {
+				console.log(error);
+				alert("Error creating an answer");
+			});
+
+		},
+
+		handleCandidate(candidate) {
+			console.log("Call handle candidate");
+			console.log(candidate);
+			this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+		},
+
+		handleAnswer(answer) {
+			this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+			console.log("connection established successfully!!");
+			this.RTCConnectionList.push(this.currentUserId === 1 ? 2 : 1);
+			console.log(this.RTCConnectionList);
+		},
+
+		send(object, userId) {
+			console.log("Call send function", object);
+			this.stompClient.send("/app/room", object, { userId: 'user' + userId, userSend: 'user' + this.currentUserId });
+		},
+
+		sendMessageRTC() {
+			this.dataChannel.send("Test");
+		},
+
+		handleErrorSubscribe() {
 			console.log("Have error when subscribe websocket");
 		},
-		
-		handleUserChangeTab(){
-			console.log("User is in current tab");
+
+		// --------------End config websocket--------------
+
+		handleUserChangeTab() {
+			return function () {
+				window.onfocus = window.onblur = window.onpageshow = window.onpagehide = function (e) {
+					if ({ focus: 1, pageshow: 1 }[e.type]) {
+						console.log("User is in current tab");
+					} else {
+						console.log("User is not in current tab");
+					}
+				};
+			};
 		}
 	}
 }
