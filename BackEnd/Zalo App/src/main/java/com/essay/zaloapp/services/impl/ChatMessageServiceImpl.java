@@ -601,6 +601,20 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             }
             messageChat = messageChatRepository.save(messageChat);
 
+            User receiver = new User();
+            for (GroupChatUser gcu : groupChatUsers) {
+                if (!gcu.getId().getPhoneNumberUser().equals(user.getPhoneNumber())) {
+                    receiver = userRepository.findByPhoneNumber(gcu.getId().getPhoneNumberUser());
+                    break;
+                }
+            }
+
+            List<MessageChat> messageChatsForUpdate = messageChatRepository.findAllByGroupIdAndUserPhoneNumber(groupChat.getId(), receiver.getPhoneNumber());
+            for (MessageChat message : messageChatsForUpdate) {
+                message.setSeen(true);
+                messageChatRepository.save(message);
+            }
+
             ChatMessageResponse response = new ChatMessageResponse();
             response.set_id(messageChat.getId() + "");
             response.setContent(messageChat.getContent());
