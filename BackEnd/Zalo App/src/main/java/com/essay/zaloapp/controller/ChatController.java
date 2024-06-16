@@ -56,12 +56,12 @@ public class ChatController {
     @MessageMapping("/room")
     public String sendRTCConnectionToSpecificUser(Principal user, @Header("userId") String userId, RTCConnection message) throws Exception {
         System.out.println("There have a message to specific user");
-        System.out.println("UserId " +userId);
+        System.out.println("UserId " + userId);
         System.out.println(message.getEvent());
         ChatNotification chatNotification = ChatNotification.builder().roomId(1L).typeNotification("RTC_CONNECTION").message(message).build();
         try {
-            simpMessagingTemplate.convertAndSendToUser(userId ,"/topic/specific-user", chatNotification);
-        } catch (MessagingException exception){
+            simpMessagingTemplate.convertAndSendToUser(userId, "/topic/specific-user", chatNotification);
+        } catch (MessagingException exception) {
             System.out.println("Have some error");
             System.out.println(exception);
         }
@@ -124,6 +124,13 @@ public class ChatController {
         return result.equals("Tạo cuộc hội thoại thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
+    @PostMapping("/add-users-to-room/{roomId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> addUsersToRoom(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long roomId, @RequestBody List<String> usersPhoneNumber) {
+        String result = chatMessageService.addUsersToRoom(userPrincipal.getId(), roomId, usersPhoneNumber);
+        return result.equals("Thêm người dùng vào nhóm chat thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
+    }
+
     @DeleteMapping("/delete-message/{messageId}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> deleteMessage(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long messageId) {
@@ -168,7 +175,7 @@ public class ChatController {
 //        );
 //    }
 
-//    private void sendChatNotification(UserPrincipal userPrincipal, ChatMessageServiceImpl.GetAMessage result) {
+    //    private void sendChatNotification(UserPrincipal userPrincipal, ChatMessageServiceImpl.GetAMessage result) {
 //        String receiverPhoneNumber = chatMessageService.getUserPhoneNumber(userPrincipal.getId(), Long.valueOf(result.getChatMessageResponse().get_id()));
 //        simpMessagingTemplate.convertAndSendToUser(
 //                receiverPhoneNumber,
@@ -181,4 +188,10 @@ public class ChatController {
 //                        .build()
 //        );
 //    }
+    @GetMapping("/get-room-info/{roomId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> getRoomInfo(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long roomId) throws Exception {
+        ChatMessageServiceImpl.GetARoomInfo result = chatMessageService.getRoomInfo(userPrincipal.getId(), roomId);
+        return result.getMessage().equals("Lấy thông tin phòng thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
+    }
 }
