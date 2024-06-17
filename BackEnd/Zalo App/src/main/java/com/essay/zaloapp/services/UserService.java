@@ -34,4 +34,6 @@ public interface UserService {
     ResponseEntity<?> updateInfoUser(Long userId, ChangeInfoUserRequest changeInfoUserRequest) throws Exception;
 
     ResponseEntity<?> findUserByPhoneNumber(String phoneNumber) throws Exception;
+
+    ResponseEntity<?> findUserById(Long userId) throws Exception;
 }

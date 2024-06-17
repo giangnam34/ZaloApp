@@ -19,4 +19,6 @@ public interface FriendService {
     ResponseEntity<?> listAllFriend(Long userId) throws Exception;
 
     ResponseEntity<?> listAllInviteFriend(Long userId) throws Exception;
+
+    ResponseEntity<?> listAllFriendAreNotInRoom(Long userId, Long roomId) throws Exception;
 }

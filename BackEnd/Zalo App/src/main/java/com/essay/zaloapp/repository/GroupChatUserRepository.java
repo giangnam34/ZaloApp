@@ -19,6 +19,10 @@ public interface GroupChatUserRepository extends JpaRepository<GroupChatUser, Gr
     @Query("SELECT gcu FROM GroupChatUser gcu WHERE gcu.id.groupId = :groupId AND gcu.isDeleted = false")
     List<GroupChatUser> findAllByGroupId(@Param("groupId") Long groupId);
 
+
+    @Query("SELECT gcu FROM GroupChatUser gcu WHERE gcu.id.groupId = :groupId")
+    List<GroupChatUser> findAllByGroupIdAndGetDeleted(@Param("groupId") Long groupId);
+
     @Query("SELECT gcu FROM GroupChatUser gcu WHERE gcu.id.phoneNumberUser = :phoneNumberUser AND gcu.isDeleted = false")
     List<GroupChatUser> findByIdPhoneNumberUser(@Param("phoneNumberUser") String phoneNumberUser);
 

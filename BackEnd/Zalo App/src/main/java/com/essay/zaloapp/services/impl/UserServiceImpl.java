@@ -1,17 +1,11 @@
 package com.essay.zaloapp.services.impl;
 
-import com.essay.zaloapp.domain.enums.FriendStatus;
-import com.essay.zaloapp.domain.models.Composite.FriendsId;
-import com.essay.zaloapp.domain.models.Friends;
 import com.essay.zaloapp.domain.models.User;
 
 import com.essay.zaloapp.domain.payload.request.Authorize.ChangeInfoUserRequest;
 import com.essay.zaloapp.domain.payload.request.Authorize.ChangePhoneNumberUserRequest;
-import com.essay.zaloapp.domain.payload.request.Friend.FriendRequest;
 import com.essay.zaloapp.domain.payload.response.Authorize.DetailInfoUser;
 import com.essay.zaloapp.domain.payload.response.Authorize.GetUserResponse;
-import com.essay.zaloapp.domain.payload.response.Authorize.InfoUser;
-import com.essay.zaloapp.domain.payload.response.Friend.GetAllInviteFriendResponse;
 import com.essay.zaloapp.repository.FriendsRepository;
 import com.essay.zaloapp.repository.UserRepository;
 import com.essay.zaloapp.services.FileStorageService;
@@ -23,11 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -190,5 +179,16 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public ResponseEntity<?> findUserById(Long userId) throws Exception{
+        try {
+            User user = userRepository.findById(userId);
+            if (user == null || !user.getIsConfirmed() || user.getIsLocked()) return ResponseEntity.badRequest().body(" Số điện thoại chưa đăng ký tài khoản hoặc không cho phép tìm kiếm!");
+            DetailInfoUser detailInfoUser = new DetailInfoUser(user.getFullName(), "http://localhost:8181/v1/users/imageAvatarAnotherUser/" + user.getPhoneNumber(), "http://localhost:8181/v1/users/imageCoverAvatarAnotherUser/" + user.getPhoneNumber(), user.getPhoneNumber(), user.getSex().name(),user.getBirthDay());
+            return ResponseEntity.ok(detailInfoUser);
+        } catch (Exception e){
+            throw new Exception("Có lỗi xảy ra. Vui lòng thử lại!!!");
+        }
+    }
 
 }

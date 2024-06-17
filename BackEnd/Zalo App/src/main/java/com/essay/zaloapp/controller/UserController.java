@@ -113,6 +113,12 @@ public class UserController {
         return userService.findUserByPhoneNumber(phoneNumber);
     }
 
+    @GetMapping("/findUserById/{userId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> findUserById(@PathVariable Long userId) throws Exception {
+        return userService.findUserById(userId);
+    }
+
     // Kết bạn với người dùng, friendRequest.fromPhoneNumberUser là người gửi lời mời, friendRequest.toPhoneNumberUser là người nhận lời mời
     @PostMapping("/sendInviteFriend")
     @PreAuthorize("hasRole('USER')")
@@ -153,6 +159,12 @@ public class UserController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getAllFriendUser(@AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
         return friendService.listAllFriend(userPrincipal.getId());
+    }
+
+    @GetMapping("/getListFriendsAreNotInRoom/{roomId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> getListFriendsAreNotInRoom(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long roomId) throws Exception {
+        return friendService.listAllFriendAreNotInRoom(userPrincipal.getId(), roomId);
     }
 
     @GetMapping("/getAllInviteFriend")

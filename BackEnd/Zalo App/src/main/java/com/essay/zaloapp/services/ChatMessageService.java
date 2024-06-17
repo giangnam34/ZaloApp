@@ -15,10 +15,14 @@ public interface ChatMessageService {
 
     ChatMessageServiceImpl.GetAllRooms getAllRooms(Long userId, String sortOrder) throws Exception;
 
+    ChatMessageServiceImpl.GetARoomInfo getRoomInfo(Long userId, Long roomId) throws Exception;
+
     String deleteRoom(Long userId, Long roomId);
 
     String createRoom(Long senderId, List<Long> receiverIds);
 
+
+    String addUsersToRoom(Long userId, Long roomId, List<String> usersPhoneNumber);
 
     ChatMessageServiceImpl.GetAMessage createChatMessage(Long userId, AddNewChatMessageRequest addNewChatMessageRequest);
 
