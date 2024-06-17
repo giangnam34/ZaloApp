@@ -37,7 +37,9 @@ public class UserController {
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getUserById(@PathVariable("id") Long id, UserPrincipal principal){
-        if (!(principal.getId() == id)) return ResponseEntity.badRequest().body(Message.WRONG_USERID);
+        if (!(principal.getId() == id)) {
+            return ResponseEntity.badRequest().body(Message.WRONG_USERID);
+        }
         return userService.getUserById(id);
     }
 

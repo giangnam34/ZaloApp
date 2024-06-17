@@ -110,6 +110,8 @@ INSERT ignore INTO user VALUES
 
 insert ignore into roles values(1,"ROLE_USER");
 insert ignore into roles values(2,"ROLE_ADMIN");
+insert ignore into roles values(3,"ROLE_USER");
+
 
 insert ignore into user_roles values(1,1);
 insert ignore into user_roles values(2,1);

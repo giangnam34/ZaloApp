@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -54,13 +55,16 @@ public class ChatController {
     }
 
     @MessageMapping("/room")
-    public String sendRTCConnectionToSpecificUser(Principal user, @Header("userId") String userId, RTCConnection message) throws Exception {
+    public String sendRTCConnectionToSpecificUser(Principal user, @Header("userId") String userId, @Header("userSend") String userSend, RTCConnection message) throws Exception {
         System.out.println("There have a message to specific user");
         System.out.println("UserId " +userId);
         System.out.println(message.getEvent());
         ChatNotification chatNotification = ChatNotification.builder().roomId(1L).typeNotification("RTC_CONNECTION").message(message).build();
         try {
-            simpMessagingTemplate.convertAndSendToUser(userId ,"/topic/specific-user", chatNotification);
+            HashMap<String,Object> header = new HashMap<>();
+            header.put("userId", userId.substring(userId.indexOf("user")+4));
+            header.put("userSend", userSend.substring(userId.indexOf("user")+4));
+            simpMessagingTemplate.convertAndSendToUser(userId ,"/topic/specific-user", chatNotification,header);
         } catch (MessagingException exception){
             System.out.println("Have some error");
             System.out.println(exception);
