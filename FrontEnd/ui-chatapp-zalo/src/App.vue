@@ -139,12 +139,17 @@ export default {
 
             const currentUserID = decoded.sub;
 
+            console.log(decoded);
+
             const responseUser = await axios.get(`users/${currentUserID}`, {
               headers: {
                 'Authorization': localStorage.getItem("token")
               }
             });
             const user = responseUser.data;
+
+            console.log("Response");
+            console.log(responseUser.status);
 
             localStorage.setItem('user', JSON.stringify(user));
 
