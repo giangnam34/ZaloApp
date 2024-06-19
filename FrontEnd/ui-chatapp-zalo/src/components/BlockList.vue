@@ -2,15 +2,15 @@
     <div class="contact">
         <div class="header">
             <a id="user-group-icon">
-                <font-awesome-icon icon="fa-solid fa-user-group" />
+                <font-awesome-icon icon="fa-solid fa-ban" />
             </a>
             <p class="menu-name">
-                <span>Danh sách bạn bè</span>
+                <span>Danh sách đã chặn</span>
             </p>
         </div>
         <div class="wrapper">
             <div class="cart-list">
-                <div class="title" style="height: 64px; width: 100%;">Bạn bè ({{ friends.length }})</div>
+                <div class="title" style="height: 64px; width: 100%;">Đã chặn ({{ friends.length }})</div>
                 <div class="filter-wrapper">
                     <div class="search-container">
                         <a id="search-icon">
@@ -136,33 +136,20 @@
                                                 </div>
                                             </div>
                                             <div class="separator"></div>
-                                            <div class="popover-item" :class="{ 'hoveredFilter': hoveredItem === 'type' }"
-                                                @mouseenter="(hoveredItem = 'type')" @mouseleave="hoveredItem = ''">
-                                                <div>
-                                                    Phân loại
-                                                </div>
-                                            </div>
-                                            <div class="popover-item" :class="{ 'hoveredFilter': hoveredItem === 'rename' }"
-                                                @mouseenter="(hoveredItem = 'rename')" @mouseleave="hoveredItem = ''">
-                                                <div>
-                                                    Đặt tên ghi nhớ
-                                                </div>
-                                            </div>
-                                            <div class="separator"></div>
                                             <div class="popover-item" :class="{ 'hoveredFilter': hoveredItem === 'block' }"
                                                 @mouseenter="(hoveredItem = 'block')" @mouseleave="hoveredItem = ''"
-                                                @click="blockUser(friend.phoneNumber)">
+                                                @click="unBlockUser(friend.phoneNumber)">
                                                 <div>
-                                                    Chặn
+                                                    Bỏ chặn
                                                 </div>
                                             </div>
-                                            <div class="separator"></div>
+                                            <!-- <div class="separator"></div>
                                             <div class="popover-item" style="color: red"
                                                 :class="{ 'hoveredFilter': hoveredItem === 'delete' }"
                                                 @mouseenter="(hoveredItem = 'delete')" @mouseleave="hoveredItem = ''"
                                                 @click="deleteFriend(friend.phoneNumber)">
                                                 Xóa bạn
-                                            </div>
+                                            </div> -->
                                         </div>
                                     </div>
                                 </div>
@@ -259,7 +246,7 @@ export default {
         return { toast }
     },
     created() {
-        this.getListOfFriends();
+        this.getListOfBlockedFriends();
         const userString = localStorage.getItem('user');
         if (userString) {
             this.user = JSON.parse(userString);
@@ -349,9 +336,9 @@ export default {
             this.popoverTop = popupTop + 'px';
             event.stopPropagation();
         },
-        async getListOfFriends() {
+        async getListOfBlockedFriends() {
             try {
-                const response = await axios.get(`users/getAllFriendUser`, {
+                const response = await axios.get(`users/getAllBlockedUser`, {
                     headers: {
                         'Authorization': localStorage.getItem("token")
                     }
@@ -413,14 +400,14 @@ export default {
                 }
             }
         },
-        async blockUser(phoneNumber) {
+        async unBlockUser(phoneNumber) {
             try {
                 const friendRequest = {
                     fromPhoneNumberUser: this.user.phoneNumber,
                     toPhoneNumberUser: phoneNumber,
                 }
 
-                const response = await axios.post(`users/blockFriendUser`, friendRequest, {
+                const response = await axios.post(`users/unBlockFriendUser`, friendRequest, {
                     headers: {
                         'Authorization': localStorage.getItem("token")
                     }
@@ -729,7 +716,7 @@ export default {
                     position: absolute;
                     background-color: #fff;
                     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-                    height: 210px;
+                    height: 80px;
                     width: 180px;
                     justify-content: space-between;
 

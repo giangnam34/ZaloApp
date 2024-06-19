@@ -164,7 +164,7 @@
                                         <font-awesome-icon icon="fa-solid fa-ellipsis" />
                                     </a>
                                     <div class="popoverAction" v-show="group.id === selectedItem"
-                                        :style="{ right: popoverRight, top: popoverTop }">
+                                        :style="{ left: popoverLeft, top: popoverTop }">
                                         <div class="popover-body">
                                             <div class="popover-item" :class="{ 'hoveredFilter': hoveredItem === 'type' }"
                                                 @mouseenter="(hoveredItem = 'type')" @mouseleave="hoveredItem = ''">
@@ -204,6 +204,7 @@ export default {
             chosenType: 'newest',
             popoverRight: 0,
             popoverTop: 0,
+            popoverLeft: 0,
             groups: [
                 { id: 1, name: "Group 1", quantity: 5, img: "https://i.imgur.com/gEKsypv.jpg" },
                 { id: 2, name: "Group 2", quantity: 5, img: "https://i.imgur.com/gEKsypv.jpg" },
@@ -258,10 +259,39 @@ export default {
         handleClickAction(id, event) {
             this.selectedItem = id;
             const rect = event.target.getBoundingClientRect();
-            const x = rect.left;
-            const y = rect.top;
-            this.popoverRight = x - 1216 + 'px';
-            this.popoverTop = y - 90 + 'px';
+            const mouseX = rect.left;
+            const mouseY = rect.top;
+
+            const windowWidth = window.innerWidth + window.scrollX;
+            const windowHeight = window.innerHeight + window.scrollY;
+
+            const popupWidth = 180;
+            const popupHeight = 120;
+
+            let popupLeft, popupTop;
+
+            if (mouseX + popupWidth > windowWidth) {
+                popupLeft = mouseX - popupWidth;
+            } else {
+                popupLeft = mouseX;
+            }
+
+            if (mouseY + popupHeight > windowHeight) {
+                popupTop = mouseY - popupHeight;
+            } else {
+                popupTop = mouseY;
+            }
+
+            if (popupLeft < window.scrollX) {
+                popupLeft = window.scrollX;
+            }
+
+            if (popupTop < window.scrollY) {
+                popupTop = window.scrollY;
+            }
+
+            this.popoverLeft = popupLeft + 'px';
+            this.popoverTop = popupTop + 'px';
             event.stopPropagation();
         },
         quitGroup(id) {

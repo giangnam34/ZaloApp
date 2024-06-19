@@ -1,6 +1,7 @@
 package com.essay.zaloapp.services;
 
 import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewChatMessageRequest;
+import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewRoomRequest;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.UpdateChatMessageRequest;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.ChatMessageResponse;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.ChatNotification;
@@ -15,12 +16,13 @@ public interface ChatMessageService {
 
     ChatMessageServiceImpl.GetAllRooms getAllRooms(Long userId, String sortOrder) throws Exception;
 
+    List<Long> getListIdsByListPhoneNumber(List<String> usersPhoneNumber) throws Exception;
+
     ChatMessageServiceImpl.GetARoomInfo getRoomInfo(Long userId, Long roomId) throws Exception;
 
     String deleteRoom(Long userId, Long roomId);
 
-    String createRoom(Long senderId, List<Long> receiverIds);
-
+    String createRoom(Long senderId, AddNewRoomRequest addNewRoomRequest);
 
     String addUsersToRoom(Long userId, Long roomId, List<String> usersPhoneNumber);
 

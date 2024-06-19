@@ -25,6 +25,7 @@ public class MessageChat {
 
 	private Date updatedAt;
 
+	@Column(length = 15000)
 	private String content;
 
 	@Column(name = "isSystem", nullable = false, columnDefinition = "boolean default false")

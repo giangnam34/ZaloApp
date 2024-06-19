@@ -32,4 +32,7 @@ public interface MessageChatRepository extends JpaRepository<MessageChat, Long> 
 
     @Query("SELECT mc FROM MessageChat mc LEFT JOIN FETCH mc.reactions WHERE mc.id = :messageChatId")
     MessageChat findByIdWithReactions(@Param("messageChatId") Long messageChatId);
+
+    @Query("SELECT m FROM MessageChat m WHERE m.groupChat.id = :groupId")
+    List<MessageChat> findAllByGroupIdNoPagination(@Param("groupId") Long groupId);
 }

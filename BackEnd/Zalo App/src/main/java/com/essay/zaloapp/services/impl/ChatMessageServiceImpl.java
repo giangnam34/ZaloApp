@@ -4,6 +4,7 @@ import com.essay.zaloapp.domain.enums.ResourceType;
 import com.essay.zaloapp.domain.models.*;
 import com.essay.zaloapp.domain.models.Composite.GroupChatUserId;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewChatMessageRequest;
+import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewRoomRequest;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.UpdateChatMessageRequest;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.ChatMessageResponse;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.ChatNotification;
@@ -228,14 +229,14 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 for (GroupChatUser gcu : groupChatUsersForGetGroupName) {
                     User tester = userRepository.findByPhoneNumber(gcu.getId().getPhoneNumberUser());
                     if (tester.getId() != userId) {
-                        if(groupChatUsersForGetGroupName.size()<=2){
+                        if (groupChatUsersForGetGroupName.size() <= 2) {
                             response.setRoomName(tester.getFullName());
                             response.setAvatar("http://localhost:8181/media/getImage/" + tester.getImageAvatarUrl());
                             break;
                         }
                     }
                 }
-                if(groupChatUsersForGetGroupName.size()>2){
+                if (groupChatUsersForGetGroupName.size() > 2) {
                     response.setAvatar("http://localhost:8181/media/getImage/" + groupChat.getAvatar());
                     response.setRoomName(groupChat.getGroupName());
                 }
@@ -305,6 +306,19 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             return new GetAllRooms("Có lỗi xảy ra trong quá trình thực thi, vui lòng thử lại!", responses);
         }
 
+    }
+
+    @Override
+    public List<Long> getListIdsByListPhoneNumber(List<String> usersPhoneNumber) throws Exception {
+        List<Long> ids = new ArrayList<>();
+        for (String phoneNumber : usersPhoneNumber) {
+            if (!userRepository.existsUserByPhoneNumber(phoneNumber)) {
+                throw new Exception("Người dùng không tồn tại!");
+            }
+            User user = userRepository.findByPhoneNumber(phoneNumber);
+            ids.add(user.getId());
+        }
+        return ids;
     }
 
     @Override
@@ -412,9 +426,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     }
 
     @Override
-    public String createRoom(Long senderId, List<Long> receiverIds) {
+    public String createRoom(Long senderId, AddNewRoomRequest addNewRoomRequest) {
         try {
-            if (receiverIds.size() == 0) {
+            if (addNewRoomRequest.getReceiverIds().size() == 0) {
                 return "Vui lòng gửi danh sách thành viên của phòng!";
             }
 
@@ -422,7 +436,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             User sender = userRepository.findById(senderId);
             if (sender == null) return "Người gửi không tồn tại!";
 
-            for (Long receiverId : receiverIds) {
+            for (Long receiverId : addNewRoomRequest.getReceiverIds()) {
 
                 if (receiverId == senderId) {
                     return "Không thể tự tạo phòng với chính bản thân!";
@@ -432,23 +446,25 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 }
             }
 
-            if (receiverIds.size() == 1) {
-                Long receiverId = receiverIds.get(0);
+            if (addNewRoomRequest.getReceiverIds().size() == 1) {
+                Long receiverId = addNewRoomRequest.getReceiverIds().get(0);
                 String result = checkAndUpdateExistingChat(senderId, receiverId);
                 return result;
 
             }
 
             List<GroupChatUser> testSender = groupChatUserRepository.findAllByPhoneNumberUser(sender.getPhoneNumber());
-            GroupChat groupChat = findExistingGroupChat(testSender, receiverIds);
+            GroupChat groupChat = findExistingGroupChat(testSender, addNewRoomRequest.getReceiverIds());
             boolean existingChat = groupChat != null;
 
             if (!existingChat) {
-                groupChat = createNewGroupChat(receiverIds);
+                groupChat = createNewGroupChat(addNewRoomRequest);
+            }else{
+                return "Nhóm đã tồn tại!";
             }
 
-            addUsersToGroupChat(groupChat, sender, receiverIds, existingChat);
-            return "Tạo cuộc hội thoại thành công!";
+            addUsersToGroupChat(groupChat, sender, addNewRoomRequest.getReceiverIds(), existingChat);
+            return "Tạo nhóm thành công!";
 
         } catch (
                 Exception e) {
@@ -504,40 +520,50 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     }
 
     private GroupChat findExistingGroupChat(List<GroupChatUser> testSender, List<Long> receiverIds) {
-        outerLoop:
+
         for (GroupChatUser senderChatUser : testSender) {
             GroupChat groupChatSender = groupChatRepository.findById(senderChatUser.getId().getGroupId()).orElse(null);
             if (groupChatSender == null) continue;
 
+            List<GroupChatUser> groupChatUsers = groupChatUserRepository.findAllByGroupId(groupChatSender.getId());
+            List<String> groupMemberPhoneNumbers = groupChatUsers.stream()
+                    .map(groupChatUser -> groupChatUser.getId().getPhoneNumberUser())
+                    .collect(Collectors.toList());
+
+            // Tạo danh sách tất cả các thành viên dự kiến (bao gồm người gửi và người nhận)
+            List<String> expectedMemberPhoneNumbers = new ArrayList<>();
             for (Long receiverId : receiverIds) {
-                User receiver = userRepository.findById(receiverId);
-                if (receiver == null) continue;
-
-                List<GroupChatUser> testReceiver = groupChatUserRepository.findAllByPhoneNumberUser(receiver.getPhoneNumber());
-                boolean receiverInChat = testReceiver.stream()
-                        .anyMatch(receiverChatUser -> receiverChatUser.getId().getGroupId().equals(groupChatSender.getId()));
-
-                if (!receiverInChat) {
-                    continue outerLoop;
-                }
+                User user = userRepository.findById(receiverId);
+                expectedMemberPhoneNumbers.add(user.getPhoneNumber());
             }
+            expectedMemberPhoneNumbers.add(senderChatUser.getId().getPhoneNumberUser());
 
-            return groupChatSender;
+            // Kiểm tra số lượng thành viên và sự tồn tại của tất cả các thành viên trong nhóm
+            if (groupMemberPhoneNumbers.size() == expectedMemberPhoneNumbers.size() && groupMemberPhoneNumbers.containsAll(expectedMemberPhoneNumbers)) {
+                return groupChatSender;
+            }
         }
         return null;
     }
 
-    private GroupChat createNewGroupChat(List<Long> receiverIds) {
+    private GroupChat createNewGroupChat(AddNewRoomRequest addNewRoomRequest) {
         GroupChat groupChat = new GroupChat();
-        User firstReceiver = userRepository.findById(receiverIds.get(0));
+        User firstReceiver = userRepository.findById(addNewRoomRequest.getReceiverIds().get(0));
         if (firstReceiver == null) throw new IllegalArgumentException("Người nhận đầu tiên không tồn tại!");
 
-
-        if (receiverIds.size() == 1) {
+        if (addNewRoomRequest.getReceiverIds().size() == 1) {
             groupChat.setGroupName(firstReceiver.getFullName());
+            groupChat.setAvatar(firstReceiver.getImageAvatarUrl());
+        } else {
+            if (addNewRoomRequest.getGroupName().isEmpty()) {
+                throw new IllegalArgumentException("Tên nhóm không được để trống!");
+            } else if (addNewRoomRequest.getGroupAvatarFile().isEmpty() && addNewRoomRequest.getGroupAvatarFile() == null) {
+                throw new IllegalArgumentException("Avatar của nhóm không được để trống!");
+            } else {
+                groupChat.setGroupName(addNewRoomRequest.getGroupName());
+                groupChat.setAvatar(fileStorageService.storeFile(addNewRoomRequest.getGroupAvatarFile()));
+            }
         }
-        groupChat.setGroupName("Group with " + receiverIds.size() + 1 + " members");
-        groupChat.setAvatar(firstReceiver.getImageAvatarUrl());
         return groupChatRepository.save(groupChat);
     }
 

@@ -8,7 +8,7 @@
 			@fetch-messages="fetchMessages($event.detail[0])" :templates-text="JSON.stringify(templatesText)"
 			@delete-message="deleteMessage($event.detail[0])" @send-message-reaction="sendMessageReaction($event.detail[0])"
 			:theme="theme" @room-info="showRoomInfo($event.detail[0])" @edit-message="editMessage($event.detail[0])"
-			@room-action-handler="roomActionHandler($event.detail[0])"
+			@room-action-handler="roomActionHandler($event.detail[0])" @add-room="addRoom($event.detail[0])"
 			@menu-action-handler="menuActionHandler($event.detail[0])" :emoji-data-source="emojiDataSource" />
 		<v-dialog class="dialog-container-user" v-model="showPopUpInfoRoomWith2Members" max-width="352px"
 			@click:outside="closePopupInfoRoom">
@@ -141,7 +141,8 @@
 				<v-card-text class="dialog-content">
 					<div class="pt-4 pl-4 pr-4">
 						<input type="text" v-model="searchText" placeholder="Tìm kiếm theo tên" class="search-input" />
-						<div v-if="addedFriends.length !== 0"><span>Đã chọn để thêm vào nhóm</span></div>
+						<div v-if="addedFriends.length !== 0"><span>Đã chọn để thêm vào nhóm ({{ addedFriends.length }} bạn
+								bè)</span></div>
 						<div class="update-file-container" style="height:100px" v-if="addedFriends.length !== 0">
 							<div v-for="friend in addedFriends" v-bind:key="friend.phoneNumber" class="position-relative">
 								<div class="friend-info cursor-pointer m-2" @click="deleteFriendTag(friend)">
@@ -157,9 +158,9 @@
 								</div>
 							</div>
 						</div>
-						<div><span>Danh sách bạn bè</span></div>
+						<div><span>Danh sách bạn bè ({{ listFriends.length }} bạn bè)</span></div>
 						<div class="friend-list-container">
-							<div v-for="friend in filteredFriends" v-bind:key="friend.phoneNumber"
+							<div v-for="friend in filteredFriendsForInvite" v-bind:key="friend.phoneNumber"
 								class="position-relative">
 								<div class="friend-info friend-container" @click="addFriendTag(friend)">
 									<div class="avatar-container">
@@ -178,6 +179,85 @@
 					<div class="profile-action" @click="addUsersToGroup">
 						<div class="items-center text-center cursor-pointer bg-blue-400 rounded-lg h-10 mx-4 px-4 py-2">
 							Thêm vào nhóm
+						</div>
+					</div>
+				</v-card-text>
+			</v-card>
+		</v-dialog>
+		<v-dialog class="dialog-container" v-model="showPopUpCreateRoom" max-width="500px"
+			@click:outside="closeCreateRoomDialog">
+			<v-card class="dialog-component">
+				<v-card-title class="dialog-title">
+					<h2 class="title">Tạo nhóm mới
+						<div class="icon-close" @click="closeCreateRoomDialog"><font-awesome-icon icon="fa-solid fa-x" />
+						</div>
+					</h2>
+				</v-card-title>
+				<hr style="border: none; border-bottom: 1px solid #ccc;">
+				<v-card-text class="dialog-content">
+					<div class="create_group_header">
+						<div class="relative">
+							<div style="top: 57px; left: -1px; position: absolute; pointer-events: none;"></div>
+							<div class="create_group_avatar">
+								<input type="file" @change="handleFileChange" ref="groupAvatarFile"
+									style="display: none;" />
+								<div v-if="groupAvatarFile === null" @click="getFileGroupAvatar"
+									class="cursor-pointer flex justify-center items-center w-100 h-100">
+									<font-awesome-icon icon="fa-solid fa-camera" />
+								</div>
+								<div v-else @click="getFileGroupAvatar">
+									<img :src="getUrl(groupAvatarFile)" alt="Selected Image" class="cursor-pointer" />
+								</div>
+							</div>
+						</div>
+						<div class="create_group_input">
+							<span class="span_input">
+								<input type="text" placeholder="Nhập tên nhóm..." maxlength="50" class="input_name"
+									v-model="groupName">
+							</span>
+						</div>
+					</div>
+					<div class="pt-4 pl-4 pr-4">
+						<input type="text" v-model="searchText" placeholder="Tìm kiếm theo tên" class="search-input" />
+						<div v-if="addedFriends.length !== 0"><span>Đã chọn để thêm vào nhóm ({{ addedFriends.length }} bạn
+								bè)</span></div>
+						<div class="update-file-container" style="height:100px" v-if="addedFriends.length !== 0">
+							<div v-for="friend in addedFriends" v-bind:key="friend.phoneNumber" class="position-relative">
+								<div class="friend-info cursor-pointer m-2" @click="deleteFriendTag(friend)">
+									<div :class="{ 'wrap': shouldWrap }" class="detail" style="border: 1px solid #ccc;
+                                                           border-radius: 8px;
+                                                           display: flex;
+                                                           justify-content: space-between;
+                                                           align-items: center;
+                                                           padding: 8px;">
+										<span class="color-blue">{{ friend.userName }}
+											<font-awesome-icon icon="fa-solid fa-x" /></span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div><span>Danh sách bạn bè ({{ listFriendsForCreateRoom.length }} bạn bè)</span></div>
+						<div class="friend-list-container">
+							<div v-for="friend in filteredFriendsForCreateRoom" v-bind:key="friend.phoneNumber"
+								class="position-relative">
+								<div class="friend-info friend-container" @click="addFriendTag(friend)">
+									<div class="avatar-container">
+										<div class="avatar-wrapper">
+											<img :src="friend.imageAvatar" class="avatar object-cover object-bottom">
+										</div>
+									</div>
+									<div class="detail">
+										<span>{{ friend.userName }}</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="mt-4"></div>
+					<div class="profile-action" @click="confirmCreateRoom"
+						:class="{ 'disabled': !checkValidForCreateRoom }">
+						<div class="items-center text-center cursor-pointer bg-blue-400 rounded-lg h-10 mx-4 px-4 py-2">
+							Tạo nhóm
 						</div>
 					</div>
 				</v-card-text>
@@ -204,14 +284,23 @@ export default {
 		// UserInfo
 	},
 	computed: {
-		filteredFriends() {
+		filteredFriendsForInvite() {
 			const normalizedSearchText = this.searchText.toLowerCase();
 			return this.listFriends.filter(friend =>
 				friend.userName.toLowerCase().includes(normalizedSearchText)
 			);
 		},
+		filteredFriendsForCreateRoom() {
+			const normalizedSearchText = this.searchText.toLowerCase();
+			return this.listFriendsForCreateRoom.filter(friend =>
+				friend.userName.toLowerCase().includes(normalizedSearchText)
+			);
+		},
 		hasSystemMessage() {
 			return this.messages.some(message => message.system);
+		},
+		checkValidForCreateRoom() {
+			return this.addedFriends.length >= 2 && this.groupAvatarFile !== null && this.groupName !== "";
 		}
 	},
 	setup() {
@@ -232,6 +321,7 @@ export default {
 			listFriends: [],
 			addedFriends: [],
 			searchText: "",
+			groupName: "",
 			theme: 'light',
 			currentRoom: null,
 			currentRoomInfo: null,
@@ -269,7 +359,10 @@ export default {
 			showPopUpInfoRoomWith2Members: false,
 			showPopUpInfoRoomWithMembers: false,
 			showPopUpInviteUserToRoom: false,
+			showPopUpCreateRoom: false,
+			listFriendsForCreateRoom: [],
 			displayedDate: '',
+			groupAvatarFile: null,
 			emojiDataSource: "https://cdn.jsdelivr.net/npm/emoji-picker-element-data@%5E1/en/emojibase/data.json"
 		}
 	},
@@ -345,7 +438,8 @@ export default {
 			// console.log("Log first");
 			console.log("Result: ");
 			console.log(result.data);
-			const messages = result.data.chatMessageResponses;
+			let messages = result.data.chatMessageResponses;
+			messages = messages.filter(message => !(message.system === true && message.deleted === true));
 			messages.forEach(element => {
 				element.files.forEach(file => {
 					delete file.progress;
@@ -447,6 +541,77 @@ export default {
 			}
 		},
 
+		async addRoom() {
+			console.log("Enter add room");
+			this.addedFriends = [];
+			await this.getListOfFriendsForCreateRoom();
+			this.showPopUpCreateRoom = true;
+		},
+		async confirmCreateRoom() {
+			if (!this.checkValidForCreateRoom) return;
+			console.log("zo");
+			const formData = new FormData();
+			formData.append('groupName', this.groupName);
+			formData.append('groupAvatarFile', this.groupAvatarFile);
+			const receiversPhoneNumber= this.addedFriends.map(friend => friend.phoneNumber);
+			console.log(receiversPhoneNumber);
+			formData.append('receiversPhoneNumber', JSON.stringify(receiversPhoneNumber));
+			try {
+				const result = await axios.post(`http://localhost:8181/v1/chat/create-room`, formData, {
+					headers: {
+						'Content-Type': 'multipart/form-data'
+					}
+				});
+				if (result.status === 200) {
+					console.log("zo tiep");
+					this.toast.success(result.data, { timeout: 1500 });
+					this.closeCreateRoomDialog();
+					this.fetchMoreRooms();
+				} else {
+					this.toast.error(result.data, { timeout: 1500 });
+				}
+				// const room 
+			} catch (error) {
+				if (error.response) {
+					if (error.response.status === 400) {
+						this.toast.error(error.response.data, { timeout: 1500 });
+					} else {
+						this.toast.error(error.response.data, { timeout: 1500 });
+					}
+				} else if (error.request) {
+					this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+				} else {
+					this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+				}
+			}
+		},
+		closeCreateRoomDialog() {
+			this.showPopUpCreateRoom = false;
+			this.addedFriends = [];
+			this.groupAvatarFile = null;
+			this.groupName = "";
+		},
+
+		getFileGroupAvatar() {
+			console.log("Gọi hàm: openFilePicker");
+			const fileInput = this.$refs.groupAvatarFile;
+			if (fileInput) {
+				fileInput.click();
+			}
+		},
+		handleFileChange() {
+			console.log("Gọi hàm: handleFileChange");
+			const selectedFile = event.target.files[0];
+			this.groupAvatarFile = selectedFile;
+		},
+		getUrl(file) {
+			try {
+				console.log("Gọi hàm: getUrl");
+				return URL.createObjectURL(file);
+			} catch (error) {
+				console.log("Hàm getUrl lỗi rồi");
+			}
+		},
 		async callApiUpdateMessage(roomId, message) {
 			// const form = new FormData();
 			// form.append('roomId', 1);
@@ -659,9 +824,19 @@ export default {
 				}
 			}
 		},
+
 		closePopupInfoRoom() {
-			this.showPopUpInfoRoomWith2Members = false;
-			this.showPopUpInfoRoomWithMembers = false;
+			if (this.showPopUpInfoRoomWithMembers) {
+				if (this.showPopUpInfoRoomWith2Members) {
+					this.showPopUpInfoRoomWith2Members = false;
+				} else {
+					this.showPopUpInfoRoomWithMembers = false;
+					this.showPopUpInfoRoomWith2Members = false;
+				}
+			} else {
+				this.showPopUpInfoRoomWith2Members = false;
+				this.showPopUpInfoRoomWithMembers = false;
+			}
 		},
 
 		roomActionHandler({ roomId, action }) {
@@ -684,7 +859,14 @@ export default {
 				this.inviteUser(room);
 			}
 		},
+		async showUserInfoDialog(friend) {
+			console.log(friend);
+			await this.getUserInfo(friend._id);
 
+			this.formattedBirthday();
+
+			this.showPopUpInfoRoomWith2Members = true;
+		},
 		async getListOfFriends(room) {
 			console.log("Gọi hàm: getListOfFriends");
 			try {
@@ -714,9 +896,43 @@ export default {
 				}
 			}
 		},
+		async getListOfFriendsForCreateRoom() {
+			try {
+				const response = await axios.get(`users/getAllFriendUser`, {
+					headers: {
+						'Authorization': localStorage.getItem("token")
+					}
+				});
+
+				if (response.status === 200) {
+
+					this.listFriendsForCreateRoom = response.data;
+				} else {
+					console.error(response.data);
+					this.toast.error(response.data, { timeout: 1500 });
+				}
+			} catch (error) {
+				if (error.response) {
+					if (error.response.status === 400) {
+						this.toast.error(error.response.data, { timeout: 1500 });
+					} else {
+						this.toast.error(error.response.data, { timeout: 1500 });
+					}
+				} else if (error.request) {
+					this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+				} else {
+					this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+				}
+			}
+		},
 		deleteFriendByPhoneNumber(phoneNumber) {
 			console.log("Gọi hàm: deleteFriendByPhoneNumber");
-			this.listFriends = this.listFriends.filter(friend => friend.phoneNumber !== phoneNumber);
+			if (this.showPopUpInviteUserToRoom) {
+				this.listFriends = this.listFriends.filter(friend => friend.phoneNumber !== phoneNumber);
+			} else if (this.showPopUpCreateRoom) {
+				this.listFriendsForCreateRoom = this.listFriendsForCreateRoom.filter(friend => friend.phoneNumber !== phoneNumber);
+			}
+
 		},
 		addFriendTag(friend) {
 			this.addedFriends.push(friend);
@@ -728,10 +944,18 @@ export default {
 				this.addedFriends.splice(indexInTag, 1);
 			}
 
-			const indexInFriends = this.listFriends.findIndex(existingFriend => existingFriend.phoneNumber === friend.phoneNumber);
-			if (indexInFriends === -1) {
-				this.listFriends.push(friend);
+			if (this.showPopUpInviteUserToRoom) {
+				const indexInFriends = this.listFriends.findIndex(existingFriend => existingFriend.phoneNumber === friend.phoneNumber);
+				if (indexInFriends === -1) {
+					this.listFriends.push(friend);
+				}
+			} else if (this.showPopUpCreateRoom) {
+				const indexInFriends = this.listFriendsForCreateRoom.findIndex(existingFriend => existingFriend.phoneNumber === friend.phoneNumber);
+				if (indexInFriends === -1) {
+					this.listFriendsForCreateRoom.push(friend);
+				}
 			}
+
 		},
 		callToSpecificUser(room) {
 			console.log("Call function callToSpecificUser");
@@ -746,6 +970,7 @@ export default {
 			try {
 				console.log(room);
 				await this.getListOfFriends(room);
+				this.addedFriends = [];
 				this.currentRoomInfo = room;
 				this.showPopUpInviteUserToRoom = true;
 			} catch (exception) {
@@ -768,9 +993,18 @@ export default {
 				} else {
 					this.toast.error(result.data, { timeout: 1500 });
 				}
-			} catch (exception) {
-				console.log("Loi roi");
-				console.log(exception);
+			} catch (error) {
+				if (error.response) {
+					if (error.response.status === 400) {
+						this.toast.error(error.response.data, { timeout: 1500 });
+					} else {
+						this.toast.error(error.response.data, { timeout: 1500 });
+					}
+				} else if (error.request) {
+					this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+				} else {
+					this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+				}
 			}
 		},
 		closeChooseFriendDialog() {
@@ -1249,6 +1483,69 @@ body {
 			position: relative;
 			height: auto;
 
+			.create_group_header {
+				height: 80px;
+				padding-top: 0;
+				margin-bottom: -20px;
+				padding: 16px 16px 0;
+				display: flex;
+
+				.create_group_avatar {
+					width: 46px;
+					height: 46px;
+					border-radius: 50%;
+					border: 1px solid #d6dbe1;
+					font-size: 1.5rem;
+					font-weight: 400;
+					line-height: 1.5;
+					color: #7589a3;
+					overflow: hidden;
+					justify-content: center;
+					align-items: center;
+				}
+
+				.create_group_input {
+					margin-left: 10px;
+					flex-grow: 1;
+					padding-top: 4px;
+
+					.span_input {
+						border-top: none;
+						border-left: none;
+						border-right: none;
+						border-radius: 0;
+						height: 38px;
+						line-height: 38px;
+						display: flex;
+						overflow: hidden;
+						background: #fff;
+						position: relative;
+						width: 100%;
+						border: 1px solid #d6dbe1;
+						box-sizing: border-box;
+
+						.input_name {
+							padding: 0;
+							box-sizing: border-box;
+							list-style: none;
+							position: relative;
+							width: 100%;
+							color: #081c36;
+							background-image: none;
+							border: none;
+							outline: none;
+							border-radius: 4px;
+							transition: all .3s;
+							font-size: .875rem;
+							font-weight: 400;
+							line-height: 1.5;
+							background: transparent;
+							padding-left: 8px;
+						}
+					}
+				}
+			}
+
 			.text-sea-green {
 				color: #0077cc;
 			}
@@ -1397,5 +1694,10 @@ body {
 
 .position-relative {
 	position: relative;
+}
+
+.disabled {
+	pointer-events: none;
+	opacity: 0.5;
 }
 </style>

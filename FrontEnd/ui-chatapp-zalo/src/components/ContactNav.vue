@@ -47,6 +47,17 @@
                                 <span>Lời mời kết bạn</span>
                             </p>
                         </div>
+                        <div class="menu-item"
+                            :class="{ 'selected': selectedMenuItem === 'blockList', 'hovered': hoveredItem === 'blockList', 'hovering': selectedMenuItem === 'blockList' }"
+                            @mouseenter="!isSelected('blockList') && (hoveredItem = 'blockList')"
+                            @mouseleave="hoveredItem = ''" @click="selectMenuItem('blockList')">
+                            <a id="block-list-icon">
+                                <font-awesome-icon icon="fa-solid fa-ban" />
+                            </a>
+                            <p class="menu-name">
+                                <span>Danh sách đã chặn</span>
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -60,6 +71,9 @@
             </div>
             <div class="set-width" v-if="selectedMenuItem === 'friendRequests'">
                 <InvitationFriendManage></InvitationFriendManage>
+            </div>
+            <div class="set-width" v-if="selectedMenuItem === 'blockList'">
+                <BlockList></BlockList>
             </div>
         </div>
         <v-dialog class="dialog-container" v-model="showVisibleFindFriendDialog" max-width="500px"
@@ -191,6 +205,7 @@
 import axios from 'axios';
 import FriendList from './FriendList.vue';
 import GroupList from './GroupList.vue';
+import BlockList from './BlockList.vue';
 import InvitationFriendManage from './InvitationFriendManage.vue';
 import { format, parseISO } from 'date-fns';
 import viLocale from 'date-fns/locale/vi';
@@ -199,7 +214,8 @@ export default {
     components: {
         FriendList,
         GroupList,
-        InvitationFriendManage
+        InvitationFriendManage,
+        BlockList
     },
     created() {
         const userString = localStorage.getItem('user');
@@ -556,6 +572,10 @@ export default {
 
             .menu-contact .menu-item .menu-name {
                 font-weight: bold;
+            }
+
+            #request-list-icon, #block-list-icon{
+                width: 20px;
             }
 
             .menu-item {

@@ -25,6 +25,7 @@ public class Comment {
     private Boolean isDelete;
 
     // Nội dung comment
+    @Column(length = 15000)
     private String contentComment;
 
     @ManyToOne

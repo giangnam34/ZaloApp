@@ -1,19 +1,13 @@
 package com.essay.zaloapp.services.impl;
 
-import com.essay.zaloapp.Constant.Message;
 import com.essay.zaloapp.domain.enums.FriendStatus;
-import com.essay.zaloapp.domain.enums.ResourceType;
 import com.essay.zaloapp.domain.models.*;
 import com.essay.zaloapp.domain.models.Composite.FriendsId;
+import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewRoomRequest;
 import com.essay.zaloapp.domain.payload.request.Friend.FriendRequest;
 import com.essay.zaloapp.domain.payload.response.Authorize.InfoUser;
-import com.essay.zaloapp.domain.payload.response.ChatMessage.ChatMessageResponse;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.ChatNotification;
-import com.essay.zaloapp.domain.payload.response.ChatMessage.FileData;
-import com.essay.zaloapp.domain.payload.response.ChatMessage.ReplyMessageResponse;
 import com.essay.zaloapp.domain.payload.response.Friend.GetAllInviteFriendResponse;
-import com.essay.zaloapp.domain.payload.response.RoomChat.StatusOfUser;
-import com.essay.zaloapp.domain.payload.response.RoomChat.UserOfRoom;
 import com.essay.zaloapp.repository.*;
 import com.essay.zaloapp.services.ChatMessageService;
 import com.essay.zaloapp.services.FriendService;
@@ -129,9 +123,11 @@ public class FriendServiceImpl implements FriendService {
                     friends.setFriendFrom(new Date(new Date().getTime() + 7 * 60 * 60000));
                     friendsRepository.save(friends);
 
+                    AddNewRoomRequest addNewRoomRequest = new AddNewRoomRequest();
                     List<Long> ids = new ArrayList<>();
                     ids.add(user1.getId());
-                    chatMessageService.createRoom(userId, ids);
+                    addNewRoomRequest.setReceiverIds(ids);
+                    chatMessageService.createRoom(userId, addNewRoomRequest);
                     return ResponseEntity.ok("Chấp nhận lời mời kết bạn thành công!!!");
                 } else {
                     friendsRepository.delete(friends);
@@ -246,7 +242,7 @@ public class FriendServiceImpl implements FriendService {
                 List<Long> groupChatIds = new ArrayList<>();
 
                 for (GroupChatUser groupChatUser1 : groupChatUserList1) {
-                    for(GroupChatUser groupChatUser2 : groupChatUserList2) {
+                    for (GroupChatUser groupChatUser2 : groupChatUserList2) {
                         if (groupChatUser1.getId().getGroupId() == groupChatUser2.getId().getGroupId()) {
                             groupChatIds.add(groupChatUser1.getId().getGroupId());
                         }
@@ -255,9 +251,9 @@ public class FriendServiceImpl implements FriendService {
 
                 Long groupChatId = null;
 
-                for(Long id : groupChatIds){
+                for (Long id : groupChatIds) {
                     List<GroupChatUser> check = groupChatUserRepository.findAllByGroupId(id);
-                    if(check.size()==2){
+                    if (check.size() == 2) {
                         groupChatId = id;
                         break;
                     }
@@ -286,7 +282,7 @@ public class FriendServiceImpl implements FriendService {
             List<Long> groupChatIds = new ArrayList<>();
 
             for (GroupChatUser groupChatUser1 : groupChatUserList1) {
-                for(GroupChatUser groupChatUser2 : groupChatUserList2) {
+                for (GroupChatUser groupChatUser2 : groupChatUserList2) {
                     if (groupChatUser1.getId().getGroupId() == groupChatUser2.getId().getGroupId()) {
                         groupChatIds.add(groupChatUser1.getId().getGroupId());
                     }
@@ -295,9 +291,9 @@ public class FriendServiceImpl implements FriendService {
 
             Long groupChatId = null;
 
-            for(Long id : groupChatIds){
+            for (Long id : groupChatIds) {
                 List<GroupChatUser> check = groupChatUserRepository.findAllByGroupId(id);
-                if(check.size()==2){
+                if (check.size() == 2) {
                     groupChatId = id;
                     break;
                 }
@@ -399,4 +395,94 @@ public class FriendServiceImpl implements FriendService {
             return ResponseEntity.badRequest().body("Có lỗi xảy ra. Vui lòng thử lại!");
         }
     }
+
+    @Override
+    public ResponseEntity<?> listAllFriendIsBlockByUser(Long userId) throws Exception {
+        try {
+            List<Friends> friendsList = friendsRepository.findByFriendsIdUser1(userId);
+            friendsList.addAll(friendsRepository.findByFriendsIdUser2(userId));
+            List<InfoUser> result = new ArrayList<>();
+            for (Friends friend : friendsList) {
+                if (friend.getFriendStatus().equals(FriendStatus.ISBlock) &&
+                        ((friend.getIsBlock() == 1 && Objects.equals(userId, friend.getUser1().getId())) ||
+                                (friend.getIsBlock() == 2 && Objects.equals(userId, friend.getUser2().getId())))) {
+                    result.add(new InfoUser(Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getFullName() : friend.getUser1().getFullName(),
+                            "http://localhost:8181/v1/users/imageAvatarAnotherUser/" + (Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getPhoneNumber() : friend.getUser1().getPhoneNumber()),
+                            Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getPhoneNumber() : friend.getUser1().getPhoneNumber()));
+                }
+            }
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Có lỗi xảy ra. Vui lòng thử lại!");
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> unBlockFriendUser(Long userId, FriendRequest friendRequest) throws Exception {
+        try {
+            User user1 = userRepository.findById(userId);
+            if (!user1.getPhoneNumber().equals(friendRequest.getFromPhoneNumberUser()) || friendRequest.getFromPhoneNumberUser().equals(friendRequest.getToPhoneNumberUser())) {
+                return ResponseEntity.status(401).body("Bạn không có quyền để thực hiện hành động này!");
+            }
+            if (friendRequest.getToPhoneNumberUser().length() < 10) {
+                return ResponseEntity.badRequest().body("Số điện thoại không hợp lệ!");
+            }
+            User user2 = userRepository.findByPhoneNumber(friendRequest.getToPhoneNumberUser());
+            if (user2 == null) {
+                return ResponseEntity.badRequest().body("Hành động không hợp lệ!!!");
+            }
+            if (user1.getId() > user2.getId()) {
+                User temp = user1;
+                user1 = user2;
+                user2 = temp;
+            }
+
+            FriendsId friendsId = new FriendsId(user1.getId(), user2.getId());
+            if (friendsRepository.existsFriendsByFriendsId(friendsId)) {
+                Friends friends = friendsRepository.findByFriendsId(friendsId);
+                if (friends.getFriendStatus().equals(FriendStatus.ISBlock) &&
+                        ((friends.getIsBlock() == 1 && Objects.equals(user1.getId(), userId)) ||
+                                (friends.getIsBlock() == 2 && Objects.equals(user2.getId(), userId)))) {
+                    friends.setFriendStatus(FriendStatus.IsFriend);
+                    friends.setIsBlock(0L);
+                    friendsRepository.save(friends);
+
+                    List<GroupChatUser> groupChatUserList1 = groupChatUserRepository.findByIdPhoneNumberUser(user1.getPhoneNumber());
+                    List<GroupChatUser> groupChatUserList2 = groupChatUserRepository.findByIdPhoneNumberUser(user2.getPhoneNumber());
+
+                    List<Long> groupChatIds = new ArrayList<>();
+
+                    for (GroupChatUser groupChatUser1 : groupChatUserList1) {
+                        for (GroupChatUser groupChatUser2 : groupChatUserList2) {
+                            if (groupChatUser1.getId().getGroupId().equals(groupChatUser2.getId().getGroupId())) {
+                                List<GroupChatUser> groupChatUsersForTest = groupChatUserRepository.findAllByGroupId(groupChatUser1.getId().getGroupId());
+                                if (groupChatUsersForTest.size() == 2) {
+                                    groupChatIds.add(groupChatUser1.getId().getGroupId());
+                                }
+                            }
+                        }
+                    }
+
+                    for (Long groupId : groupChatIds) {
+                        List<MessageChat> messages = messageChatRepository.findAllByGroupIdNoPagination(groupId);
+                        for (MessageChat message : messages) {
+                            if (message.getIsSystem()) {
+                                message.setDeleted(true);
+                                messageChatRepository.save(message);
+                            }
+                        }
+                    }
+
+                    return ResponseEntity.ok("Đã bỏ chặn người dùng này thành công!!!");
+                } else {
+                    return ResponseEntity.badRequest().body("Người dùng này không bị chặn bởi bạn!");
+                }
+            } else {
+                return ResponseEntity.badRequest().body("Người dùng này chưa là bạn bè!");
+            }
+        } catch (Exception e) {
+            throw new Exception("Có lỗi xảy ra. Vui lòng thử lại!!!");
+        }
+    }
+
 }

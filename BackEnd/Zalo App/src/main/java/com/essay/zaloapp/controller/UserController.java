@@ -152,11 +152,23 @@ public class UserController {
         return friendService.blockFriendUser(userPrincipal.getId(),friendRequest);
     }
 
+    @PostMapping("/unBlockFriendUser")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> unBlockFriendUser(@RequestBody FriendRequest friendRequest, @AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+        return friendService.unBlockFriendUser(userPrincipal.getId(),friendRequest);
+    }
+
     // Hiển thị danh sách bạn bè
     @GetMapping("/getAllFriendUser")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getAllFriendUser(@AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
         return friendService.listAllFriend(userPrincipal.getId());
+    }
+
+    @GetMapping("/getAllBlockedUser")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> getAllBlockedUser(@AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
+        return friendService.listAllFriendIsBlockByUser(userPrincipal.getId());
     }
 
     @GetMapping("/getListFriendsAreNotInRoom/{roomId}")

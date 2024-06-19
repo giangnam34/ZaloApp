@@ -2,6 +2,7 @@ package com.essay.zaloapp.controller;
 
 import com.essay.zaloapp.domain.models.User;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewChatMessageRequest;
+import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewRoomRequest;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.RTCConnection;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.UpdateChatMessageRequest;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.ChatNotification;
@@ -9,7 +10,10 @@ import com.essay.zaloapp.secruity.UserPrincipal;
 import com.essay.zaloapp.services.ChatMessageService;
 import com.essay.zaloapp.services.ChatService;
 import com.essay.zaloapp.services.impl.ChatMessageServiceImpl;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessagingException;
@@ -22,6 +26,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 
 import java.security.Principal;
@@ -43,6 +48,9 @@ public class ChatController {
 
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MessageMapping("/chat")
     @SendTo("/topic/messages")
@@ -117,11 +125,24 @@ public class ChatController {
         return result.equals("Xóa hội thoại thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
-    @PostMapping("/create-room")
+    @PostMapping(value = "/create-room", produces = MediaType.ALL_VALUE)
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> createRoom(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody List<Long> receiverIds) {
-        String result = chatMessageService.createRoom(userPrincipal.getId(), receiverIds);
-        return result.equals("Tạo cuộc hội thoại thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
+    public ResponseEntity<?> createRoom(@AuthenticationPrincipal UserPrincipal userPrincipal,
+                                        @RequestPart("groupName") String groupName,
+                                        @RequestPart("groupAvatarFile") MultipartFile groupAvatarFile,
+                                        @RequestPart("receiversPhoneNumber") String receiversPhoneNumberJson) {
+        try {
+            List<String> receiversPhoneNumber = objectMapper.readValue(receiversPhoneNumberJson, new TypeReference<List<String>>() {});
+
+            List<Long> ids = chatMessageService.getListIdsByListPhoneNumber(receiversPhoneNumber);
+
+            AddNewRoomRequest addNewRoomRequest = new AddNewRoomRequest(groupName, groupAvatarFile, ids);
+
+            String result = chatMessageService.createRoom(userPrincipal.getId(), addNewRoomRequest);
+            return result.equals("Tạo nhóm thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Gửi format data không đúng!");
+        }
     }
 
     @PostMapping("/add-users-to-room/{roomId}")
