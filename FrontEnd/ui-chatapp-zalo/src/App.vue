@@ -66,7 +66,7 @@ export default {
     TestChat,
     ContactNav,
     ToDo,
-    PostPage
+    PostPage,
   },
   async mounted() {
     await this.checkToken();

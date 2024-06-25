@@ -6,8 +6,9 @@
 			:messages="JSON.stringify(messages)" :messages-loaded="messagesLoaded" :load-first-room="loadFirstRoom"
 			:show-footer="!hasSystemMessage" @send-message="sendMessage($event.detail[0])" :room-info-enabled="roomInfo"
 			@fetch-messages="fetchMessages($event.detail[0])" :templates-text="JSON.stringify(templatesText)"
-			@delete-message="deleteMessage($event.detail[0])" @send-message-reaction="sendMessageReaction($event.detail[0])"
-			:theme="theme" @room-info="showRoomInfo($event.detail[0])" @edit-message="editMessage($event.detail[0])"
+			@delete-message="deleteMessage($event.detail[0])"
+			@send-message-reaction="sendMessageReaction($event.detail[0])" :theme="theme"
+			@room-info="showRoomInfo($event.detail[0])" @edit-message="editMessage($event.detail[0])"
 			@room-action-handler="roomActionHandler($event.detail[0])"
 			@menu-action-handler="menuActionHandler($event.detail[0])" :emoji-data-source="emojiDataSource" />
 		<v-dialog class="dialog-container-user" v-model="showPopUpInfoRoomWith2Members" max-width="352px"
@@ -15,7 +16,8 @@
 			<v-card class="dialog-component-user">
 				<v-card-title class="dialog-title-user">
 					<h2 class="title-user">Thông tin tài khoản
-						<div class="icon-close-user" @click="closePopupInfoRoom"><font-awesome-icon icon="fa-solid fa-x" />
+						<div class="icon-close-user" @click="closePopupInfoRoom"><font-awesome-icon
+								icon="fa-solid fa-x" />
 						</div>
 					</h2>
 				</v-card-title>
@@ -68,7 +70,8 @@
 			<v-card class="dialog-component-user">
 				<v-card-title class="dialog-title-user">
 					<h2 class="title-user">Thông tin nhóm chat
-						<div class="icon-close-user" @click="closePopupInfoRoom"><font-awesome-icon icon="fa-solid fa-x" />
+						<div class="icon-close-user" @click="closePopupInfoRoom"><font-awesome-icon
+								icon="fa-solid fa-x" />
 						</div>
 					</h2>
 				</v-card-title>
@@ -76,7 +79,8 @@
 				<v-card-text class="dialog-content-user">
 					<div class="profile-photo-user">
 						<div class="cover-avatar-user">
-							<img class="cover-image-user" :src="roomDetail.roomAvatar" alt="None" crossorigin="anonymous">
+							<img class="cover-image-user" :src="roomDetail.roomAvatar" alt="None"
+								crossorigin="anonymous">
 						</div>
 						<div class="ava-name-container-user">
 							<div class="avatar-profile-user">
@@ -133,7 +137,8 @@
 			<v-card class="dialog-component">
 				<v-card-title class="dialog-title">
 					<h2 class="title">Mời bạn bè vào nhóm
-						<div class="icon-close" @click="closeChooseFriendDialog"><font-awesome-icon icon="fa-solid fa-x" />
+						<div class="icon-close" @click="closeChooseFriendDialog"><font-awesome-icon
+								icon="fa-solid fa-x" />
 						</div>
 					</h2>
 				</v-card-title>
@@ -143,7 +148,8 @@
 						<input type="text" v-model="searchText" placeholder="Tìm kiếm theo tên" class="search-input" />
 						<div v-if="addedFriends.length !== 0"><span>Đã chọn để thêm vào nhóm</span></div>
 						<div class="update-file-container" style="height:100px" v-if="addedFriends.length !== 0">
-							<div v-for="friend in addedFriends" v-bind:key="friend.phoneNumber" class="position-relative">
+							<div v-for="friend in addedFriends" v-bind:key="friend.phoneNumber"
+								class="position-relative">
 								<div class="friend-info cursor-pointer m-2" @click="deleteFriendTag(friend)">
 									<div :class="{ 'wrap': shouldWrap }" class="detail" style="border: 1px solid #ccc;
                                                            border-radius: 8px;
@@ -184,6 +190,17 @@
 			</v-card>
 		</v-dialog>
 
+		<template>
+			<v-dialog v-model="videoCallDialog" max-width="90%" max-height="90%" persistent class="custom-dialog">
+				<v-card>
+					<v-card-title class="headline">Video Call</v-card-title>
+					<v-card-text>
+						<video-call-component @endCall="closeDialog" />
+					</v-card-text>
+				</v-card>
+			</v-dialog>
+		</template>
+
 	</div>
 </template>
 
@@ -196,12 +213,15 @@ import viLocale from 'date-fns/locale/vi';
 // import UserInfo from './UserInfo.vue';
 import SockJS from 'sockjs-client';
 import Stomp from "webstomp-client";
+import VideoCallComponent from './VideoCallComponent.vue';
+
 // import { register } from '../../vue-advanced-chat/dist/vue-advanced-chat.es.js'
 register()
 
 export default {
 	components: {
 		// UserInfo
+		VideoCallComponent
 	},
 	computed: {
 		filteredFriends() {
@@ -223,6 +243,7 @@ export default {
 	},
 	data() {
 		return {
+			videoCallDialog: false,
 			peerConnection: null,
 			dataChannel: null,
 			socket: null,
@@ -252,6 +273,17 @@ export default {
 				{ name: 'quitRoom', title: 'Quit Room' },
 				// { name: 'deleteRoom', title: 'Delete Room' },
 			],
+			constraints: {
+				video: {
+					frameRate: {
+						ideal: 10,
+						max: 15
+					},
+					width: 1280,
+					height: 720,
+					facingMode: "user"
+				}
+			},
 			messages: [],
 			messagePage: 0,
 			messagesLoaded: false,
@@ -290,6 +322,11 @@ export default {
 	},
 
 	methods: {
+
+		closeDialog() {
+			console.log("closeDialog called"); // Kiểm tra xem phương thức có được gọi không
+			this.videoCallDialog = false;
+		},
 		formattedBirthday() {
 			if (this.userFound && this.userFound.birthDay) {
 				const parsedDate = parseISO(this.userFound.birthDay);
@@ -679,7 +716,8 @@ export default {
 			// console.log("Action", action);
 			const room = this.rooms.find(room => room.roomId === roomId);
 			if (action.name === 'callUser') {
-				this.callToSpecificUser(room);
+				this.videoCallDialog = true;
+				// this.callToSpecificUser(room);
 			} else if (action.name === 'sendMessageToUser') {
 				console.log("Call sendMessageToUser");
 				console.log(this.peerConnection);
@@ -753,6 +791,15 @@ export default {
 				const user = room.users.filter(element => element._id != this.currentUserId);
 				await this.initializeRTCPeerConnection(this.currentUserId);
 				await this.createOffer(user[0]._id);
+				navigator.mediaDevices.getUserMedia(this.constraints).then(async function (stream) {
+					await this.peerConnection.addStream(stream);
+					this.peerConnection.onaddstream = function (event) {
+						const videoElement = document.getElementById('localVideo');
+						videoElement.srcObject = event.stream;
+					}
+				}).catch(function (exception) {
+					console.log(exception);
+				});
 			} catch (exception) {
 				console.log(exception);
 			}
@@ -1442,5 +1489,10 @@ body {
 
 .position-relative {
 	position: relative;
+}
+
+.custom-dialog .v-card {
+	height: 90vh;
+	/* 90% of the viewport height */
 }
 </style>

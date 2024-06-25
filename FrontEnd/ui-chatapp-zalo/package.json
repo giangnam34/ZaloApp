@@ -8,12 +8,14 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@ant-design/icons-vue": "^7.0.1",
     "@fortawesome/fontawesome-svg-core": "^6.4.2",
     "@fortawesome/free-brands-svg-icons": "^6.4.2",
     "@fortawesome/free-regular-svg-icons": "^6.4.2",
     "@fortawesome/free-solid-svg-icons": "^6.4.2",
     "@fortawesome/vue-fontawesome": "^3.0.3",
     "@types/body-parser": "^1.19.3",
+    "ant-design-vue": "^4.2.3",
     "axios": "^1.6.1",
     "body-parser": "^1.20.2",
     "core-js": "^3.8.3",
@@ -73,7 +75,7 @@
       "parser": "@babel/eslint-parser"
     },
     "rules": {
-      "no-unused-vars": "off" 
+      "no-unused-vars": "off"
     }
   },
   "browserslist": [
