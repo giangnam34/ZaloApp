@@ -7,7 +7,6 @@ import Toast from "vue-toastification";
 // Import the CSS or use your own!
 import "vue-toastification/dist/index.css";
 // import store from './vuex'
-
 import './assets/style.css'
 
 /* import the fontawesome core */
@@ -17,6 +16,7 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 import 'vuetify/styles'
+import '@mdi/font/css/materialdesignicons.css'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
@@ -50,6 +50,9 @@ library.add(faUserSecret, faCommentDots, faAddressBook, faToolbox, faGear, faClo
 const vuetify = createVuetify({
     components,
     directives,
+    icons: {
+        iconfont: 'mdi', // Chọn thư viện biểu tượng
+    },
 })
 
 const options = {

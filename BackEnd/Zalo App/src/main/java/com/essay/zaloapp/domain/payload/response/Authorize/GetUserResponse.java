@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -32,4 +33,6 @@ public class GetUserResponse {
     private Boolean isConfirmed = null;
 
     private String fullName = null;
+
+    private Set<String> roles = null;
 }

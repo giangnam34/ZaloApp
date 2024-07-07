@@ -35,7 +35,7 @@ public class UserController {
 
     // Tìm thông tin user
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<?> getUserById(@PathVariable("id") Long id, UserPrincipal principal){
         if (!(principal.getId() == id)) {
             return ResponseEntity.badRequest().body(Message.WRONG_USERID);
@@ -69,7 +69,7 @@ public class UserController {
 
     //Nhận ảnh đại diện
     @GetMapping(value = "/imageAvatar", produces = MediaType.IMAGE_JPEG_VALUE)
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Resource> getImageAvatar(@AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
         return ResponseEntity.ok(userService.getImageAvatar(userPrincipal.getId()));
     }
@@ -86,7 +86,7 @@ public class UserController {
 
     // Nhận ảnh bìa
     @GetMapping(value = "/imageCoverAvatar", produces = MediaType.IMAGE_JPEG_VALUE)
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Resource> getImageCoverAvatar(@AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
         return ResponseEntity.ok(userService.getImageCoverAvatar(userPrincipal.getId()));
     }

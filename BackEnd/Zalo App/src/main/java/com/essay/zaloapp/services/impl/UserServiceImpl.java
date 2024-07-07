@@ -18,6 +18,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -46,7 +49,15 @@ public class UserServiceImpl implements UserService {
             User user = userRepository.findById(id);
 
             if(user != null){
-                return ResponseEntity.ok(mapper.map(user, GetUserResponse.class));
+
+                Set<String> roles = user.getRoles().stream()
+                        .map(role -> role.getName().name())
+                        .collect(Collectors.toSet());
+
+                GetUserResponse response = mapper.map(user, GetUserResponse.class);
+                response.setRoles(roles);
+
+                return ResponseEntity.ok(response);
             }else{
                 return ResponseEntity.badRequest().body(new GetUserResponse());
             }

@@ -5,32 +5,37 @@
     <SignIn @userLoggedIn="updateJWT"></SignIn>
   </div>
   <div v-else class="width-100" style="display: flex;">
-    <MainSidebarNav @pageSelected="updateChosenPage" @userLoggedIn="updateJWT"></MainSidebarNav>
-    <div v-if="chosenPage === 1" class="width-100">
-      <!-- <ChatSidebarNav></ChatSidebarNav>
+    <div v-if="isAdmin" class="width-100" style="display: flex;">
+      <AdminPage @userLoggedIn="updateJWT"></AdminPage>
+    </div>
+    <div v-else class="width-100" style="display: flex;">
+      <MainSidebarNav @pageSelected="updateChosenPage" @userLoggedIn="updateJWT"></MainSidebarNav>
+      <div v-if="chosenPage === 1" class="width-100">
+        <!-- <ChatSidebarNav></ChatSidebarNav>
       <HomeChat></HomeChat> -->
-      <TestChat></TestChat>
-    </div>
-    <div v-if="chosenPage === 2" class="width-100">
-      <ContactNav></ContactNav>
-    </div>
-    <div v-if="chosenPage === 3" class="width-100">
-      <ToDo></ToDo>
-    </div>
-    <div v-if="chosenPage === 4" class="width-100">
-      <ChatSidebarNav></ChatSidebarNav>
-      <HomeChat></HomeChat>
-    </div>
-    <div v-if="chosenPage === 5" class="width-100">
-      <ChatSidebarNav></ChatSidebarNav>
-      <HomeChat></HomeChat>
-    </div>
-    <div v-if="chosenPage === 6" class="width-100">
-      <ChatSidebarNav></ChatSidebarNav>
-      <HomeChat></HomeChat>
-    </div>
-    <div v-if="chosenPage === 10" class="width-100 height-100">
-      <PostPage></PostPage>
+        <TestChat></TestChat>
+      </div>
+      <div v-if="chosenPage === 2" class="width-100">
+        <ContactNav></ContactNav>
+      </div>
+      <div v-if="chosenPage === 3" class="width-100">
+        <ToDo></ToDo>
+      </div>
+      <div v-if="chosenPage === 4" class="width-100">
+        <ChatSidebarNav></ChatSidebarNav>
+        <HomeChat></HomeChat>
+      </div>
+      <div v-if="chosenPage === 5" class="width-100">
+        <ChatSidebarNav></ChatSidebarNav>
+        <HomeChat></HomeChat>
+      </div>
+      <div v-if="chosenPage === 6" class="width-100">
+        <ChatSidebarNav></ChatSidebarNav>
+        <HomeChat></HomeChat>
+      </div>
+      <div v-if="chosenPage === 10" class="width-100 height-100">
+        <PostPage></PostPage>
+      </div>
     </div>
   </div>
 </template>
@@ -44,6 +49,7 @@ import ToDo from './components/ToDo.vue';
 import TestChat from './components/ChatComponent.vue';
 import SignIn from './components/SignIn.vue';
 import PostPage from './components/PostPage.vue';
+import AdminPage from './components/AdminPage.vue';
 import VueJwtDecode from 'vue-jwt-decode';
 import axios from 'axios';
 import SockJS from 'sockjs-client';
@@ -56,6 +62,7 @@ export default {
       chosenPage: 1,
       userIsValid: false,
       jwt: '',
+      isAdmin: false,
     }
   },
   components: {
@@ -66,7 +73,8 @@ export default {
     TestChat,
     ContactNav,
     ToDo,
-    PostPage
+    PostPage,
+    AdminPage
   },
   async mounted() {
     await this.checkToken();
@@ -103,7 +111,7 @@ export default {
       var userId = JSON.parse(localStorage.getItem('user'))['id'];
       console.log(userId);
 
-      stompClient.connect({ userId : 'user' + userId},function () {
+      stompClient.connect({ userId: 'user' + userId }, function () {
         var url = stompClient.ws._transport.url;
         console.log(url);
         url = url.replace(
@@ -120,7 +128,7 @@ export default {
             console.log(message);
           }
         )
-        stompClient.send("/app/room", "Hehehe", { userId : 'user' + 2});
+        stompClient.send("/app/room", "Hehehe", { userId: 'user' + 2 });
 
       }
       )
@@ -157,6 +165,7 @@ export default {
               this.userIsValid = false;
             } else {
               this.userIsValid = true;
+              this.isAdmin = user.roles.includes('ROLE_ADMIN');
               // this.subcribeTopicWebSocket();
               // this.subcribeSpecificUserWebSocket();
             }

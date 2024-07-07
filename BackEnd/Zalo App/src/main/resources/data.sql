@@ -105,7 +105,8 @@ INSERT ignore INTO user VALUES
     (97,'2002-12-16 17:00:00','2024-05-16 17:00:00','Hoàng Hải Anh','Avatar96.jfif','Avatar96.jfif',_binary '',_binary '\0','2024-05-16 17:00:00','$2a$12$D0xTq0HXSEMj7Vb86VMDwO4Q99bPi07ZwQbgmcKBLdoTeLqqmp0Ea','0941764911','Male','OFFLINE','2024-05-16 17:00:00'),
     (98,'2002-12-16 17:00:00','2024-05-16 17:00:00','Ngô Khánh Linh','Avatar97.jfif','Avatar97.jfif',_binary '',_binary '\0','2024-05-16 17:00:00','$2a$12$D0xTq0HXSEMj7Vb86VMDwO4Q99bPi07ZwQbgmcKBLdoTeLqqmp0Ea','0976719408','Male','OFFLINE','2024-05-16 17:00:00'),
     (99,'2002-12-16 17:00:00','2024-05-16 17:00:00','Vũ Phương Linh','Avatar98.jfif','Avatar98.jfif',_binary '',_binary '\0','2024-05-16 17:00:00','$2a$12$D0xTq0HXSEMj7Vb86VMDwO4Q99bPi07ZwQbgmcKBLdoTeLqqmp0Ea','0960805127','Female','OFFLINE','2024-05-16 17:00:00'),
-    (100,'2002-12-16 17:00:00','2024-05-16 17:00:00','Đỗ Bảo Ngọc','Avatar99.jfif','Avatar99.jfif',_binary '',_binary '\0','2024-05-16 17:00:00','$2a$12$D0xTq0HXSEMj7Vb86VMDwO4Q99bPi07ZwQbgmcKBLdoTeLqqmp0Ea','0914856276','Male','OFFLINE','2024-05-16 17:00:00');
+    (100,'2002-12-16 17:00:00','2024-05-16 17:00:00','Đỗ Bảo Ngọc','Avatar99.jfif','Avatar99.jfif',_binary '',_binary '\0','2024-05-16 17:00:00','$2a$12$D0xTq0HXSEMj7Vb86VMDwO4Q99bPi07ZwQbgmcKBLdoTeLqqmp0Ea','0914856276','Male','OFFLINE','2024-05-16 17:00:00'),
+    (101,'2002-12-16 17:00:00','2024-05-16 17:00:00','Admin','Avatar99.jfif','Avatar99.jfif',_binary '',_binary '\0','2024-05-16 17:00:00','$2a$12$D0xTq0HXSEMj7Vb86VMDwO4Q99bPi07ZwQbgmcKBLdoTeLqqmp0Ea','0919191919','Male','OFFLINE','2024-05-16 17:00:00');
 
 
 insert ignore into roles values(1,"ROLE_USER");
@@ -212,6 +213,7 @@ insert ignore into user_roles values(97,1);
 insert ignore into user_roles values(98,1);
 insert ignore into user_roles values(99,1);
 insert ignore into user_roles values(100,1);
+insert ignore into user_roles values(101,2);
 
 INSERT ignore INTO `zaloapp`.`category_user` (`id`, `created_at`, `index_category`, `name`, `updated_at`, `phone_number_user`) VALUES ('1', '2024-05-16 12:00:00', '1', 'aaa', '2024-05-16 12:00:00', '1');
 
