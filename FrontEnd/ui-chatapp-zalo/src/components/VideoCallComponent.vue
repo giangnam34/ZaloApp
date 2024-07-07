@@ -2,7 +2,7 @@
   <div class="video-call">
     <div class="video-container">
       <video ref="localVideo" id="localVideo" autoplay playsinline muted></video>
-      <video id="remoteVideo" autoplay playsinline></video>
+      <video ref="remoteVideo" id="remoteVideo" autoplay playsinline></video>
     </div>
     <div class="controls">
       <a-button type="primary" shape="circle" @click="toggleMute" :icon="isMuted ? audioMutedIcon : audioIcon"
@@ -18,8 +18,9 @@
     </div>
   </div>
 </template>
+
 <script setup>
-import { ref, h, defineEmits, onMounted } from 'vue';
+import { ref, h, defineEmits, onMounted, onUnmounted, defineProps, watch } from 'vue';
 import { Button } from 'ant-design-vue';
 import {
   AudioOutlined,
@@ -37,33 +38,46 @@ const audioIcon = h(AudioOutlined);
 const audioMutedIcon = h(AudioMutedOutlined);
 const videoCameraIcon = h(VideoCameraOutlined);
 const videoCameraOffIcon = h(VideoCameraAddOutlined);
-const phoneIcon = h(PhoneOutlined);
 const closeIcon = h(CloseOutlined);
 
 const emit = defineEmits(['endCall']);
 
 const localVideo = ref(null);
-let localStream = null; // Store the stream to access tracks
+const remoteVideo = ref(null);
+const constraints = {
+  video: true,
+  audio: true
+};
+
+const props = defineProps({
+  room: Object,
+  localStream: MediaStream,
+  remoteStream: MediaStream,
+});
+
+watch(() => props.localStream, (localStream) => {
+  handleNewLocalStream(localStream);
+});
+
+watch(() => props.remoteStream, (remoteStream) => {
+  handleNewRemoteStream(remoteStream);
+});
 
 onMounted(() => {
-  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-      .then(stream => {
-        localStream = stream;
-        localVideo.value.srcObject = stream;
-      })
-      .catch(error => {
-        console.error('Error accessing media devices: ', error);
-      });
-  } else {
-    console.error('getUserMedia not supported on your browser');
+  handleNewLocalStream(props.localStream);
+  handleNewRemoteStream(props.remoteStream);
+});
+
+onUnmounted(() => {
+  if (props.localStream) {
+    props.localStream.getTracks().forEach(track => track.stop());
   }
 });
 
 const toggleMute = () => {
   isMuted.value = !isMuted.value;
-  if (localStream) {
-    localStream.getAudioTracks().forEach(track => {
+  if (props.localStream) {
+    props.localStream.getAudioTracks().forEach(track => {
       track.enabled = !isMuted.value;
     });
   }
@@ -71,8 +85,8 @@ const toggleMute = () => {
 
 const toggleVideo = () => {
   isVideoEnabled.value = !isVideoEnabled.value;
-  if (localStream) {
-    localStream.getVideoTracks().forEach(track => {
+  if (props.localStream) {
+    props.localStream.getVideoTracks().forEach(track => {
       track.enabled = isVideoEnabled.value;
     });
   }
@@ -81,7 +95,28 @@ const toggleVideo = () => {
 const handleEndCall = () => {
   emit('endCall');
 };
+
+function handleNewLocalStream(localStream) {
+  if (localStream instanceof MediaStream) {
+    if (localVideo.value) {
+      localVideo.value.srcObject = localStream;
+    }
+  } else {
+    console.error('Provided local stream is not a MediaStream:', localStream);
+  }
+}
+
+function handleNewRemoteStream(remoteStream) {
+  if (remoteStream instanceof MediaStream) {
+    if (remoteVideo.value) {
+      remoteVideo.value.srcObject = remoteStream;
+    }
+  } else {
+    console.error('Provided remote stream is not a MediaStream:', remoteStream);
+  }
+}
 </script>
+
 <style scoped>
 .video-call {
   display: flex;
@@ -99,6 +134,14 @@ const handleEndCall = () => {
   align-items: center;
   width: 100%;
   height: calc(100% - 100px);
+}
+
+video {
+  flex: 1;
+  margin: 0 10px;
+  max-width: 100%;
+  height: auto;
+  border: 2px solid #000;
 }
 
 .controls {

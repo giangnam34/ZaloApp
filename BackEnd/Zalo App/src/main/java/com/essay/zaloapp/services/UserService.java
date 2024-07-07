@@ -4,6 +4,7 @@ import com.essay.zaloapp.domain.models.User;
 import com.essay.zaloapp.domain.payload.request.Authorize.ChangeInfoUserRequest;
 import com.essay.zaloapp.domain.payload.request.Authorize.ChangePhoneNumberUserRequest;
 import com.essay.zaloapp.domain.payload.request.Friend.FriendRequest;
+import com.nimbusds.openid.connect.sdk.federation.policy.language.BooleanOperation;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,4 +37,6 @@ public interface UserService {
     ResponseEntity<?> findUserByPhoneNumber(String phoneNumber) throws Exception;
 
     ResponseEntity<?> findUserById(Long userId) throws Exception;
+
+    Boolean updateUserOfflineActivity(Long id) throws Exception;
 }

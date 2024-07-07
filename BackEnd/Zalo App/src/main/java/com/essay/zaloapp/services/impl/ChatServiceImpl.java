@@ -94,7 +94,6 @@ public class ChatServiceImpl implements ChatService {
             groupChatSender.setId(groupChatSenderId);
             groupChatUserRepository.save(groupChatSender);
 
-
             User receiver = userRepository.findByPhoneNumber(receiverPhoneNumber);
             GroupChatUser groupChatReceiver = new GroupChatUser();
             GroupChatUserId groupChatReceiverId = new GroupChatUserId();

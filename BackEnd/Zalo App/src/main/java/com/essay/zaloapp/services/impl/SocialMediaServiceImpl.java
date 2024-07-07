@@ -212,13 +212,13 @@ public class SocialMediaServiceImpl implements SocialMediaService {
             if(key.getValue().equals(PostUserType.UserLike)) userLikeList.add(key.getKey());
             else if (key.getValue().equals(PostUserType.TagUser)) userTagList.add(key.getKey());
         }
-        getInfoPostResponse.setUserLikeList(userLikeList.stream().map(user -> new InfoUser(user.getFullName(), (user.getImageAvatarUrl() != null && !user.getImageAvatarUrl().isEmpty()) ? "http://localhost:8181/media/getImage/".concat(user.getImageAvatarUrl()) : null, user.getPhoneNumber())).collect(Collectors.toList()));
-        getInfoPostResponse.setUserTagList(userTagList.stream().map(user -> new InfoUser(user.getFullName(), (user.getImageAvatarUrl() != null && !user.getImageAvatarUrl().isEmpty()) ? "http://localhost:8181/media/getImage/".concat(user.getImageAvatarUrl()) : null, user.getPhoneNumber())).collect(Collectors.toList()));
-        getInfoPostResponse.setUserShareList(post.getPostTopList().stream().map(postUser -> new InfoUser(postUser.getUser().getFullName(),postUser.getUser().getImageAvatarUrl(), postUser.getUser().getPhoneNumber())).collect(Collectors.toList()));
+        getInfoPostResponse.setUserLikeList(userLikeList.stream().map(user -> new InfoUser(user.getFullName(), (user.getImageAvatarUrl() != null && !user.getImageAvatarUrl().isEmpty()) ? "http://localhost:8181/media/getImage/".concat(user.getImageAvatarUrl()) : null, user.getPhoneNumber(),post.getUser().getStatus().name())).collect(Collectors.toList()));
+        getInfoPostResponse.setUserTagList(userTagList.stream().map(user -> new InfoUser(user.getFullName(), (user.getImageAvatarUrl() != null && !user.getImageAvatarUrl().isEmpty()) ? "http://localhost:8181/media/getImage/".concat(user.getImageAvatarUrl()) : null, user.getPhoneNumber(), post.getUser().getStatus().name())).collect(Collectors.toList()));
+        getInfoPostResponse.setUserShareList(post.getPostTopList().stream().map(postUser -> new InfoUser(postUser.getUser().getFullName(),postUser.getUser().getImageAvatarUrl(), postUser.getUser().getPhoneNumber(), post.getUser().getStatus().name())).collect(Collectors.toList()));
         getInfoPostResponse.setFiles(post.getResourceList().stream().map(file -> "http://localhost:8181/media/" + (file.getResourceType().equals(ResourceType.Video) ? "getVideo/" : "getImage/")  + file.getResourceValue()).collect(Collectors.toList()));
         getInfoPostResponse.setCreatedAt(formatDate.formatDate(post.getCreatedAt()));
         getInfoPostResponse.setUpdatedAt(formatDate.formatDate(post.getUpdatedAt()));
-        getInfoPostResponse.setUserPost(new InfoUser(post.getUser().getFullName(), "http://localhost:8181/media/getImage/" + post.getUser().getImageAvatarUrl(), post.getUser().getPhoneNumber()));
+        getInfoPostResponse.setUserPost(new InfoUser(post.getUser().getFullName(), "http://localhost:8181/media/getImage/" + post.getUser().getImageAvatarUrl(), post.getUser().getPhoneNumber(), post.getUser().getStatus().name()));
         long nonDeletedCommentCount = post.getCommentList().stream()
                 .filter(comment -> comment.getIsDelete() != true)
                 .count();
@@ -400,7 +400,7 @@ public class SocialMediaServiceImpl implements SocialMediaService {
         try{
             if (!commentRepository.existsCommentById(commentId)) throw new Exception("Bình luận này không tồn tại hoặc người dùng không có quyền xem bình luận này!");
             Comment comment = commentRepository.findById(commentId).get();
-            InfoUser infoUser = new InfoUser(comment.getUser().getFullName(), "http://localhost:8181/media/getImage/" +comment.getUser().getImageAvatarUrl(), comment.getUser().getPhoneNumber());
+            InfoUser infoUser = new InfoUser(comment.getUser().getFullName(), "http://localhost:8181/media/getImage/" +comment.getUser().getImageAvatarUrl(), comment.getUser().getPhoneNumber(), comment.getUser().getStatus().name());
             Set<User> userSet = new HashSet<>();
             for(CommentUser commentUser : comment.getCommentUserList()){
                 userSet.add(commentUser.getUser());
@@ -408,7 +408,7 @@ public class SocialMediaServiceImpl implements SocialMediaService {
             List<InfoUser> infoUserList = new ArrayList<>();
             for (User user : userSet){
                 if (commentUserRepository.findFirstByUserAndCommentOrderByCreatedAtDesc(user,comment).getIsUserLike()){
-                    infoUserList.add(new InfoUser(user.getFullName(),"http://localhost:8181/media/getImage/" + user.getImageAvatarUrl(),user.getPhoneNumber()));
+                    infoUserList.add(new InfoUser(user.getFullName(),"http://localhost:8181/media/getImage/" + user.getImageAvatarUrl(),user.getPhoneNumber(), user.getStatus().name()));
                 }
             }
             List<InfoComment> infoCommentList = comment.getCommentBot().stream().map(commentBot -> {

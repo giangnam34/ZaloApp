@@ -5,8 +5,8 @@
 			:room-actions="JSON.stringify(roomActions)" :menu-actions="JSON.stringify(menuActions)"
 			:messages="JSON.stringify(messages)" :messages-loaded="messagesLoaded" :load-first-room="loadFirstRoom"
 			:show-footer="!hasSystemMessage" @send-message="sendMessage($event.detail[0])" :room-info-enabled="roomInfo"
-			@fetch-messages="fetchMessages($event.detail[0])" :templates-text="JSON.stringify(templatesText)"
-			@delete-message="deleteMessage($event.detail[0])"
+			:show-new-messages-divider="true" @fetch-messages="fetchMessages($event.detail[0])"
+			:templates-text="JSON.stringify(templatesText)" @delete-message="deleteMessage($event.detail[0])"
 			@send-message-reaction="sendMessageReaction($event.detail[0])" :theme="theme"
 			@room-info="showRoomInfo($event.detail[0])" @edit-message="editMessage($event.detail[0])"
 			@room-action-handler="roomActionHandler($event.detail[0])"
@@ -191,14 +191,22 @@
 		</v-dialog>
 
 		<template>
-			<v-dialog v-model="videoCallDialog" max-width="90%" max-height="90%" persistent class="custom-dialog">
-				<v-card>
-					<v-card-title class="headline">Video Call</v-card-title>
-					<v-card-text>
-						<video-call-component @endCall="closeDialog" />
-					</v-card-text>
-				</v-card>
-			</v-dialog>
+			<div>
+				<a-modal v-if="callIncoming" title="Incoming Call" ok-text="Accept" cancel-text="Decline"
+					@ok="acceptCall" @cancel="declineCall">
+					<p>You have an incoming call. Do you want to accept it?</p>
+				</a-modal>
+
+				<v-dialog v-model="videoCallDialog" max-width="90%" max-height="90%" persistent class="custom-dialog">
+					<v-card>
+						<v-card-title class="headline">Video Call</v-card-title>
+						<v-card-text>
+							<video-call-component :room="currentRoomVideoCall" :localStream="localStream"
+								:remoteStream="remoteStream" @endCall="closeDialog" />
+						</v-card-text>
+					</v-card>
+				</v-dialog>
+			</div>
 		</template>
 
 	</div>
@@ -214,6 +222,7 @@ import viLocale from 'date-fns/locale/vi';
 import SockJS from 'sockjs-client';
 import Stomp from "webstomp-client";
 import VideoCallComponent from './VideoCallComponent.vue';
+import { Modal } from 'ant-design-vue';
 
 // import { register } from '../../vue-advanced-chat/dist/vue-advanced-chat.es.js'
 register()
@@ -243,6 +252,11 @@ export default {
 	},
 	data() {
 		return {
+			callIncoming: false,
+			offerData: null,
+			remoteUser: null,
+			localStream: null,
+			remoteStream: null,
 			videoCallDialog: false,
 			peerConnection: null,
 			dataChannel: null,
@@ -279,8 +293,8 @@ export default {
 						ideal: 10,
 						max: 15
 					},
-					width: 1280,
-					height: 720,
+					width: 200,
+					height: 200,
 					facingMode: "user"
 				}
 			},
@@ -307,17 +321,25 @@ export default {
 	},
 
 	created() {
+		document.title = "Hehehe";
 		this.getCurrentUserId();
 		this.fetchMoreRooms();
 		this.subscribeSpecificUserWebSocket();
-		document.addEventListener("visibilitychange", () => {
-			if (document.hidden) {
-				// // console.log("Tab is changed");
-				// Not done
-			} else {
-				// // console.log("Tab is active");
-				// Not done
-			}
+		window.addEventListener("focus", () => {
+			// console.log("Tab is active");
+			this.messages = this.messages.map(message => {
+				if (message.senderId != this.currentUserId && message.seen === false) {
+					const updatedMessage = {
+						...message,
+						seen: true
+					};
+					this.callApiUpdateMessage(this.currentRoom, updatedMessage);
+					return updatedMessage;
+				}
+				return message;
+			});
+			// console.log(this.messages);
+			// this.messages.forEach(message => this.callApiUpdateMessage(this.currentRoom, message));
 		});
 	},
 
@@ -325,6 +347,11 @@ export default {
 
 		closeDialog() {
 			console.log("closeDialog called"); // Kiểm tra xem phương thức có được gọi không
+			if (this.localStream) {
+				this.localStream.getTracks().forEach(track => {
+					track.stop();
+				});
+			}
 			this.videoCallDialog = false;
 		},
 		formattedBirthday() {
@@ -450,6 +477,7 @@ export default {
 			}
 			this.loadingRooms = false;
 			this.roomsLoaded = true;
+			console.log(this.rooms);
 		},
 
 		async editMessage({ roomId, messageId, newContent, files, replyMessage, usersTag }) {
@@ -488,14 +516,8 @@ export default {
 		},
 
 		async callApiUpdateMessage(roomId, message) {
-			// const form = new FormData();
-			// form.append('roomId', 1);
-			// // console.log("Message reactions: ");
-			// // console.log(message.reactions);
-			// console.log("Message ");
-			// console.log(message);
-			// console.log("Reply Message Id", message.replyMessage);
-			// console.log("Files", message.files);
+			console.log('Call api update message function');
+			console.log(message);
 			const form = new FormData();
 			form.append('roomId', roomId);
 			form.append('messageId', message._id);
@@ -704,37 +726,6 @@ export default {
 			this.showPopUpInfoRoomWithMembers = false;
 		},
 
-		roomActionHandler({ roomId, action }) {
-			// console.log("Call roomActionHandler function");
-			// console.log("RoomId", roomId);
-			// console.log("Action", action);
-		},
-
-		menuActionHandler({ roomId, action }) {
-			// console.log("Call menuActionHandler function");
-			// console.log("RoomId", roomId);
-			// console.log("Action", action);
-			const room = this.rooms.find(room => room.roomId === roomId);
-			if (action.name === 'callUser') {
-				this.videoCallDialog = true;
-				// this.callToSpecificUser(room);
-			} else if (action.name === 'sendMessageToUser') {
-				console.log("Call sendMessageToUser");
-				console.log(this.peerConnection);
-				if (this.peerConnection && this.peerConnection.connectionState === 'connected') {
-					this.dataChannel.send("Test 123");
-				} else {
-					console.log("Error when connected to user");
-				}
-				console.log("Send message successful");
-			}
-			if (action.name === 'quitRoom') {
-				this.quitRoom(room);
-			} if (action.name === 'inviteUser') {
-				this.inviteUser(room);
-			}
-		},
-
 		async getListOfFriends(room) {
 			console.log("Gọi hàm: getListOfFriends");
 			try {
@@ -783,29 +774,6 @@ export default {
 				this.listFriends.push(friend);
 			}
 		},
-		async callToSpecificUser(room) {
-			console.log("Call function callToSpecificUser");
-			// console.log("Room info");
-			// console.log(room);
-			try {
-				const user = room.users.filter(element => element._id != this.currentUserId);
-				await this.initializeRTCPeerConnection(this.currentUserId);
-				await this.createOffer(user[0]._id);
-				navigator.mediaDevices.getUserMedia(this.constraints).then(async function (stream) {
-					await this.peerConnection.addStream(stream);
-					this.peerConnection.onaddstream = function (event) {
-						const videoElement = document.getElementById('localVideo');
-						videoElement.srcObject = event.stream;
-					}
-				}).catch(function (exception) {
-					console.log(exception);
-				});
-			} catch (exception) {
-				console.log(exception);
-			}
-			// this.dataChannel.send("Test Web RTC");
-		},
-
 		async inviteUser(room) {
 			try {
 				console.log(room);
@@ -876,8 +844,38 @@ export default {
 			// console.log("Call fetchNewInfoMessage" + roomId);
 		},
 
+		roomActionHandler({ roomId, action }) {
+			// console.log("Call roomActionHandler function");
+			// console.log("RoomId", roomId);
+			// console.log("Action", action);
+		},
+
+		async menuActionHandler({ roomId, action }) {
+			// console.log("Call menuActionHandler function");
+			// console.log("RoomId", roomId);
+			// console.log("Action", action);
+			const room = this.rooms.find(room => room.roomId === roomId);
+			if (action.name === 'callUser') {
+				this.videoCallDialog = true;
+				await this.callToSpecificUser(room);
+			} else if (action.name === 'sendMessageToUser') {
+				console.log("Call sendMessageToUser");
+				console.log(this.peerConnection);
+				if (this.peerConnection && this.peerConnection.connectionState === 'connected') {
+					this.dataChannel.send("Test 123");
+				} else {
+					console.log("Error when connected to user");
+				}
+				console.log("Send message successful");
+			}
+			if (action.name === 'quitRoom') {
+				this.quitRoom(room);
+			} if (action.name === 'inviteUser') {
+				this.inviteUser(room);
+			}
+		},
+
 		async handleNewUpdate(message) {
-			// console.log("Call handle new update");
 			const notification = JSON.parse(message.body);
 			const userSend = message.headers.userSend;
 			if (notification.typeNotification === "RTC_CONNECTION") {
@@ -911,13 +909,36 @@ export default {
 							this.messages = [...this.messages];
 						}
 					}
-				} else {
-					// fetch new info room
+				}
+				console.log(this.rooms);
+				const indexRoom = this.rooms.indexOf(this.rooms.find(room => room.roomId == notification.roomInfo.roomId));
+				if (indexRoom !== -1){
+					this.rooms[indexRoom] = notification.roomInfo;
+					this.rooms = [...this.rooms];
 				}
 			}
 		},
 
 		// --------------Config web socket--------------
+
+		async callToSpecificUser(room) {
+			console.log("Call function callToSpecificUser");
+			// console.log("Room info");
+			// console.log(room);
+			try {
+				const user = room.users.filter(element => element._id != this.currentUserId);
+				await this.initializeRTCPeerConnection(this.currentUserId);
+				const stream = await this.getStream();
+				this.localStream = stream;
+				stream.getTracks().forEach((track) => {
+					this.peerConnection.addTrack(track, stream);
+				});
+				await this.createOffer(user[0]._id);
+			} catch (exception) {
+				console.log(exception);
+			}
+			// this.dataChannel.send("Test Web RTC");
+		},
 
 		async subscribeSpecificUserWebSocket() {
 			this.socket = new SockJS('http://localhost:8181/room');
@@ -986,52 +1007,47 @@ export default {
 					console.log("message:", event.data);
 				};
 			};
+			this.peerConnection.ontrack = ev => {
+				console.log("On track functin fire");
+				if (ev.streams && ev.streams[0]) {
+					this.remoteStream = ev.streams[0];
+				}
+			};
 		},
 
 		async createOffer(userId) {
-			this.peerConnection.createOffer(async offer => {
+			try {
+				const offer = await this.peerConnection.createOffer();
+				await this.peerConnection.setLocalDescription(offer);
 				await this.send(JSON.stringify({
 					event: "offer",
 					data: offer
 				}), userId);
-				await this.peerConnection.setLocalDescription(offer);
-			}, function (error) {
-				// console.log(error);
-				alert("Error creating an offer");
-			});
+			} catch (error) {
+				console.log("Error creating an offer");
+			}
 		},
 
 		async handleOffer(offer, remoteUser) {
-			// console.log("Call handle offer");
-			// console.log("Offer");
-			// console.log(offer);
-			try {
-				this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer)).catch(exception => {
-					console.log(exception);
-				})
-			} catch (exception) {
-				console.log(exception);
-			}
-			// create and send an answer to an offer
-			this.peerConnection.createAnswer(async answer => {
-				this.peerConnection.setLocalDescription(answer);
-				await this.send(JSON.stringify({
-					event: "answer",
-					data: answer
-				}), remoteUser);
-			}, function (error) {
-				// console.log(error);
-				alert("Error creating an answer");
+			this.callIncoming = true;
+			this.offerData = offer;
+			this.remoteUser = remoteUser;
+			Modal.confirm({
+				title: 'Incoming Call',
+				content: 'You have an incoming call. Do you want to accept it?',
+				onOk: () => {
+					this.acceptCall();
+				},
+				onCancel: () => {
+					this.declineCall();
+				}
 			});
-
 		},
 
 		async handleCandidate(candidate) {
-			console.log("Call handle candidate");
-			console.log(candidate);
 			try {
 				if (candidate) {
-					this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate)).catch(e => {
+					await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate)).catch(e => {
 						console.log(e);
 					})
 				}
@@ -1062,6 +1078,48 @@ export default {
 
 		handleErrorSubscribe() {
 			// console.log("Have error when subscribe websocket");
+		},
+
+		async getStream() {
+			try {
+				const stream = await navigator.mediaDevices.getUserMedia(this.constraints, (stream) => {
+					stream.getTracks().forEach((track) => {
+						this.peerConnection.addTrack(track, stream);
+					});
+				});
+				return stream;
+			} catch (error) {
+				console.error('Error getting user media:', error);
+				throw error; // Throwing the error to handle it in the caller function
+			}
+		},
+
+		async acceptCall() {
+			this.callIncoming = false;
+			this.videoCallDialog = true;
+			try {
+				await this.peerConnection.setRemoteDescription(new RTCSessionDescription(this.offerData));
+				const stream = await this.getStream();
+				this.localStream = stream;
+				stream.getTracks().forEach((track) => {
+					this.peerConnection.addTrack(track, stream);
+				});
+
+				const answer = await this.peerConnection.createAnswer();
+				await this.peerConnection.setLocalDescription(answer);
+				await this.send(JSON.stringify({
+					event: "answer",
+					data: answer
+				}), this.remoteUser);
+			} catch (exception) {
+				console.log(exception);
+			}
+		},
+		declineCall() {
+			this.callIncoming = false;
+			this.offerData = null;
+			this.remoteUser = null;
+			// You may want to send a message back to the caller indicating the call was declined
 		},
 
 		// --------------End config websocket--------------
