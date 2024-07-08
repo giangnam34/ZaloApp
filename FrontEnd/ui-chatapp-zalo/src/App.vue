@@ -54,6 +54,7 @@ import VueJwtDecode from 'vue-jwt-decode';
 import axios from 'axios';
 import SockJS from 'sockjs-client';
 import Stomp from "webstomp-client";
+import { onUnmounted } from 'vue';
 export default {
   name: 'App',
   data() {
@@ -61,6 +62,7 @@ export default {
       loading: true,
       chosenPage: 1,
       userIsValid: false,
+      currentUserID: null,
       jwt: '',
       isAdmin: false,
     }
@@ -80,10 +82,14 @@ export default {
     await this.checkToken();
     this.loading = false;
     console.log(this.userIsValid);
+    window.addEventListener("beforeunload", this.updateUserOfflineActivity);
+  },
+  beforeUnmount() {
+    window.removeEventListener('beforeunload', this.updateUserOfflineActivity);
   },
   methods: {
     updateJWT(userData) {
-      this.jwt = userData; // Set user data here, or just set it to null if not available
+      this.jwt = userData;
       this.checkToken();
     },
     updateChosenPage(page) {
@@ -147,6 +153,8 @@ export default {
 
             const currentUserID = decoded.sub;
 
+            this.currentUserID = currentUserID;
+
             console.log(decoded);
 
             const responseUser = await axios.get(`users/${currentUserID}`, {
@@ -186,6 +194,15 @@ export default {
       }
 
     },
+
+    async updateUserOfflineActivity(){
+      const responseUser = await axios.get(`users/update-user-offline-activity/${this.currentUserID}`, {
+              headers: {
+                'Authorization': localStorage.getItem("token")
+              }
+            });
+      console.log(responseUser.status);
+    }
   },
 }
 </script>

@@ -20,7 +20,8 @@ import '@mdi/font/css/materialdesignicons.css'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
-
+import Antd from "ant-design-vue";
+import 'ant-design-vue/dist/reset.css';
 // import { createRouter, createWebHistory } from 'vue-router';
 
 // /* import specific icons */
@@ -31,12 +32,13 @@ import {
     faChevronDown, faPlus, faChartSimple, faCheck, faPhone, faKey, faEye, faEyeSlash, faPencil, faTag,
     faVideo, faInfo, faPaperclip, faCameraRetro, faFont, faExclamation, faAt, faBullhorn, faWrench, faGlobe,
     faDatabase, faChevronRight, faUser, faUnlockKeyhole, faX, faNewspaper, faEllipsisVertical, faPenToSquare,
-    faUserTag, faLock, faUserMinus, faShare, faEarthAmericas, faCamera, faBan
+    faUserTag, faLock, faUserMinus, faShare, faEarthAmericas, faCamera, faBan, faMicrophoneLines, faMicrophoneLinesSlash
 } from '@fortawesome/free-solid-svg-icons'
 
 import { faAddressBook, faSquareCheck, faNoteSticky, faImage, faAddressCard, faClock, faFaceLaugh, faThumbsUp, faStar, faHeart, faComment, faImages } from '@fortawesome/free-regular-svg-icons'
 
-import { faRocketchat } from '@fortawesome/free-brands-svg-icons'
+import { faRocketchat } from '@fortawesome/free-brands-svg-icons';
+
 
 // /* add icons to the library */
 library.add(faUserSecret, faCommentDots, faAddressBook, faToolbox, faGear, faCloud, faMagnifyingGlass, faSquareCheck, faUserPlus,
@@ -44,7 +46,7 @@ library.add(faUserSecret, faCommentDots, faAddressBook, faToolbox, faGear, faClo
     faAddressCard, faClock, faFont, faExclamation, faRocketchat, faFaceLaugh, faAt, faThumbsUp, faStar, faBullhorn,
     faWrench, faGlobe, faDatabase, faChevronRight, faUserGroup, faUsersLine, faEnvelopeOpen, faSort, faFilter, faChevronDown,
     faPlus, faChartSimple, faCheck, faPhone, faKey, faEye, faEyeSlash, faUser, faUnlockKeyhole, faX, faNewspaper, faHeart, faComment,
-    faEllipsisVertical, faPenToSquare, faImages, faUserTag, faLock, faUserMinus, faShare, faEarthAmericas, faCamera, faBan
+    faEllipsisVertical, faPenToSquare, faImages, faUserTag, faLock, faUserMinus, faShare, faEarthAmericas, faCamera, faBan, faMicrophoneLines, faMicrophoneLinesSlash
 )
 
 const vuetify = createVuetify({
@@ -74,4 +76,4 @@ app.use(Toast, options);
 
 app.component('font-awesome-icon', FontAwesomeIcon);
 
-app.mount('#app');
+app.use(Antd).mount('#app');

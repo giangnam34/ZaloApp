@@ -1,6 +1,7 @@
 package com.essay.zaloapp.services.impl;
 
 import com.essay.zaloapp.domain.enums.ResourceType;
+import com.essay.zaloapp.domain.enums.TypeNotification;
 import com.essay.zaloapp.domain.models.*;
 import com.essay.zaloapp.domain.models.Composite.GroupChatUserId;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewChatMessageRequest;
@@ -14,6 +15,8 @@ import com.essay.zaloapp.domain.payload.response.RoomChat.*;
 import com.essay.zaloapp.repository.*;
 import com.essay.zaloapp.services.ChatMessageService;
 import com.essay.zaloapp.services.FileStorageService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -61,6 +64,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @Override
     public GetAllMessages getAllMessages(Long roomId, Long userId, int page, int size) throws Exception {
         if (!groupChatRepository.existsById(roomId)) throw new Exception("Nhóm chat này không tồn tại!");
@@ -80,11 +86,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         }
 
         List<MessageChat> messageChatsForUpdate = messageChatRepository.findAllByGroupIdAndUserPhoneNumber(roomId, receiver.getPhoneNumber());
-        for (MessageChat messageChat : messageChatsForUpdate) {
-            messageChat.setSeen(true);
-            messageChatRepository.save(messageChat);
-        }
-
         Pageable pageable = PageRequest.of(page, size);
         Page<MessageChat> messageChatPage = messageChatRepository.findAllByGroupId(roomId, pageable);
 
@@ -114,8 +115,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
             response.setSystem(messageChat.getIsSystem());
             response.setSaved(messageChat.getSaved());
-            response.setDistributed(messageChat.getDistributed());
-            response.setSeen(messageChat.getSeen());
+            response.setDistributed(true);
+            response.setSeen(true);
             response.setDeleted(messageChat.getDeleted());
             response.setFailure(messageChat.getFailure());
             response.setDisableActions(messageChat.getDisableActions());
@@ -203,9 +204,12 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
             responseMap.put(messageChat.getId(), response);
             responses.add(response);
-
+            if (!messageChat.getSeen()){
+                messageChat.setSeen(true);
+                messageChatRepository.save(messageChat);
+                notifyToUser(messageChat.getUser().getId(),ChatNotification.builder().roomId(messageChat.getGroupChat().getId()).typeNotification(TypeNotification.UPDATE).message(getAMessageToSend(messageChat).getChatMessageResponse()).build());
+            }
         }
-
         Collections.reverse(responses);
         GetAllMessages result = new GetAllMessages("Thành công!", responses, messageChatPage.getTotalPages(), page);
         return result;
@@ -255,7 +259,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                     adjustedDate = calendar.getTime();
                     lastMessageResponse.setTimestamp(extractTime(adjustedDate));
                     lastMessageResponse.setSaved(lastMessage.getSaved());
-                    lastMessageResponse.setDistributed(lastMessage.getDistributed());
+                    lastMessageResponse.setDistributed(true);
                     lastMessageResponse.setSeen(lastMessage.getSeen());
                     lastMessageResponse.setIsNew(true);
                     response.setLastMessage(lastMessageResponse);
@@ -278,7 +282,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                     userOfRoom.setAvatar("http://localhost:8181/media/getImage/" + userFound.getImageAvatarUrl());
 
                     StatusOfUser statusOfUser = new StatusOfUser();
-                    statusOfUser.setState(userFound.getStatus() + "");
+                    statusOfUser.setState(String.valueOf(userFound.getStatus()).toLowerCase());
                     calendar.setTime(userFound.getLastActive());
                     calendar.add(Calendar.HOUR_OF_DAY, -7);
                     adjustedDate = calendar.getTime();
@@ -702,7 +706,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 messageChat.setDisableReactions(addNewChatMessageRequest.getDisableReactions());
             }
             if (addNewChatMessageRequest.getDistributed() != null) {
-                messageChat.setDistributed(addNewChatMessageRequest.getDistributed());
+                messageChat.setDistributed(true);
             }
             if (addNewChatMessageRequest.getFailure() != null) {
                 messageChat.setFailure(addNewChatMessageRequest.getFailure());
@@ -711,10 +715,10 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 messageChat.setIsSystem(addNewChatMessageRequest.getSystem());
             }
             if (addNewChatMessageRequest.getSaved() != null) {
-                messageChat.setSaved(addNewChatMessageRequest.getSaved());
+                messageChat.setSaved(true);
             }
             if (addNewChatMessageRequest.getSeen() != null) {
-                messageChat.setSeen(addNewChatMessageRequest.getSeen());
+                messageChat.setSeen(false);
             }
             messageChat.setSendAt(new Date(new Date().getTime()));
             messageChat.setUpdatedAt(new Date(new Date().getTime()));
@@ -795,7 +799,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
             response.setSystem(messageChat.getIsSystem());
             response.setSaved(messageChat.getSaved());
-            response.setDistributed(messageChat.getDistributed());
+            response.setDistributed(true);
             response.setSeen(messageChat.getSeen());
             response.setDeleted(messageChat.getDeleted());
             response.setFailure(messageChat.getFailure());
@@ -877,7 +881,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             response.setTaggedUser(taggedUsers);
             for (GroupChatUser groupChatUser : groupChatUsers) {
                 if (!groupChatUser.getId().getPhoneNumberUser().equals(user.getPhoneNumber())) {
-                    notifyToUser(userRepository.findByPhoneNumber(groupChatUser.getId().getPhoneNumberUser()).getId(), ChatNotification.builder().roomId(addNewChatMessageRequest.getRoomId()).typeNotification("CREATE").message(response).build());
+                    notifyToUser(userRepository.findByPhoneNumber(groupChatUser.getId().getPhoneNumberUser()).getId(), ChatNotification.builder().roomId(addNewChatMessageRequest.getRoomId()).typeNotification(TypeNotification.CREATE).message(response).build());
                 }
             }
             return new GetAMessage("Tin nhắn đã được gửi!", response);
@@ -898,6 +902,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             MessageChat messageChat = messageChatOptional.get();
             if (user.getId() != messageChat.getUser().getId()) {
                 if (updateChatMessageRequest.getReactions() != null) {
+                    if (updateChatMessageRequest.getSeen() != null) {
+                        messageChat.setSeen(updateChatMessageRequest.getSeen());
+                    }
                     Map<String, List<String>> reactionsMap = updateChatMessageRequest.getReactionsMap();
                     reactionRepository.deleteByMessageChat(messageChat);
                     List<Reaction> newReactions = new ArrayList<>();
@@ -923,7 +930,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                     List<GroupChatUser> groupChatUsers = groupChatUserRepository.findAllByGroupId(updateChatMessageRequest.getRoomId());
                     for (GroupChatUser groupChatUser : groupChatUsers) {
                         if (!groupChatUser.getId().getPhoneNumberUser().equals(user.getPhoneNumber())) {
-                            notifyToUser(userRepository.findByPhoneNumber(groupChatUser.getId().getPhoneNumberUser()).getId(), ChatNotification.builder().roomId(updateChatMessageRequest.getRoomId()).typeNotification("UPDATE").message(getAMessageToSend(messageChat).getChatMessageResponse()).build());
+                            notifyToUser(userRepository.findByPhoneNumber(groupChatUser.getId().getPhoneNumberUser()).getId(), ChatNotification.builder().roomId(updateChatMessageRequest.getRoomId()).typeNotification(TypeNotification.UPDATE).message(getAMessageToSend(messageChat).getChatMessageResponse()).build());
                         }
                     }
                     return getAMessageToSend(messageChat);
@@ -941,7 +948,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 messageChat.setDisableReactions(updateChatMessageRequest.getDisableReactions());
             }
             if (updateChatMessageRequest.getDistributed() != null) {
-                messageChat.setDistributed(updateChatMessageRequest.getDistributed());
+                messageChat.setDistributed(true);
             }
             if (updateChatMessageRequest.getFailure() != null) {
                 messageChat.setFailure(updateChatMessageRequest.getFailure());
@@ -1004,7 +1011,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             List<GroupChatUser> groupChatUsers = groupChatUserRepository.findAllByGroupId(updateChatMessageRequest.getRoomId());
             for (GroupChatUser groupChatUser : groupChatUsers) {
                 if (!groupChatUser.getId().getPhoneNumberUser().equals(user.getPhoneNumber())) {
-                    notifyToUser(userRepository.findByPhoneNumber(groupChatUser.getId().getPhoneNumberUser()).getId(), ChatNotification.builder().roomId(updateChatMessageRequest.getRoomId()).typeNotification("UPDATE").message(getAMessageToSend(messageChat).getChatMessageResponse()).build());
+                    notifyToUser(userRepository.findByPhoneNumber(groupChatUser.getId().getPhoneNumberUser()).getId(), ChatNotification.builder().roomId(updateChatMessageRequest.getRoomId()).typeNotification(TypeNotification.UPDATE).message(getAMessageToSend(messageChat).getChatMessageResponse()).build());
                 }
             }
             return getAMessageToSend(messageChat);
@@ -1028,7 +1035,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
         response.setSystem(updatedMessage.getIsSystem());
         response.setSaved(updatedMessage.getSaved());
-        response.setDistributed(updatedMessage.getDistributed());
+        response.setDistributed(true);
         response.setSeen(updatedMessage.getSeen());
         response.setDeleted(updatedMessage.getDeleted());
         response.setFailure(updatedMessage.getFailure());
@@ -1130,7 +1137,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             List<GroupChatUser> groupChatUsers = groupChatUserRepository.findAllByGroupId(messageChat.getGroupChat().getId());
             for (GroupChatUser groupChatUser : groupChatUsers) {
                 if (!groupChatUser.getId().getPhoneNumberUser().equals(messageChat.getUser().getPhoneNumber())) {
-                    notifyToUser(userRepository.findByPhoneNumber(groupChatUser.getId().getPhoneNumberUser()).getId(), ChatNotification.builder().roomId(messageChat.getGroupChat().getId()).typeNotification("UPDATE").message(getAMessageToSend(messageChat).getChatMessageResponse()).build());
+                    notifyToUser(userRepository.findByPhoneNumber(groupChatUser.getId().getPhoneNumberUser()).getId(), ChatNotification.builder().roomId(messageChat.getGroupChat().getId()).typeNotification(TypeNotification.UPDATE).message(getAMessageToSend(messageChat).getChatMessageResponse()).build());
                 }
             }
             return "Xóa tin nhắn thành công!";
@@ -1181,10 +1188,17 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Override
     public void notifyToUser(Long userId, ChatNotification chatNotification) {
         try {
+            GetAllRooms getAllRoomResponse = getAllRooms(userId,"desc");
+            chatNotification.setRoomInfo(getAllRoomResponse.getAllRoomResponses.stream().filter(room -> Long.valueOf(room.getRoomId()).equals(chatNotification.getRoomId())).toList().get(0));
             simpMessagingTemplate.convertAndSendToUser("user" + userId, "/topic/specific-user", chatNotification);
         } catch (MessagingException exception) {
             System.out.println("Have some error");
             System.out.println(exception.toString());
+        } catch (JsonProcessingException e) {
+            System.out.println("Have some error");
+            System.out.println(e.toString());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

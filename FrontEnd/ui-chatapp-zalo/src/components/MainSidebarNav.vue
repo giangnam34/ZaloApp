@@ -9,7 +9,8 @@
           <div id="userName">{{ user.fullName }}</div>
           <hr>
           <div id="yourProfile" @mouseover="onHover('yourProfile')" @mouseleave="outHover()"
-            :class="{ hoverProfile: isHover && name === 'yourProfile' }" @click="emitOpenDialogEvent">Hồ sơ của bạn</div>
+            :class="{ hoverProfile: isHover && name === 'yourProfile' }" @click="emitOpenDialogEvent">Hồ sơ của bạn
+          </div>
           <div id="setting" @mouseover="onHover('settingProfile')" @mouseleave="outHover()"
             :class="{ hoverProfile: isHover && name === 'settingProfile' }">Cài đặt</div>
           <hr>
@@ -103,8 +104,8 @@
               <div>Cài đặt</div>
             </div>
             <hr>
-            <div id="database" @mouseover.stop="onHover('subDatabase')" @mouseleave.stop="outHover()" @click.prevent.stop
-              :class="{ subHover: isHover && name === 'subDatabase', isChoose: index === 7 }">
+            <div id="database" @mouseover.stop="onHover('subDatabase')" @mouseleave.stop="outHover()"
+              @click.prevent.stop :class="{ subHover: isHover && name === 'subDatabase', isChoose: index === 7 }">
               <div class="icon">
                 <font-awesome-icon icon="fa-solid fa-database" />
               </div>
@@ -140,8 +141,9 @@
               <div class="arrowRight"><font-awesome-icon icon="fa-solid fa-chevron-right" /></div>
             </div>
             <hr>
-            <div id="logOut" style="margin-top: 0px" @mouseover.stop="onHover('subLogOut')" @mouseleave.stop="outHover()"
-              @click.prevent.stop :class="{ subHover: isHover && name === 'subLogOut', isChoose: index === 7 }">
+            <div id="logOut" style="margin-top: 0px" @mouseover.stop="onHover('subLogOut')"
+              @mouseleave.stop="outHover()" @click.prevent.stop
+              :class="{ subHover: isHover && name === 'subLogOut', isChoose: index === 7 }">
               <div class="icon">
                 <!-- <font-awesome-icon icon="fa-solid fa-info" style="margin-left: 5px; color: #f3f5f6" /> -->
               </div>
@@ -154,9 +156,10 @@
     </div>
   </div>
 </template>
-  
+
 <script>
 import UserInfo from './UserInfo.vue';
+import VueJwtDecode from 'vue-jwt-decode';
 import axios from 'axios';
 export default {
   components: {
@@ -271,13 +274,31 @@ export default {
         this.isShowWhenClickTools = false;
       }
     },
-    logout() {
+    async logout() {
+      await this.updateUserOfflineActivity();
       localStorage.removeItem("token");
       localStorage.setItem("isValid", false);
       localStorage.removeItem("user");
       this.$emit("userLoggedIn", '');
       event.preventDefault();
       event.stopPropagation();
+    },
+    async updateUserOfflineActivity() {
+      const fullToken = localStorage.getItem('token');
+      if (fullToken) {
+        const parts = fullToken.split(' ');
+        if (parts.length > 1) {
+          const token = parts[1];
+          let decoded = VueJwtDecode.decode(token);
+          const currentUserID = decoded.sub;
+          const responseUser = await axios.get(`users/update-user-offline-activity/${currentUserID}`, {
+            headers: {
+              'Authorization': localStorage.getItem("token")
+            }
+          });
+          console.log(responseUser.status);
+        }
+      }
     },
     fetchAvatar() {
       axios.get(`users/imageAvatar`, {
@@ -301,9 +322,9 @@ export default {
   },
 };
 </script>
-  
-  <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang = "scss">
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped lang="scss">
 .isChoose {
   background-color: #006edc;
 }
@@ -544,4 +565,3 @@ export default {
   }
 }
 </style>
-  

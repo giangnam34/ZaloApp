@@ -1,15 +1,18 @@
 package com.essay.zaloapp.services.impl;
 
+import com.essay.zaloapp.domain.enums.Status;
+import com.essay.zaloapp.domain.enums.TypeNotification;
 import com.essay.zaloapp.domain.models.User;
 
 import com.essay.zaloapp.domain.payload.request.Authorize.ChangeInfoUserRequest;
 import com.essay.zaloapp.domain.payload.request.Authorize.ChangePhoneNumberUserRequest;
 import com.essay.zaloapp.domain.payload.response.Authorize.DetailInfoUser;
 import com.essay.zaloapp.domain.payload.response.Authorize.GetUserResponse;
+import com.essay.zaloapp.domain.payload.response.Authorize.InfoUser;
+import com.essay.zaloapp.domain.payload.response.ChatMessage.ChatNotification;
 import com.essay.zaloapp.repository.FriendsRepository;
 import com.essay.zaloapp.repository.UserRepository;
-import com.essay.zaloapp.services.FileStorageService;
-import com.essay.zaloapp.services.UserService;
+import com.essay.zaloapp.services.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -20,6 +23,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import java.util.Date;
+import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -36,6 +42,15 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private ModelMapper mapper;
 
+    @Autowired
+    private FriendService friendService;
+
+    @Autowired
+    private ChatMessageService chatMessageService;
+
+    @Autowired
+    private ChatService chatService;
+
     @Override
     public void swap(User user1, User user2){
         User user3 = user2;
@@ -49,15 +64,29 @@ public class UserServiceImpl implements UserService {
             User user = userRepository.findById(id);
 
             if(user != null){
+                if (updateStatusActivityUser(user, Status.ONLINE)) {
+                    List<InfoUser> infoUserList = friendService.listAllFriend(id);
+                    for (InfoUser infoUser: infoUserList) {
+                        if (infoUser.getStatus().equalsIgnoreCase("ONLINE")){
+                            User anotherUser = userRepository.findByPhoneNumber(infoUser.getPhoneNumber());
+                            ChatNotification chatNotification = ChatNotification.builder()
+                                    .roomId(chatService.getChatRoomId(user.getPhoneNumber(), anotherUser.getPhoneNumber()))
+                                    .message("")
+                                    .typeNotification(TypeNotification.UPDATE)
+                                    .build();
+                            chatMessageService.notifyToUser(anotherUser.getId(),chatNotification);
+                        }
+                    }
+                    Set<String> roles = user.getRoles().stream()
+                            .map(role -> role.getName().name())
+                            .collect(Collectors.toSet());
 
-                Set<String> roles = user.getRoles().stream()
-                        .map(role -> role.getName().name())
-                        .collect(Collectors.toSet());
-
-                GetUserResponse response = mapper.map(user, GetUserResponse.class);
-                response.setRoles(roles);
-
-                return ResponseEntity.ok(response);
+                    GetUserResponse response = mapper.map(user, GetUserResponse.class);
+                    response.setRoles(roles);
+                    return ResponseEntity.ok(response);
+                } else {
+                    return ResponseEntity.badRequest().body(new GetUserResponse());
+                }
             }else{
                 return ResponseEntity.badRequest().body(new GetUserResponse());
             }
@@ -200,6 +229,39 @@ public class UserServiceImpl implements UserService {
         } catch (Exception e){
             throw new Exception("Có lỗi xảy ra. Vui lòng thử lại!!!");
         }
+    }
+
+    private Boolean updateStatusActivityUser(User user, Status status) throws Exception {
+        try{
+            user.setStatus(status);
+            if (Status.OFFLINE.equals(status)){
+                user.setLastActive(new Date(new Date().getTime() + 7*60*60*1000));
+            }
+            userRepository.save(user);
+        } catch(Exception e){
+            throw new Exception("Cập nhật trạng thái thất bại!");
+        }
+        return true;
+    }
+
+    public Boolean updateUserOfflineActivity(Long userId) throws Exception {
+        User user = userRepository.findById(userId);
+        if (updateStatusActivityUser(user,Status.OFFLINE)) {
+            List<InfoUser> infoUserList = friendService.listAllFriend(userId);
+            for (InfoUser infoUser : infoUserList) {
+                if (infoUser.getStatus().equalsIgnoreCase("ONLINE")) {
+                    User anotherUser = userRepository.findByPhoneNumber(infoUser.getPhoneNumber());
+                    ChatNotification chatNotification = ChatNotification.builder()
+                            .roomId(chatService.getChatRoomId(user.getPhoneNumber(), anotherUser.getPhoneNumber()))
+                            .message("")
+                            .typeNotification(TypeNotification.UPDATE)
+                            .build();
+                    chatMessageService.notifyToUser(anotherUser.getId(), chatNotification);
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
 }

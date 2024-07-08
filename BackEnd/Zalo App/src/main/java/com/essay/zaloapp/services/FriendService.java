@@ -1,7 +1,10 @@
 package com.essay.zaloapp.services;
 
 import com.essay.zaloapp.domain.payload.request.Friend.FriendRequest;
+import com.essay.zaloapp.domain.payload.response.Authorize.InfoUser;
 import org.springframework.http.ResponseEntity;
+
+import java.util.List;
 
 public interface FriendService {
     boolean isFriendUser(Long userId1, Long userId2);
@@ -16,7 +19,7 @@ public interface FriendService {
 
     ResponseEntity<?> blockFriendUser(Long userId, FriendRequest addFriendRequest) throws Exception;
 
-    ResponseEntity<?> listAllFriend(Long userId) throws Exception;
+    List<InfoUser> listAllFriend(Long userId) throws Exception;
 
     ResponseEntity<?> listAllInviteFriend(Long userId) throws Exception;
 

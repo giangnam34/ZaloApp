@@ -1,5 +1,6 @@
 package com.essay.zaloapp.controller;
 
+import com.essay.zaloapp.domain.enums.TypeNotification;
 import com.essay.zaloapp.domain.models.User;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewChatMessageRequest;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewRoomRequest;
@@ -67,7 +68,7 @@ public class ChatController {
         System.out.println("There have a message to specific user");
         System.out.println("UserId " + userId);
         System.out.println(message.getEvent());
-        ChatNotification chatNotification = ChatNotification.builder().roomId(1L).typeNotification("RTC_CONNECTION").message(message).build();
+        ChatNotification chatNotification = ChatNotification.builder().roomId(1L).typeNotification(TypeNotification.RTC_CONNECTION).message(message).build();
         try {
             HashMap<String,Object> header = new HashMap<>();
             header.put("userId", userId.substring(userId.indexOf("user")+4));

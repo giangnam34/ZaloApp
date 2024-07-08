@@ -1,6 +1,8 @@
 package com.essay.zaloapp.services.impl;
 
 import com.essay.zaloapp.domain.enums.FriendStatus;
+import com.essay.zaloapp.domain.enums.ResourceType;
+import com.essay.zaloapp.domain.enums.TypeNotification;
 import com.essay.zaloapp.domain.models.*;
 import com.essay.zaloapp.domain.models.Composite.FriendsId;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewRoomRequest;
@@ -314,7 +316,7 @@ public class FriendServiceImpl implements FriendService {
             List<GroupChatUser> groupChatUsers = groupChatUserRepository.findAllByGroupId(groupChatId);
             for (GroupChatUser groupChatUser : groupChatUsers) {
                 if (!groupChatUser.getId().getPhoneNumberUser().equals(user.getPhoneNumber())) {
-                    chatMessageService.notifyToUser(userRepository.findByPhoneNumber(groupChatUser.getId().getPhoneNumberUser()).getId(), ChatNotification.builder().roomId(groupChatId).typeNotification("CREATE").message(response).build());
+                    chatMessageService.notifyToUser(userRepository.findByPhoneNumber(groupChatUser.getId().getPhoneNumberUser()).getId(), ChatNotification.builder().roomId(groupChatId).typeNotification(TypeNotification.UPDATE).message(response).build());
                 }
             }
 
@@ -325,20 +327,25 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public ResponseEntity<?> listAllFriend(Long userId) throws Exception {
+    public List<InfoUser> listAllFriend(Long userId) throws Exception {
         try {
             List<Friends> friendsList = friendsRepository.findByFriendsIdUser1(userId);
             friendsList.addAll(friendsRepository.findByFriendsIdUser2(userId));
             List<InfoUser> result = new ArrayList<>();
             for (Friends friend : friendsList) {
-                if (friend.getFriendStatus().equals(FriendStatus.IsFriend))
-                    result.add(new InfoUser(Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getFullName() : friend.getUser1().getFullName(),
-                            "http://localhost:8181/v1/users/imageAvatarAnotherUser/" + (Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getPhoneNumber() : friend.getUser1().getPhoneNumber()),
-                            Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getPhoneNumber() : friend.getUser1().getPhoneNumber()));
+                if (friend.getFriendStatus().equals(FriendStatus.IsFriend)){
+                    InfoUser infoUser = InfoUser.builder()
+                            .userName(Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getFullName() : friend.getUser1().getFullName())
+                            .imageAvatar("http://localhost:8181/v1/users/imageAvatarAnotherUser/" + (Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getPhoneNumber() : friend.getUser1().getPhoneNumber()))
+                            .phoneNumber(Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getPhoneNumber() : friend.getUser1().getPhoneNumber())
+                            .status(String.valueOf(Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getStatus() : friend.getUser1().getStatus()))
+                            .build();
+                    result.add(infoUser);
+                }
             }
-            return ResponseEntity.ok(result);
+            return result;
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Có lỗi xảy ra. Vui lòng thử lại!");
+            return null;
         }
     }
 
@@ -383,11 +390,13 @@ public class FriendServiceImpl implements FriendService {
                         : friend.getUser1().getPhoneNumber();
 
                 if (!groupChatUserPhoneNumbers.contains(friendPhoneNumber) && friend.getFriendStatus().equals(FriendStatus.IsFriend)) {
-                    result.add(new InfoUser(
-                            Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getFullName() : friend.getUser1().getFullName(),
-                            "http://localhost:8181/v1/users/imageAvatarAnotherUser/" + friendPhoneNumber,
-                            friendPhoneNumber
-                    ));
+                    InfoUser infoUser = InfoUser.builder()
+                            .userName(Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getFullName() : friend.getUser1().getFullName())
+                            .imageAvatar("http://localhost:8181/v1/users/imageAvatarAnotherUser/" + friendPhoneNumber)
+                            .phoneNumber(friendPhoneNumber)
+                            .status(String.valueOf(Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getStatus() : friend.getUser1().getStatus()))
+                            .build();
+                    result.add(infoUser);
                 }
             }
             return ResponseEntity.ok(result);

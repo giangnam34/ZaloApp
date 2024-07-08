@@ -5,6 +5,7 @@ import com.essay.zaloapp.domain.payload.request.Authorize.ChangeInfoUserRequest;
 import com.essay.zaloapp.domain.payload.request.Authorize.ChangePasswordRequest;
 import com.essay.zaloapp.domain.payload.request.Authorize.ChangePhoneNumberUserRequest;
 import com.essay.zaloapp.domain.payload.request.Friend.FriendRequest;
+import com.essay.zaloapp.domain.payload.response.Authorize.InfoUser;
 import com.essay.zaloapp.secruity.UserPrincipal;
 import com.essay.zaloapp.services.AuthenticationService;
 import com.essay.zaloapp.services.FriendService;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/v1/users")
@@ -164,7 +166,11 @@ public class UserController {
     @GetMapping("/getAllFriendUser")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getAllFriendUser(@AuthenticationPrincipal UserPrincipal userPrincipal) throws Exception {
-        return friendService.listAllFriend(userPrincipal.getId());
+        List<InfoUser> listInfoUser = friendService.listAllFriend(userPrincipal.getId());
+        if (listInfoUser != null){
+            return ResponseEntity.ok(listInfoUser);
+        }
+        return ResponseEntity.badRequest().body("Có lỗi xảy ra. Vui lòng thử lại!");
     }
 
     @GetMapping("/getAllBlockedUser")
@@ -185,4 +191,15 @@ public class UserController {
         return friendService.listAllInviteFriend(userPrincipal.getId());
     }
 
+    @GetMapping("/update-user-offline-activity/{id}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> updateUserOfflineActivity(@PathVariable("id") Long id, UserPrincipal principal) throws Exception {
+        if (!(principal.getId() == id)) {
+            return ResponseEntity.badRequest().body(Message.WRONG_USERID);
+        }
+        if (userService.updateUserOfflineActivity(id)){
+            return ResponseEntity.ok().body("");
+        };
+        return ResponseEntity.badRequest().body("");
+    }
 }
