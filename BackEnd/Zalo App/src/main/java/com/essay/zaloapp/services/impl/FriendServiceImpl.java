@@ -417,7 +417,7 @@ public class FriendServiceImpl implements FriendService {
                                 (friend.getIsBlock() == 2 && Objects.equals(userId, friend.getUser2().getId())))) {
                     result.add(new InfoUser(Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getFullName() : friend.getUser1().getFullName(),
                             "http://localhost:8181/v1/users/imageAvatarAnotherUser/" + (Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getPhoneNumber() : friend.getUser1().getPhoneNumber()),
-                            Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getPhoneNumber() : friend.getUser1().getPhoneNumber()));
+                            Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getPhoneNumber() : friend.getUser1().getPhoneNumber(),String.valueOf(Objects.equals(userId, friend.getUser1().getId()) ? friend.getUser2().getStatus() : friend.getUser1().getStatus())));
                 }
             }
             return ResponseEntity.ok(result);
