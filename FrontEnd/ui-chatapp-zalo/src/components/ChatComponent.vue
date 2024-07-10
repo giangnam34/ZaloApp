@@ -9,15 +9,14 @@
 			:templates-text="JSON.stringify(templatesText)" @delete-message="deleteMessage($event.detail[0])"
 			@send-message-reaction="sendMessageReaction($event.detail[0])" :theme="theme"
 			@room-info="showRoomInfo($event.detail[0])" @edit-message="editMessage($event.detail[0])"
-			@room-action-handler="roomActionHandler($event.detail[0])"
+			@room-action-handler="roomActionHandler($event.detail[0])" @add-room="addRoom()"
 			@menu-action-handler="menuActionHandler($event.detail[0])" :emoji-data-source="emojiDataSource" />
 		<v-dialog class="dialog-container-user" v-model="showPopUpInfoRoomWith2Members" max-width="352px"
 			@click:outside="closePopupInfoRoom">
 			<v-card class="dialog-component-user">
 				<v-card-title class="dialog-title-user">
 					<h2 class="title-user">Thông tin tài khoản
-						<div class="icon-close-user" @click="closePopupInfoRoom"><font-awesome-icon
-								icon="fa-solid fa-x" />
+						<div class="icon-close-user" @click="closePopupInfoRoom"><font-awesome-icon icon="fa-solid fa-x" />
 						</div>
 					</h2>
 				</v-card-title>
@@ -70,8 +69,7 @@
 			<v-card class="dialog-component-user">
 				<v-card-title class="dialog-title-user">
 					<h2 class="title-user">Thông tin nhóm chat
-						<div class="icon-close-user" @click="closePopupInfoRoom"><font-awesome-icon
-								icon="fa-solid fa-x" />
+						<div class="icon-close-user" @click="closePopupInfoRoom"><font-awesome-icon icon="fa-solid fa-x" />
 						</div>
 					</h2>
 				</v-card-title>
@@ -79,8 +77,7 @@
 				<v-card-text class="dialog-content-user">
 					<div class="profile-photo-user">
 						<div class="cover-avatar-user">
-							<img class="cover-image-user" :src="roomDetail.roomAvatar" alt="None"
-								crossorigin="anonymous">
+							<img class="cover-image-user" :src="roomDetail.roomAvatar" alt="None" crossorigin="anonymous">
 						</div>
 						<div class="ava-name-container-user">
 							<div class="avatar-profile-user">
@@ -137,8 +134,7 @@
 			<v-card class="dialog-component">
 				<v-card-title class="dialog-title">
 					<h2 class="title">Mời bạn bè vào nhóm
-						<div class="icon-close" @click="closeChooseFriendDialog"><font-awesome-icon
-								icon="fa-solid fa-x" />
+						<div class="icon-close" @click="closeChooseFriendDialog"><font-awesome-icon icon="fa-solid fa-x" />
 						</div>
 					</h2>
 				</v-card-title>
@@ -149,8 +145,7 @@
 						<div v-if="addedFriends.length !== 0"><span>Đã chọn để thêm vào nhóm ({{ addedFriends.length }} bạn
 								bè)</span></div>
 						<div class="update-file-container" style="height:100px" v-if="addedFriends.length !== 0">
-							<div v-for="friend in addedFriends" v-bind:key="friend.phoneNumber"
-								class="position-relative">
+							<div v-for="friend in addedFriends" v-bind:key="friend.phoneNumber" class="position-relative">
 								<div class="friend-info cursor-pointer m-2" @click="deleteFriendTag(friend)">
 									<div :class="{ 'wrap': shouldWrap }" class="detail" style="border: 1px solid #ccc;
                                                            border-radius: 8px;
@@ -272,8 +267,8 @@
 
 		<template>
 			<div>
-				<a-modal v-if="callIncoming" title="Incoming Call" ok-text="Accept" cancel-text="Decline"
-					@ok="acceptCall" @cancel="declineCall">
+				<a-modal v-if="callIncoming" title="Incoming Call" ok-text="Accept" cancel-text="Decline" @ok="acceptCall"
+					@cancel="declineCall">
 					<p>You have an incoming call. Do you want to accept it?</p>
 				</a-modal>
 
@@ -302,9 +297,14 @@ import SockJS from 'sockjs-client';
 import Stomp from "webstomp-client";
 import VideoCallComponent from './VideoCallComponent.vue';
 import { Modal } from 'ant-design-vue';
-
+import newMessageSound from '../assets/messageNotificationSound.mp3';
 // import { register } from '../../vue-advanced-chat/dist/vue-advanced-chat.es.js'
 register()
+
+var audio = new Audio(newMessageSound);
+let originalTitle = document.title;
+let blinkInterval;
+let isBlinking = false;
 
 export default {
 	components: {
@@ -408,12 +408,12 @@ export default {
 			listFriendsForCreateRoom: [],
 			displayedDate: '',
 			groupAvatarFile: null,
-			emojiDataSource: "https://cdn.jsdelivr.net/npm/emoji-picker-element-data@%5E1/en/emojibase/data.json"
+			emojiDataSource: "https://cdn.jsdelivr.net/npm/emoji-picker-element-data@%5E1/en/emojibase/data.json",
 		}
 	},
 
 	created() {
-		document.title = "Hehehe";
+		document.title = "NathApp";
 		this.getCurrentUserId();
 		this.fetchMoreRooms();
 		this.subscribeSpecificUserWebSocket();
@@ -430,6 +430,8 @@ export default {
 				}
 				return message;
 			});
+			this.stopTitleBlinking();
+			document.title = "NathApp";
 			// console.log(this.messages);
 			// this.messages.forEach(message => this.callApiUpdateMessage(this.currentRoom, message));
 		});
@@ -458,8 +460,7 @@ export default {
 			if (room.users.length === 2) {
 				// console.log("This is private chat");
 				menuActionList = [
-					{ name: 'callUser', title: 'Call User' },
-					{ name: 'sendMessageToUser', title: 'Send Message To User' }
+					{ name: 'callUser', title: 'Call User' }
 				];
 			}
 			else {
@@ -608,6 +609,10 @@ export default {
 			}
 		},
 
+		playSound() {
+			audio.play();
+		},
+
 		async addRoom() {
 			console.log("Enter add room");
 			this.addedFriends = [];
@@ -620,7 +625,7 @@ export default {
 			const formData = new FormData();
 			formData.append('groupName', this.groupName);
 			formData.append('groupAvatarFile', this.groupAvatarFile);
-			const receiversPhoneNumber= this.addedFriends.map(friend => friend.phoneNumber);
+			const receiversPhoneNumber = this.addedFriends.map(friend => friend.phoneNumber);
 			console.log(receiversPhoneNumber);
 			formData.append('receiversPhoneNumber', JSON.stringify(receiversPhoneNumber));
 			try {
@@ -725,6 +730,7 @@ export default {
 			// console.log(result.data);
 			return result;
 		},
+
 		async sendMessage({ roomId, content, files, replyMessage, usersTag }) {
 			// console.log("Call send message");
 			// console.log("RoomId: ", roomId);
@@ -732,6 +738,8 @@ export default {
 			// console.log("Files: ", files);
 			// console.log("ReplyMessage: ", replyMessage);
 			// console.log("User tag:", usersTag);
+
+			const MAX_FILE_SIZE = 100 * 1024 * 1024;
 			const form = new FormData();
 			form.append('roomId', roomId);
 			form.append('content', content);
@@ -742,13 +750,16 @@ export default {
 			form.append('failure', false);
 			form.append('disableActions', false);
 			if (files) {
-				files.forEach(file => {
-					const convertFile = new File([file.blob], file.type === 'audio/mp3' ? file.name : (file.extension ? file.name.concat('.').concat(file.extension) : file.name.concat('.').concat(file.type)), {
-						type: file.type
+				for (const file of files) {
+					if (file.size > MAX_FILE_SIZE) {
+						alert(`File "${file.name}" không được hỗ trợ do có kích thước lớn hơn 100MB!`);
+					} else {
+						const convertFile = new File([file.blob], file.type === 'audio/mp3' ? file.name : (file.extension ? file.name.concat('.').concat(file.extension) : file.name.concat('.').concat(file.type)), {
+							type: file.type
+						});
+						form.append('files', convertFile);
 					}
-					);
-					form.append('files', convertFile);
-				});
+				}
 			}
 			if (replyMessage)
 				form.append('replyMessageId', replyMessage ? parseInt(replyMessage._id) : null);
@@ -762,17 +773,21 @@ export default {
 				});
 				if (result.status === 200) {
 					// console.log(result);
-					result.data.chatMessageResponse.saved = true;
-					result.data.chatMessageResponse.distributed = true;
-					if (files) {
-						result.data.chatMessageResponse.files.forEach(file => {
-							delete file.progress;
-						});
-					}
+					result.data.chatMessageResponses.forEach(chatMessageResponse => {
+						chatMessageResponse.saved = true;
+						chatMessageResponse.distributed = true;
+						if (files) {
+							chatMessageResponse.files.forEach(file => {
+								delete file.progress;
+							});
+						}
+						this.messages = [...this.messages, chatMessageResponse];
+					});
 				} else {
-					result.data.chatMessageResponse.failure = true;
+					result.data.chatMessageResponses.forEach(chatMessageResponse => {
+						chatMessageResponse.failure = true;
+					});
 				}
-				this.messages = [...this.messages, result.data.chatMessageResponse];
 				// const room 
 			} catch (exception) {
 				// console.log("Loi roi");
@@ -1107,7 +1122,26 @@ export default {
 			// console.log("Call fetchNewInfoMessage" + roomId);
 		},
 
+		startTitleBlinking(newTitle) {
+			if (isBlinking) return;
+			isBlinking = true;
+			blinkInterval = setInterval(() => {
+				if (document.title === originalTitle) {
+					document.title = newTitle;
+				} else {
+					document.title = originalTitle;
+				}
+			}, 1000); // Thay đổi mỗi giây
+		},
+
+		stopTitleBlinking() {
+			clearInterval(blinkInterval);
+			document.title = originalTitle;
+			isBlinking = false;
+		},
+
 		async handleNewUpdate(message) {
+			console.log("zo test")
 			const notification = JSON.parse(message.body);
 			const userSend = message.headers.userSend;
 			if (notification.typeNotification === "RTC_CONNECTION") {
@@ -1130,7 +1164,15 @@ export default {
 						});
 					}
 					if (notification.typeNotification === "CREATE") {
+						console.log("Notification")
+						console.log(notification)
+						this.playSound();
+						console.log("zo")
 						this.messages = [...this.messages, notification.message];
+						if (document.hidden) {
+							console.log("zo roi ne")
+							this.startTitleBlinking(notification.message.username + " đã gửi tin nhắn cho bạn");
+						}
 					} else if (notification.typeNotification === "UPDATE") {
 						// console.log("Message is update");
 						let message = this.messages.find(message => message._id == notification.message._id);
@@ -1144,7 +1186,7 @@ export default {
 				}
 				console.log(this.rooms);
 				const indexRoom = this.rooms.indexOf(this.rooms.find(room => room.roomId == notification.roomInfo.roomId));
-				if (indexRoom !== -1){
+				if (indexRoom !== -1) {
 					this.rooms[indexRoom] = notification.roomInfo;
 					this.rooms = [...this.rooms];
 				}

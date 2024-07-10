@@ -26,8 +26,8 @@ public interface ChatMessageService {
 
     String addUsersToRoom(Long userId, Long roomId, List<String> usersPhoneNumber);
 
-    ChatMessageServiceImpl.GetAMessage createChatMessage(Long userId, AddNewChatMessageRequest addNewChatMessageRequest);
 
+    ChatMessageServiceImpl.GetMessages createChatMessage(Long userId, AddNewChatMessageRequest addNewChatMessageRequest);
 
     ChatMessageServiceImpl.GetAMessage updateChatMessage(Long userId, UpdateChatMessageRequest updateChatMessageRequest);
 
