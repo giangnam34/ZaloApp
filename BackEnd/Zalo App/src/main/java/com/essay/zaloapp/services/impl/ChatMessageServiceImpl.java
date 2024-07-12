@@ -65,6 +65,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private SimpMessagingTemplate simpMessagingTemplate;
 
     @Autowired
+    private FriendsRepository friendsRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     @Override
@@ -72,6 +75,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         if (!groupChatRepository.existsById(roomId)) throw new Exception("Nhóm chat này không tồn tại!");
         User user = userRepository.findById(userId);
         List<GroupChatUser> groupChatUsersList = groupChatUserRepository.findAllByGroupId(roomId);
+
         User receiver = new User();
         Boolean check = false;
         for (GroupChatUser gcu : groupChatUsersList) {
@@ -85,9 +89,27 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             throw new Exception("Người dùng không có quyền xem tin nhắn của nhóm chat này!");
         }
 
-        List<MessageChat> messageChatsForUpdate = messageChatRepository.findAllByGroupIdAndUserPhoneNumber(roomId, receiver.getPhoneNumber());
+        Date joinDate = null;
+        for (GroupChatUser gcu : groupChatUsersList) {
+            if (gcu.getId().getPhoneNumberUser().equals(user.getPhoneNumber())) {
+                joinDate = gcu.getJoinedAt();
+                break;
+            }
+        }
+        if (joinDate == null) {
+            throw new Exception("Không tìm thấy ngày tham gia của người dùng!");
+        }
+
+        Date joinedDate = new Date(joinDate.getTime() - (24 * 60 * 60 * 1000));
+
         Pageable pageable = PageRequest.of(page, size);
-        Page<MessageChat> messageChatPage = messageChatRepository.findAllByGroupId(roomId, pageable);
+        Page<MessageChat> messageChatPage;
+
+        if (groupChatUsersList.size() >= 3) {
+            messageChatPage = messageChatRepository.findAllByGroupIdAndSendAtAfter(roomId, joinedDate, pageable);
+        } else {
+            messageChatPage = messageChatRepository.findAllByGroupId(roomId, pageable);
+        }
 
         List<MessageChat> messageChatList = messageChatPage.getContent();
 
@@ -95,24 +117,20 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         List<ChatMessageResponse> responses = new ArrayList<>();
 
         for (MessageChat messageChat : messageChatList) {
-
             ChatMessageResponse response = new ChatMessageResponse();
             response.set_id(messageChat.getId() + "");
             response.setContent(messageChat.getContent());
             User sender = userRepository.findById(messageChat.getUser().getId());
+
+            boolean isBlocked = friendsRepository.existsByUser1AndUser2AndIsBlock(user, sender, userId);
+
+            response.setIsBlock(isBlocked);
+
             response.setSenderId(sender.getId() + "");
             response.setUsername(sender.getFullName());
             response.setAvatar("http://localhost:8181/media/getImage/" + sender.getImageAvatarUrl());
-
-//            Calendar calendar = Calendar.getInstance();
-//            calendar.setTime(messageChat.getUpdatedAt());
-//            calendar.add(Calendar.HOUR_OF_DAY, -7);
-//            Date adjustedDate = calendar.getTime();
-//            response.setDate(formatDate(adjustedDate));
-//            response.setTimestamp(extractTime(adjustedDate));
             response.setDate(formatDate(messageChat.getSendAt()));
             response.setTimestamp(extractTime(messageChat.getSendAt()));
-
             response.setSystem(messageChat.getIsSystem());
             response.setSaved(messageChat.getSaved());
             response.setDistributed(true);
@@ -129,6 +147,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                             Collectors.mapping(reaction -> reaction.getUser().getId().toString(), Collectors.toList())
                     ));
             response.setReactions(reactions);
+
             if (messageChat.getReplyMessage() == null) {
                 response.setReplyMessage(null);
             } else {
@@ -153,7 +172,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                     }
                     fileData.setName(namePart);
                     fileData.setType(extensionPart);
-                    fileData.setPreview("data" + resource.getResourceType() + "/" + extensionPart + ";base64");
+                    fileData.setPreview("data:" + resource.getResourceType() + "/" + extensionPart + ";base64");
                     files.add(fileData);
                 }
                 replyMessageResponse.setFiles(files);
@@ -507,6 +526,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             groupChatSenderId.setGroupId(groupChat.getId());
             groupChatSenderId.setPhoneNumberUser(sender.getPhoneNumber());
             groupChatSender.setId(groupChatSenderId);
+            groupChatSender.setJoinedAt(new Date(new Date().getTime()));
             groupChatUserRepository.save(groupChatSender);
 
             GroupChatUser groupChatReceiver = new GroupChatUser();
@@ -514,6 +534,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             groupChatReceiverId.setGroupId(groupChat.getId());
             groupChatReceiverId.setPhoneNumberUser(receiver.getPhoneNumber());
             groupChatReceiver.setId(groupChatReceiverId);
+            groupChatReceiver.setJoinedAt(new Date(new Date().getTime()));
             groupChatUserRepository.save(groupChatReceiver);
 
             return "Tạo cuộc hội thoại thành công!";
@@ -578,6 +599,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             groupChatSenderId.setGroupId(groupChat.getId());
             groupChatSenderId.setPhoneNumberUser(sender.getPhoneNumber());
             groupChatSender.setId(groupChatSenderId);
+            groupChatSender.setJoinedAt(new Date(new Date().getTime()));
             groupChatUserRepository.save(groupChatSender);
         }
 
@@ -591,6 +613,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 groupChatReceiverId.setGroupId(groupChat.getId());
                 groupChatReceiverId.setPhoneNumberUser(receiver.getPhoneNumber());
                 groupChatReceiver.setId(groupChatReceiverId);
+                groupChatReceiver.setJoinedAt(new Date(new Date().getTime()));
                 groupChatUserRepository.save(groupChatReceiver);
             }
         }
@@ -644,6 +667,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 } else {
                     groupChatUser = new GroupChatUser();
                     groupChatUser.setId(groupChatUserId);
+                    groupChatUser.setJoinedAt(new Date(new Date().getTime()));
                 }
                 groupChatUserRepository.save(groupChatUser);
             }

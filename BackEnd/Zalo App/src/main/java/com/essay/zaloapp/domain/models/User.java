@@ -94,12 +94,12 @@ public class User {
         this.messageChatList = messageChatList;
     }
 
-    public User(String phoneNumber, String fullName, String password, HashSet<Role> roleList){
+    public User(String phoneNumber, String fullName, String password, HashSet<Role> roleList, Date birthDay){
         this.phoneNumber = phoneNumber;
         this.fullName = fullName;
         this.password = password;
         this.createdAt = new Date();
-        this.birthDay = new Date();
+        this.birthDay = birthDay;
         this.isConfirmed = false;
         this.isLocked = false;
         this.roles = roleList;

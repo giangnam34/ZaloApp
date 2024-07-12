@@ -225,13 +225,13 @@ INSERT ignore INTO `zaloapp`.`group_chat` (`id`, `group_name`, `is_change_name_a
 INSERT ignore INTO `zaloapp`.`group_chat` (`id`, `group_name`, `is_change_name_and_avatar`, `is_create_new_note`, `is_create_new_poll`, `is_pin_message`, `is_send_message`, `avatar`) VALUES ('2', 'Group2', b'0', b'0', b'0', b'0', b'1', 'DefaultAvatar.jpg');
 INSERT ignore INTO `zaloapp`.`group_chat` (`id`, `avatar`, `deleted_count`, `group_name`, `is_change_name_and_avatar`, `is_create_new_note`, `is_create_new_poll`, `is_deleted`, `is_pin_message`, `is_send_message`) VALUES ('3', 'DefaultAvatar.jpg', '0', 'Group3', '0', '0', '0', '0', '0', '1');
 
-INSERT ignore INTO `zaloapp`.`group_chat_user` (`group_id`, `phone_number_user`, `is_admin`, `is_owner`, `is_user_create_group`, `category_id`) VALUES ('1', '0968322444', b'0', b'0', b'0', b'1');
-INSERT ignore INTO `zaloapp`.`group_chat_user` (`group_id`, `phone_number_user`, `is_admin`, `is_owner`, `is_user_create_group`, `category_id`) VALUES ('1', '0968322555', b'0', b'0', b'0', b'1');
-INSERT ignore INTO `zaloapp`.`group_chat_user` (`group_id`, `phone_number_user`, `is_admin`, `is_owner`, `is_user_create_group`, `category_id`) VALUES ('2', '0968322444', b'0', b'0', b'0', b'1');
-INSERT ignore INTO `zaloapp`.`group_chat_user` (`group_id`, `phone_number_user`, `is_admin`, `is_owner`, `is_user_create_group`, `category_id`) VALUES ('2', '0968322666', b'0', b'0', b'0', b'1');
-INSERT ignore INTO `zaloapp`.`group_chat_user` (`group_id`, `phone_number_user`, `is_admin`, `is_deleted`, `is_owner`, `is_user_create_group`, `category_id`) VALUES ('3', '0968322444', '0', '0', '0', '0', '1');
-INSERT ignore INTO `zaloapp`.`group_chat_user` (`group_id`, `phone_number_user`, `is_admin`, `is_deleted`, `is_owner`, `is_user_create_group`, `category_id`) VALUES ('3', '0968322777', '0', '0', '0', '0', '1');
-INSERT ignore INTO `zaloapp`.`group_chat_user` (`group_id`, `phone_number_user`, `is_admin`, `is_deleted`, `is_owner`, `is_user_create_group`, `category_id`) VALUES ('3', '0968322666', '0', '0', '0', '0', '1');
+INSERT ignore INTO `zaloapp`.`group_chat_user` (`group_id`, `phone_number_user`, `is_admin`, `is_owner`, `is_user_create_group`, `category_id`, `joined_at`) VALUES ('1', '0968322444', b'0', b'0', b'0', b'1', '2002-12-25 00:00:00');
+INSERT ignore INTO `zaloapp`.`group_chat_user` (`group_id`, `phone_number_user`, `is_admin`, `is_owner`, `is_user_create_group`, `category_id`,  `joined_at`) VALUES ('1', '0968322555', b'0', b'0', b'0', b'1', '2002-12-25 00:00:00');
+INSERT ignore INTO `zaloapp`.`group_chat_user` (`group_id`, `phone_number_user`, `is_admin`, `is_owner`, `is_user_create_group`, `category_id`, `joined_at`) VALUES ('2', '0968322444', b'0', b'0', b'0', b'1', '2002-12-25 00:00:00');
+INSERT ignore INTO `zaloapp`.`group_chat_user` (`group_id`, `phone_number_user`, `is_admin`, `is_owner`, `is_user_create_group`, `category_id`, `joined_at`) VALUES ('2', '0968322666', b'0', b'0', b'0', b'1', '2002-12-25 00:00:00');
+INSERT ignore INTO `zaloapp`.`group_chat_user` (`group_id`, `phone_number_user`, `is_admin`, `is_deleted`, `is_owner`, `is_user_create_group`, `category_id`, `joined_at`) VALUES ('3', '0968322444', '0', '0', '0', '0', '1', '2002-12-25 00:00:00');
+INSERT ignore INTO `zaloapp`.`group_chat_user` (`group_id`, `phone_number_user`, `is_admin`, `is_deleted`, `is_owner`, `is_user_create_group`, `category_id`, `joined_at`) VALUES ('3', '0968322777', '0', '0', '0', '0', '1', '2002-12-25 00:00:00');
+INSERT ignore INTO `zaloapp`.`group_chat_user` (`group_id`, `phone_number_user`, `is_admin`, `is_deleted`, `is_owner`, `is_user_create_group`, `category_id`, `joined_at`) VALUES ('3', '0968322666', '0', '0', '0', '0', '1', '2002-12-25 00:00:00');
 
 INSERT ignore INTO `zaloapp`.`message_chat`
 (`id`, `content`, `deleted`, `disable_actions`, `disable_reactions`, `failure`, `saved`, `seen`, `send_at`, `updated_at`, `group_id`, `user_id`, `distributed`, `is_system`)
@@ -283,45 +283,45 @@ INSERT ignore INTO `zaloapp`.`message_chat`
 VALUES
     (10, 'Bye', b'0', b'0', b'0', b'0', b'1', b'0', '2024-05-16 12:13:00', '2024-05-16 12:13:00', 1, 2, b'1', b'0');
 
--- INSERT ignore INTO `zaloapp`.`message_chat`
--- (`id`, `content`, `deleted`, `disable_actions`, `disable_reactions`, `failure`, `saved`, `seen`, `send_at`, `updated_at`, `group_id`, `user_id`, `distributed`, `is_system`)
--- VALUES
---     (11, 'Ay yo', b'0', b'0', b'0', b'0', b'1', b'1', '2024-05-16 12:13:00', '2024-05-16 12:13:00', 2, 1, b'1', b'0');
---
--- INSERT ignore INTO `zaloapp`.`message_chat`
--- (`id`, `content`, `deleted`, `disable_actions`, `disable_reactions`, `failure`, `saved`, `seen`, `send_at`, `updated_at`, `group_id`, `user_id`, `distributed`, `is_system`)
--- VALUES
---     (12, 'Hi hi', b'0', b'0', b'0', b'0', b'1', b'1', '2024-05-16 12:14:00', '2024-05-16 12:14:00', 2, 3, b'1', b'0');
---
--- INSERT ignore INTO `zaloapp`.`message_chat`
--- (`id`, `content`, `deleted`, `disable_actions`, `disable_reactions`, `failure`, `saved`, `seen`, `send_at`, `updated_at`, `group_id`, `user_id`, `distributed`, `is_system`)
--- VALUES
---     (13, 'Lets go to cinema', b'0', b'0', b'0', b'0', b'1', b'1', '2024-05-16 12:15:00', '2024-05-16 12:15:00', 2, 1, b'1', b'0');
---
--- INSERT ignore INTO `zaloapp`.`message_chat`
--- (`id`, `content`, `deleted`, `disable_actions`, `disable_reactions`, `failure`, `saved`, `seen`, `send_at`, `updated_at`, `group_id`, `user_id`, `distributed`, `is_system`)
--- VALUES
---     (14, 'Okay lets go', b'0', b'0', b'0', b'0', b'1', b'1', '2024-05-16 12:16:00', '2024-05-16 12:16:00', 2, 3, b'1', b'0');
---
--- INSERT ignore INTO `zaloapp`.`message_chat`
--- (`id`, `content`, `deleted`, `disable_actions`, `disable_reactions`, `failure`, `saved`, `seen`, `send_at`, `updated_at`, `group_id`, `user_id`, `distributed`, `is_system`)
--- VALUES
---     (15, 'Whats time is it', b'0', b'0', b'0', b'0', b'1', b'1', '2024-05-16 12:17:00', '2024-05-16 12:17:00', 2, 1, b'1', b'0');
---
--- INSERT ignore INTO `zaloapp`.`message_chat`
--- (`id`, `content`, `deleted`, `disable_actions`, `disable_reactions`, `failure`, `saved`, `seen`, `send_at`, `updated_at`, `group_id`, `user_id`, `distributed`, `is_system`)
--- VALUES
---     (16, 'I can drive you', b'0', b'0', b'0', b'0', b'1', b'1', '2024-05-16 12:17:30', '2024-05-16 12:17:30', 2, 1, b'1', b'0');
---
--- INSERT ignore INTO `zaloapp`.`message_chat`
--- (`id`, `content`, `deleted`, `disable_actions`, `disable_reactions`, `failure`, `saved`, `seen`, `send_at`, `updated_at`, `group_id`, `user_id`, `distributed`, `is_system`)
--- VALUES
---     (17, 'Okay see u at 11 am', b'0', b'0', b'0', b'0', b'1', b'0', '2024-05-16 12:20:00', '2024-05-16 12:20:00', 2, 3, b'1', b'0');
---
--- INSERT ignore INTO `zaloapp`.`message_chat`
--- (`id`, `content`, `deleted`, `disable_actions`, `disable_reactions`, `failure`, `saved`, `seen`, `send_at`, `updated_at`, `group_id`, `user_id`, `distributed`, `is_system`)
--- VALUES
---     (18, 'Okay', b'0', b'0', b'0', b'0', b'1', b'0', '2024-05-16 12:22:00', '2024-05-16 12:22:00', 2, 3, b'1', b'0');
+INSERT ignore INTO `zaloapp`.`message_chat`
+(`id`, `content`, `deleted`, `disable_actions`, `disable_reactions`, `failure`, `saved`, `seen`, `send_at`, `updated_at`, `group_id`, `user_id`, `distributed`, `is_system`)
+VALUES
+    (11, 'Ay yo', b'0', b'0', b'0', b'0', b'1', b'1', '2024-07-10 12:13:00', '2024-07-10 12:13:00', 3, 1, b'1', b'0');
+
+INSERT ignore INTO `zaloapp`.`message_chat`
+(`id`, `content`, `deleted`, `disable_actions`, `disable_reactions`, `failure`, `saved`, `seen`, `send_at`, `updated_at`, `group_id`, `user_id`, `distributed`, `is_system`)
+VALUES
+    (12, 'Hi hi', b'0', b'0', b'0', b'0', b'1', b'1', '2024-07-11 12:14:00', '2024-07-11 12:14:00', 3, 3, b'1', b'0');
+
+INSERT ignore INTO `zaloapp`.`message_chat`
+(`id`, `content`, `deleted`, `disable_actions`, `disable_reactions`, `failure`, `saved`, `seen`, `send_at`, `updated_at`, `group_id`, `user_id`, `distributed`, `is_system`)
+VALUES
+    (13, 'Lets go to cinema', b'0', b'0', b'0', b'0', b'1', b'1', '2024-07-11 12:15:00', '2024-07-11 12:15:00', 3, 1, b'1', b'0');
+
+INSERT ignore INTO `zaloapp`.`message_chat`
+(`id`, `content`, `deleted`, `disable_actions`, `disable_reactions`, `failure`, `saved`, `seen`, `send_at`, `updated_at`, `group_id`, `user_id`, `distributed`, `is_system`)
+VALUES
+    (14, 'Okay lets go', b'0', b'0', b'0', b'0', b'1', b'1', '2024-07-12 12:16:00', '2024-07-12 12:16:00', 3, 3, b'1', b'0');
+
+INSERT ignore INTO `zaloapp`.`message_chat`
+(`id`, `content`, `deleted`, `disable_actions`, `disable_reactions`, `failure`, `saved`, `seen`, `send_at`, `updated_at`, `group_id`, `user_id`, `distributed`, `is_system`)
+VALUES
+    (15, 'Whats time is it', b'0', b'0', b'0', b'0', b'1', b'1', '2024-07-12 12:17:00', '2024-07-12 12:17:00', 3, 4, b'1', b'0');
+
+INSERT ignore INTO `zaloapp`.`message_chat`
+(`id`, `content`, `deleted`, `disable_actions`, `disable_reactions`, `failure`, `saved`, `seen`, `send_at`, `updated_at`, `group_id`, `user_id`, `distributed`, `is_system`)
+VALUES
+    (16, 'I can drive you', b'0', b'0', b'0', b'0', b'1', b'1', '2024-07-12 12:17:30', '2024-07-12 12:17:30', 3, 1, b'1', b'0');
+
+INSERT ignore INTO `zaloapp`.`message_chat`
+(`id`, `content`, `deleted`, `disable_actions`, `disable_reactions`, `failure`, `saved`, `seen`, `send_at`, `updated_at`, `group_id`, `user_id`, `distributed`, `is_system`)
+VALUES
+    (17, 'Okay see u at 11 am', b'0', b'0', b'0', b'0', b'1', b'0', '2024-07-12 12:20:00', '2024-07-12 12:20:00', 3, 3, b'1', b'0');
+
+INSERT ignore INTO `zaloapp`.`message_chat`
+(`id`, `content`, `deleted`, `disable_actions`, `disable_reactions`, `failure`, `saved`, `seen`, `send_at`, `updated_at`, `group_id`, `user_id`, `distributed`, `is_system`)
+VALUES
+    (18, 'Okay', b'0', b'0', b'0', b'0', b'1', b'0', '2024-07-12 12:22:00', '2024-07-12 12:22:00', 3, 3, b'1', b'0');
 
 insert ignore into zaloapp.resource(id,resource_type,resource_value) values (1, "Image", "hq720.jpg");
 insert ignore into zaloapp.resource(id,resource_type,resource_value) values (2, "Image", "response.jpeg");

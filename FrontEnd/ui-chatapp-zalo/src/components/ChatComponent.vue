@@ -10,7 +10,8 @@
 			@send-message-reaction="sendMessageReaction($event.detail[0])" :theme="theme"
 			@room-info="showRoomInfo($event.detail[0])" @edit-message="editMessage($event.detail[0])"
 			@room-action-handler="roomActionHandler($event.detail[0])" @add-room="addRoom()"
-			@menu-action-handler="menuActionHandler($event.detail[0])" :emoji-data-source="emojiDataSource" />
+			@menu-action-handler="menuActionHandler($event.detail[0])" :emoji-data-source="emojiDataSource"
+			@typing-message="typingMessage($event.detail[0])" />
 		<v-dialog class="dialog-container-user" v-model="showPopUpInfoRoomWith2Members" max-width="352px"
 			@click:outside="closePopupInfoRoom">
 			<v-card class="dialog-component-user">
@@ -351,6 +352,7 @@ export default {
 			socket: null,
 			stompClient: null,
 			currentUserId: null,
+			currentUser: null,
 			userFound: null,
 			listFriends: [],
 			addedFriends: [],
@@ -364,6 +366,7 @@ export default {
 			roomDetail: null,
 			roomsLoaded: false,
 			loadingRooms: true,
+			roomForNotification: null,
 			loadFirstRoom: true,
 			roomInfo: true,
 			roomActions: [
@@ -409,6 +412,9 @@ export default {
 			displayedDate: '',
 			groupAvatarFile: null,
 			emojiDataSource: "https://cdn.jsdelivr.net/npm/emoji-picker-element-data@%5E1/en/emojibase/data.json",
+			timeoutId: null,
+			callAccepted: false,
+			callDeclined: false,
 		}
 	},
 
@@ -452,6 +458,14 @@ export default {
 			if (this.userFound && this.userFound.birthDay) {
 				const parsedDate = parseISO(this.userFound.birthDay);
 				this.displayedDate = format(parsedDate, "dd 'tháng' MM, yyyy", { locale: viLocale });
+			}
+		},
+		typingMessage({ roomId, message }) {
+
+			const roomIndex = this.rooms.findIndex(room => room.roomId === roomId);
+
+			if (roomIndex !== -1) {
+				this.rooms[roomIndex].typingUsers = [...this.rooms[roomIndex].typingUsers, this.currentUserId];
 			}
 		},
 		async fetchMessages({ room = {}, options = {} }) {
@@ -508,9 +522,12 @@ export default {
 			let messages = result.data.chatMessageResponses;
 			messages = messages.filter(message => !(message.system === true && message.deleted === true));
 			messages.forEach(element => {
+				if (element.isBlock === true) {
+					element.content = "Tin nhắn đã bị ẩn!";
+				}
 				element.files.forEach(file => {
 					delete file.progress;
-				})
+				});
 			});
 			// console.log(messages);
 			this.messages = [...messages, ...this.messages];
@@ -1110,6 +1127,7 @@ export default {
 
 		getCurrentUserId() {
 			const user = JSON.parse(localStorage.getItem('user'));
+			this.currentUser = user;
 			this.currentUserId = user.id;
 			// console.log(this.currentUserId);
 		},
@@ -1193,6 +1211,52 @@ export default {
 			}
 		},
 
+		clearTimeouts() {
+			if (this.timeoutId) {
+				clearTimeout(this.timeoutId);
+				this.timeoutId = null;
+			}
+		},
+
+		async createMissedCallMessage() {
+
+			const user = this.roomForNotification.users.find(element => element._id != this.currentUserId);
+			if (user) {
+				const messageContent = `${user.username} đã bỏ lỡ cuộc gọi!`;
+				const form = new FormData();
+
+				form.append('roomId', this.roomForNotification.roomId);
+				form.append('content', messageContent);
+				form.append('system', false);
+				form.append('saved', false);
+				form.append('distributed', false);
+				form.append('seen', false);
+				form.append('failure', false);
+				form.append('disableActions', false);
+
+				try {
+					const result = await axios.post(`http://localhost:8181/v1/chat/create-message`, form, {
+						headers: {
+							'Content-Type': 'multipart/form-data'
+						}
+					});
+					if (result.status === 200) {
+						result.data.chatMessageResponses.forEach(chatMessageResponse => {
+							chatMessageResponse.saved = true;
+							chatMessageResponse.distributed = true;
+							this.messages = [...this.messages, chatMessageResponse];
+						});
+					} else {
+						result.data.chatMessageResponses.forEach(chatMessageResponse => {
+							chatMessageResponse.failure = true;
+						});
+					}
+				} catch (exception) {
+					console.log('Error creating message:', exception);
+				}
+			}
+		},
+
 		// --------------Config web socket--------------
 
 		async callToSpecificUser(room) {
@@ -1201,12 +1265,14 @@ export default {
 			// console.log(room);
 			try {
 				const user = room.users.filter(element => element._id != this.currentUserId);
+				this.roomForNotification = room;
 				await this.initializeRTCPeerConnection(this.currentUserId);
 				const stream = await this.getStream();
 				this.localStream = stream;
 				stream.getTracks().forEach((track) => {
 					this.peerConnection.addTrack(track, stream);
 				});
+				// const timeout = setTimeout(await this.createOffer(), 10000, user[0]._id);
 				await this.createOffer(user[0]._id);
 			} catch (exception) {
 				console.log(exception);
@@ -1297,12 +1363,18 @@ export default {
 					event: "offer",
 					data: offer
 				}), userId);
+
+				const timeout = setTimeout(this.createMissedCallMessage, 10000);
+				if (this.callAccepted || this.callDeclined) {
+					clearTimeout(timeout);
+				}
 			} catch (error) {
 				console.log("Error creating an offer");
 			}
 		},
 
 		async handleOffer(offer, remoteUser) {
+			console.log("Handle")
 			this.callIncoming = true;
 			this.offerData = offer;
 			this.remoteUser = remoteUser;
@@ -1316,6 +1388,18 @@ export default {
 					this.declineCall();
 				}
 			});
+			const timeout = setTimeout(this.closeForm, 10000);
+			if (this.callAccepted || this.callDeclined) {
+				clearTimeout(timeout);
+			}
+		},
+
+		closeForm() {
+			this.callAccepted = false;
+			this.callDeclined = false;
+			this.callIncoming = false;
+			this.offerData = null;
+			this.remoteUser = null;
 		},
 
 		async handleCandidate(candidate) {
@@ -1370,6 +1454,7 @@ export default {
 
 		async acceptCall() {
 			this.callIncoming = false;
+			this.callAccepted = true;
 			this.videoCallDialog = true;
 			try {
 				await this.peerConnection.setRemoteDescription(new RTCSessionDescription(this.offerData));
@@ -1393,6 +1478,7 @@ export default {
 			this.callIncoming = false;
 			this.offerData = null;
 			this.remoteUser = null;
+			this.callDeclined = true;
 			// You may want to send a message back to the caller indicating the call was declined
 		},
 

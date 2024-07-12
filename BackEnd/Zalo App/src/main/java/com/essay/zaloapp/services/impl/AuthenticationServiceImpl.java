@@ -83,7 +83,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             HashSet<Role> roleUser = new HashSet<Role>();
             roleUser.add((Role) roleRepository.findByName(RoleName.ROLE_USER));
             String otpCode = generateOTPCode(100000, 999999);
-            User user = new User(signUpRequest.getPhoneNumber(), signUpRequest.getFullName(), passwordEncoder.encode(signUpRequest.getPassword()), roleUser);
+            User user = new User(signUpRequest.getPhoneNumber(), signUpRequest.getFullName(), passwordEncoder.encode(signUpRequest.getPassword()), roleUser, signUpRequest.getBirthDay());
             ResultSMSResponse result = new ObjectMapper().readValue(sendOTP(signUpRequest.getPhoneNumber(), otpCode), ResultSMSResponse.class);
             userRepository.save(user);
             Long statusCode = getStatusSendOTP(result);

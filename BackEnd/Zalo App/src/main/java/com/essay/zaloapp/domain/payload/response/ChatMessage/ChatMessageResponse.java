@@ -34,4 +34,5 @@ public class ChatMessageResponse {
     private Map<String, List<String>> reactions;
     private ReplyMessageResponse replyMessage;
     private List<UserOfRoom> taggedUser;
+    private Boolean isBlock;
 }

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +18,9 @@ public interface MessageChatRepository extends JpaRepository<MessageChat, Long> 
 
     @Query("SELECT COUNT(m) FROM MessageChat m WHERE m.seen = false AND m.groupChat.id = :groupId AND m.user.phoneNumber = :phoneNumberUser")
     int countBySeenFalseAndGroupId(@Param("groupId") Long groupId, @Param("phoneNumberUser") String phoneNumberUser);
+
+    @Query("SELECT m FROM MessageChat m WHERE m.groupChat.id = :groupId AND m.sendAt > :sendAt ORDER BY m.sendAt DESC")
+    Page<MessageChat> findAllByGroupIdAndSendAtAfter(@Param("groupId") Long groupId, @Param("sendAt") Date sendAt, Pageable pageable);
 
     @Query("SELECT m FROM MessageChat m WHERE m.groupChat.id = :groupId ORDER BY m.sendAt DESC")
     List<MessageChat> findLatestMessageByGroupId(@Param("groupId") Long groupId);
