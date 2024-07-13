@@ -268,10 +268,10 @@
 
 		<template>
 			<div>
-				<a-modal v-if="callIncoming" title="Incoming Call" ok-text="Accept" cancel-text="Decline" @ok="acceptCall"
+				<!-- <a-modal v-if="callIncoming" title="Incoming Call" ok-text="Accept" cancel-text="Decline" @ok="acceptCall"
 					@cancel="declineCall">
 					<p>You have an incoming call. Do you want to accept it?</p>
-				</a-modal>
+				</a-modal> -->
 
 				<v-dialog v-model="videoCallDialog" max-width="90%" max-height="90%" persistent class="custom-dialog">
 					<v-card>
@@ -414,7 +414,9 @@ export default {
 			emojiDataSource: "https://cdn.jsdelivr.net/npm/emoji-picker-element-data@%5E1/en/emojibase/data.json",
 			timeoutId: null,
 			callAccepted: false,
+			timeout: null,
 			callDeclined: false,
+			confirmModal: null,
 		}
 	},
 
@@ -442,7 +444,24 @@ export default {
 			// this.messages.forEach(message => this.callApiUpdateMessage(this.currentRoom, message));
 		});
 	},
-
+	watch: {
+		callAccepted(newVal) {
+			if (newVal && this.timeout) {
+				clearTimeout(this.timeout);
+				if (this.confirmModal) {
+					this.confirmModal.destroy();
+				}
+			}
+		},
+		callDeclined(newVal) {
+			if (newVal && this.timeout) {
+				clearTimeout(this.timeout);
+				if (this.confirmModal) {
+					this.confirmModal.destroy();
+				}
+			}
+		},
+	},
 	methods: {
 
 		closeDialog() {
@@ -944,6 +963,7 @@ export default {
 			// console.log("Action", action);
 			const room = this.rooms.find(room => room.roomId === roomId);
 			if (action.name === 'callUser') {
+				this.videoCallDialog = true;
 				this.callToSpecificUser(room);
 			} else if (action.name === 'sendMessageToUser') {
 				console.log("Call sendMessageToUser");
@@ -1254,6 +1274,8 @@ export default {
 				} catch (exception) {
 					console.log('Error creating message:', exception);
 				}
+
+				this.videoCallDialog = false;
 			}
 		},
 
@@ -1350,6 +1372,7 @@ export default {
 			this.peerConnection.ontrack = ev => {
 				console.log("On track functin fire");
 				if (ev.streams && ev.streams[0]) {
+					this.callAccepted = true;
 					this.remoteStream = ev.streams[0];
 				}
 			};
@@ -1364,10 +1387,7 @@ export default {
 					data: offer
 				}), userId);
 
-				const timeout = setTimeout(this.createMissedCallMessage, 10000);
-				if (this.callAccepted || this.callDeclined) {
-					clearTimeout(timeout);
-				}
+				this.timeout = setTimeout(this.createMissedCallMessage, 60000);
 			} catch (error) {
 				console.log("Error creating an offer");
 			}
@@ -1376,9 +1396,11 @@ export default {
 		async handleOffer(offer, remoteUser) {
 			console.log("Handle")
 			this.callIncoming = true;
+			this.callAccepted = false;
+			this.callDeclined = false;
 			this.offerData = offer;
 			this.remoteUser = remoteUser;
-			Modal.confirm({
+			this.confirmModal = Modal.confirm({
 				title: 'Incoming Call',
 				content: 'You have an incoming call. Do you want to accept it?',
 				onOk: () => {
@@ -1388,10 +1410,12 @@ export default {
 					this.declineCall();
 				}
 			});
-			const timeout = setTimeout(this.closeForm, 10000);
-			if (this.callAccepted || this.callDeclined) {
-				clearTimeout(timeout);
-			}
+			this.timeout = setTimeout(() => {
+				this.closeForm();
+				if (this.confirmModal) {
+					this.confirmModal.destroy();
+				}
+			}, 60000);
 		},
 
 		closeForm() {
