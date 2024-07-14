@@ -40,7 +40,7 @@ public class Post {
     private User user;
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "post_resource", joinColumns = @JoinColumn(name = "post_id"), inverseJoinColumns = @JoinColumn(name = "resource_id"))
+    @JoinTable(name = "post_resource",joinColumns = @JoinColumn(name = "post_id"), inverseJoinColumns = @JoinColumn(name = "resource_id"))
     private List<Resource> resourceList;
 
     @ManyToOne(cascade = CascadeType.ALL)
@@ -52,6 +52,12 @@ public class Post {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<Comment> commentList;
+
+    // Điểm xếp hạng bài viết
+    // Like : 0.1
+    // Comment : 0.3
+    // Share : 0.6
+    private Double postScore;
 
 
     public Post(Date createdAt, Date updatedAt, String contentPost, Audience value, User user, List<Resource> resourceList) {

@@ -9,6 +9,7 @@ import com.essay.zaloapp.domain.payload.response.SocialMedia.Comment.InfoComment
 import com.essay.zaloapp.secruity.UserPrincipal;
 import com.essay.zaloapp.services.SocialMediaService;
 import com.essay.zaloapp.services.impl.SocialMediaServiceImpl;
+import org.apache.mahout.cf.taste.common.TasteException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -153,7 +155,7 @@ public class SocialMediaController {
     // Hiển thị bản tin
     @GetMapping("/get-post")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> getPostUser(@AuthenticationPrincipal UserPrincipal userPrincipal){
+    public ResponseEntity<?> getPostUser(@AuthenticationPrincipal UserPrincipal userPrincipal) throws IOException, TasteException {
         SocialMediaServiceImpl.GetAllInfoPostUser result = socialMediaService.getNewFeedUser(userPrincipal.getId());
         return result.getMesage().equals("Thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }

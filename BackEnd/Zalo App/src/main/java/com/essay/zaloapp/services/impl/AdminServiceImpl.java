@@ -10,6 +10,8 @@ import com.essay.zaloapp.domain.payload.response.Admin.UsersResponse;
 import com.essay.zaloapp.repository.*;
 import com.essay.zaloapp.services.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -60,7 +62,7 @@ public class AdminServiceImpl implements AdminService {
             usersResponse.setIsConfirm(user.getIsConfirmed());
             usersResponse.setIsLock(user.getIsLocked());
 
-            List<Post> posts = postRepository.findByUser_Id(user.getId());
+            List<Post> posts = postRepository.findByUser_Id(user.getId(), PageRequest.of(1,100));
             usersResponse.setPostsCount(Long.valueOf(posts.size()));
 
             List<Friends> friends = friendsRepository.findAllByUserId(user.getId());

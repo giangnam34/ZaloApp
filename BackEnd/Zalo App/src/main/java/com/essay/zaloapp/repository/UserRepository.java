@@ -19,4 +19,6 @@ public interface UserRepository extends CrudRepository<User, String> {
     Boolean existsUserById(Long userId);
 
     List<User> findAllByStatus(Status status);
+
+    List<User> findAll();
 }

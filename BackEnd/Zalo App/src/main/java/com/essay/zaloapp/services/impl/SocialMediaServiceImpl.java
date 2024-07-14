@@ -10,18 +10,21 @@ import com.essay.zaloapp.domain.payload.response.Authorize.InfoUser;
 import com.essay.zaloapp.domain.payload.response.SocialMedia.Comment.InfoComment;
 import com.essay.zaloapp.domain.payload.response.SocialMedia.GetInfoPostResponse;
 import com.essay.zaloapp.repository.*;
-import com.essay.zaloapp.services.FileStorageService;
-import com.essay.zaloapp.services.FormatDate;
-import com.essay.zaloapp.services.FriendService;
-import com.essay.zaloapp.services.SocialMediaService;
+import com.essay.zaloapp.services.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.mahout.cf.taste.common.TasteException;
+import org.apache.mahout.cf.taste.recommender.RecommendedItem;
+import org.apache.poi.ss.formula.functions.T;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -58,6 +61,12 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     @Autowired
     private FriendsRepository friendsRepository;
 
+    @Autowired
+    private RecommendSystemService recommendSystemService;
+
+    @Autowired
+    private PreferenceCalculator preferenceCalculator;
+
     @Override
     public String validateCreateNewPostRequest(User user, CreateNewPostRequest createNewPostRequest){
         if ( createNewPostRequest.getPostTopId() == null && (createNewPostRequest.getFiles() == null || (createNewPostRequest.getFiles() != null && createNewPostRequest.getFiles()[0].isEmpty())) && (createNewPostRequest.getContent() == null || createNewPostRequest.getContent().isEmpty()) && ( createNewPostRequest.getUserTagIDList() == null || createNewPostRequest.getUserTagIDList().isEmpty())) {
@@ -74,6 +83,7 @@ public class SocialMediaServiceImpl implements SocialMediaService {
         try{
             User user = userRepository.findById(userId);
             String validate = validateCreateNewPostRequest(user,createNewPostRequest);
+            Long sharePostID = null;
             if (!validate.equals("Hợp lệ!"))
                 return validate;
             List<Resource> resourceList = new ArrayList<>();
@@ -86,6 +96,8 @@ public class SocialMediaServiceImpl implements SocialMediaService {
                 if (postTop == null) return "Bài viết chia sẻ đã không còn tồn tại!";
                 if (!isUserAuthorizeInteractPost(post,user)) return "Người dùng không có quyền chia sẻ bài viết này!";
                 post.setPostTop(postTop);
+                sharePostID = postTop.getId();
+                postTop.setPostScore( (postTop.getPostScore() != null ? postTop.getPostScore() : 0.000000000000000000) + 0.600000000000000000);
             }
             if (createNewPostRequest.getUserTagIDList() != null && !createNewPostRequest.getUserTagIDList().isEmpty()) {
                 for (String userPhoneNumber : createNewPostRequest.getUserTagIDList()){
@@ -96,6 +108,10 @@ public class SocialMediaServiceImpl implements SocialMediaService {
                 post.setPostUserList(postUserList);
             }
             postRepository.save(post);
+            if (sharePostID != null){
+
+                preferenceCalculator.updatePreferenceUser(user,sharePostID, 0L, 0L, 1L);
+            }
             return "Đăng bài viết thành công!";
         } catch(Exception e){
             System.out.println(e.toString());
@@ -160,6 +176,13 @@ public class SocialMediaServiceImpl implements SocialMediaService {
             Post post = postRepository.findById(postId).orElseThrow(Exception::new);
             if (post.getUser().getId() != userId)
                 return "Người dùng không có quyền thực hiện hành động này!";
+            if (post.getPostTop() != null){
+                Post postTop = post.getPostTop();
+                if (postTop.getPostScore() != null && postTop.getPostScore() - 0.600000000000000000 >= 0.000000000000000000) {
+                    postTop.setPostScore(postTop.getPostScore() - 0.600000000000000000);
+                    postRepository.save(postTop);
+                }
+            }
             postRepository.delete(post);
             return "Xóa bài viết thành công!";
         } catch(Exception e){
@@ -172,7 +195,8 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     @Override
     public GetAllInfoPostUser getAllPostUser(Long userId){
         try{
-            return new GetAllInfoPostUser("Thành công!", mapListPostEntityToResponse(postRepository.findByUser_Id(userId)));
+            Pageable pageable = PageRequest.of(1,10);
+            return new GetAllInfoPostUser("Thành công!", mapListPostEntityToResponse(postRepository.findByUser_Id(userId, pageable)));
         } catch(Exception e){
             System.out.println(e.toString());
             return new GetAllInfoPostUser("Có lỗi xảy ra trong quá trình thực thi. Vui lòng thử lại!", null);
@@ -181,14 +205,27 @@ public class SocialMediaServiceImpl implements SocialMediaService {
 
     // Nhận bảng tin của người dùng
     @Override
-    public GetAllInfoPostUser getNewFeedUser(Long userId){
-        List <Post> postList = postRepository.findAll().stream().filter(post -> {
+    public GetAllInfoPostUser getNewFeedUser(Long userId) throws IOException, TasteException {
+        User user = userRepository.findById(userId);
+        Long age = (new Date().getTime() - user.getBirthDay().getTime())/(1000l * 60 * 60 * 24 * 365);
+        List<RecommendedItem> recommendIDList = recommendSystemService.recommendSystem(userId,age);
+        List<Post> recommendedPostList = recommendIDList.stream().map(recommendElement -> postRepository.findById(recommendElement.getItemID()).get()).toList();
+        List <Post> postList =  recommendedPostList.stream().filter(post -> {
             return (post.getAudienceValue() == Audience.Public ||
-                    post.getUser().getId() == userId ||
+                    Objects.equals(post.getUser().getId(), userId) ||
                     (friendService.isFriendUser(userId,post.getUser().getId()) &&
                             (post.getAudienceValue() == Audience.AllFriend || (post.getAudienceValue() == Audience.SomeOneCanSee && !post.getPostUserList().stream().filter(postUser -> postUser.getPostUserType() == PostUserType.TagUser && postUser.getUser().getId() == userId).collect(Collectors.toList()).isEmpty())
                                                                            || (post.getAudienceValue() == Audience.AllExceptSomeOne && post.getPostUserList().stream().filter(postUser -> postUser.getPostUserType() == PostUserType.TagUser && postUser.getUser().getId() == userId).collect(Collectors.toList()).isEmpty()))));
         }).collect(Collectors.toList());
+        if (postList.isEmpty()){
+            postList = postRepository.findAll(PageRequest.of(1,10)).stream().filter(post -> {
+                return (post.getAudienceValue() == Audience.Public ||
+                        post.getUser().getId() == userId ||
+                        (friendService.isFriendUser(userId,post.getUser().getId()) &&
+                                (post.getAudienceValue() == Audience.AllFriend || (post.getAudienceValue() == Audience.SomeOneCanSee && !post.getPostUserList().stream().filter(postUser -> postUser.getPostUserType() == PostUserType.TagUser && postUser.getUser().getId() == userId).collect(Collectors.toList()).isEmpty())
+                                        || (post.getAudienceValue() == Audience.AllExceptSomeOne && post.getPostUserList().stream().filter(postUser -> postUser.getPostUserType() == PostUserType.TagUser && postUser.getUser().getId() == userId).collect(Collectors.toList()).isEmpty()))));
+            }).collect(Collectors.toList());
+        }
         return new GetAllInfoPostUser("Thành công!", mapListPostEntityToResponse(postList));
     }
 
@@ -243,12 +280,16 @@ public class SocialMediaServiceImpl implements SocialMediaService {
             PostUser postUser = new PostUser();
             if (!postUserTypeMap.containsKey(user) || (postUserTypeMap.get(user).equals(PostUserType.UserDisLike))){
                 postUser = new PostUser(post,user, PostUserType.UserLike);
+                post.setPostScore( (post.getPostScore() != null ? post.getPostScore() : 0.000000000000000000) + 0.100000000000000000);
                 postUserRepository.save(postUser);
+                preferenceCalculator.updatePreferenceUser(user,post.getId(),1L,0L,0L);
                 return "Thích bài viết thành công!";
             }
             else {
                 postUser = new PostUser(post,user,PostUserType.UserDisLike);
+                if (post.getPostScore() != null && post.getPostScore() - 0.100000000000000000 >= 0.000000000000000000) post.setPostScore( post.getPostScore() - 0.100000000000000000);
                 postUserRepository.save(postUser);
+                preferenceCalculator.updatePreferenceUser(user,post.getId(),-1L,0L,0L);
                 return "Hủy thích bài viết thành công!";
             }
 
@@ -274,7 +315,9 @@ public class SocialMediaServiceImpl implements SocialMediaService {
             else commentTop = null;
             if (isUserAuthorizeInteractPost(post,user)) {
                 Comment comment = new Comment(content, post, commentTop, user, null, (file != null && !file.isEmpty()) ? new Resource(fileStorageService.storeFile(file), file.getContentType().contains("video") ? ResourceType.Video : ResourceType.Image) : null);
+                post.setPostScore( (post.getPostScore() != null ? post.getPostScore() : 0.000000000000000000) + 0.300000000000000000);
                 commentRepository.save(comment);
+                preferenceCalculator.updatePreferenceUser(user,post.getId(), 0L, 1L, 0L);
             }
             else return "Người dùng không có quyền thực hiện thao tác này!";
             return "Đăng bình luận thành công!";
@@ -345,7 +388,12 @@ public class SocialMediaServiceImpl implements SocialMediaService {
             if (!comment.getUser().getId().equals(userId)) return "Người dùng không có quyền xóa bình luận này!";
             comment.setIsDelete(true);
             //comment.setUpdatedAt(new Date(new Date().getTime() + 7*60*60*1000));
+            Post post = comment.getPost();
+            if (post.getPostScore() != null && post.getPostScore() - 0.3000000000000000000 >= 0.0000000000000000000){
+                post.setPostScore(post.getPostScore() - 0.3000000000000000000);
+            }
             commentRepository.save(comment);
+            preferenceCalculator.updatePreferenceUser(comment.getUser(), comment.getPost().getId(), 0L, -1L, 0L);
             return "Xóa bình luận thành công!";
         } catch (Exception e){
             return "Có lỗi xảy ra trong quá trình thực thi. Vui lòng thử lại!";

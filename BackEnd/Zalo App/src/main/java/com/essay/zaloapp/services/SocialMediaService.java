@@ -7,8 +7,10 @@ import com.essay.zaloapp.domain.payload.request.SocialMedia.CreateNewPostRequest
 import com.essay.zaloapp.domain.payload.response.SocialMedia.Comment.InfoComment;
 import com.essay.zaloapp.domain.payload.response.SocialMedia.GetInfoPostResponse;
 import com.essay.zaloapp.services.impl.SocialMediaServiceImpl;
+import org.apache.mahout.cf.taste.common.TasteException;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface SocialMediaService {
@@ -24,7 +26,7 @@ public interface SocialMediaService {
 
     SocialMediaServiceImpl.GetAllInfoPostUser getAllPostUser(Long userId);
 
-    SocialMediaServiceImpl.GetAllInfoPostUser getNewFeedUser(Long userId);
+    SocialMediaServiceImpl.GetAllInfoPostUser getNewFeedUser(Long userId) throws IOException, TasteException;
 
     List<GetInfoPostResponse> mapListPostEntityToResponse(List<Post> postList);
 
