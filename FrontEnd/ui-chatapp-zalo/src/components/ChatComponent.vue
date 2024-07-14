@@ -11,7 +11,8 @@
 			@room-info="showRoomInfo($event.detail[0])" @edit-message="editMessage($event.detail[0])"
 			@room-action-handler="roomActionHandler($event.detail[0])" @add-room="addRoom()"
 			@menu-action-handler="menuActionHandler($event.detail[0])" :emoji-data-source="emojiDataSource"
-			@typing-message="typingMessage($event.detail[0])" />
+			@typing-message="typingMessage($event.detail[0])">
+		</vue-advanced-chat>
 		<v-dialog class="dialog-container-user" v-model="showPopUpInfoRoomWith2Members" max-width="352px"
 			@click:outside="closePopupInfoRoom">
 			<v-card class="dialog-component-user">
@@ -326,7 +327,7 @@ export default {
 			);
 		},
 		hasSystemMessage() {
-			return this.messages.some(message => message.system);
+			return this.messages.some(message => message.system && message.content.includes('Không thể tiếp tục gửi tin nhắn do đã bị chặn từ người dùng'));
 		},
 		checkValidForCreateRoom() {
 			return this.addedFriends.length >= 2 && this.groupAvatarFile !== null && this.groupName !== "";
@@ -417,6 +418,8 @@ export default {
 			timeout: null,
 			callDeclined: false,
 			confirmModal: null,
+			user: null,
+			receiverId: null,
 		}
 	},
 
@@ -425,6 +428,10 @@ export default {
 		this.getCurrentUserId();
 		this.fetchMoreRooms();
 		this.subscribeSpecificUserWebSocket();
+		const userString = localStorage.getItem('user');
+		if (userString) {
+			this.user = JSON.parse(userString);
+		}
 		window.addEventListener("focus", () => {
 			// console.log("Tab is active");
 			this.messages = this.messages.map(message => {
@@ -459,11 +466,11 @@ export default {
 				if (this.confirmModal) {
 					this.confirmModal.destroy();
 				}
+				this.videoCallDialog = false;
 			}
 		},
 	},
 	methods: {
-
 		closeDialog() {
 			console.log("closeDialog called"); // Kiểm tra xem phương thức có được gọi không
 			if (this.localStream) {
@@ -472,6 +479,7 @@ export default {
 				});
 			}
 			this.videoCallDialog = false;
+			clearTimeout(this.timeout);
 		},
 		formattedBirthday() {
 			if (this.userFound && this.userFound.birthDay) {
@@ -1213,12 +1221,17 @@ export default {
 						}
 					} else if (notification.typeNotification === "UPDATE") {
 						// console.log("Message is update");
-						let message = this.messages.find(message => message._id == notification.message._id);
-						// console.log(message);
-						if (message) {
-							const indexMessage = this.messages.indexOf(message);
-							this.messages[indexMessage] = notification.message;
-							this.messages = [...this.messages];
+						if (notification.message === "Người dùng từ chối nhận cuộc gọi!") {
+							this.callDeclined = true;
+							this.toast.error("Người dùng từ chối nhận cuộc gọi!", { timeout: 1500 });
+						} else {
+							let message = this.messages.find(message => message._id == notification.message._id);
+							// console.log(message);
+							if (message) {
+								const indexMessage = this.messages.indexOf(message);
+								this.messages[indexMessage] = notification.message;
+								this.messages = [...this.messages];
+							}
 						}
 					}
 				}
@@ -1247,7 +1260,7 @@ export default {
 
 				form.append('roomId', this.roomForNotification.roomId);
 				form.append('content', messageContent);
-				form.append('system', false);
+				form.append('system', true);
 				form.append('saved', false);
 				form.append('distributed', false);
 				form.append('seen', false);
@@ -1387,7 +1400,7 @@ export default {
 					data: offer
 				}), userId);
 
-				this.timeout = setTimeout(this.createMissedCallMessage, 60000);
+				this.timeout = setTimeout(this.createMissedCallMessage, 10000);
 			} catch (error) {
 				console.log("Error creating an offer");
 			}
@@ -1415,7 +1428,7 @@ export default {
 				if (this.confirmModal) {
 					this.confirmModal.destroy();
 				}
-			}, 60000);
+			}, 10000);
 		},
 
 		closeForm() {
@@ -1498,11 +1511,21 @@ export default {
 				console.log(exception);
 			}
 		},
-		declineCall() {
+		async declineCall() {
 			this.callIncoming = false;
 			this.offerData = null;
 			this.remoteUser = null;
 			this.callDeclined = true;
+			const room = this.rooms.filter(element => element.roomId === this.currentRoom)[0];
+			const user = room.users.filter(element => element._id !== this.currentUserId)[0];
+			const receiverId = user._id;
+			const form = new FormData();
+			form.append('roomId', this.currentRoom);
+			form.append('receiverId', receiverId);
+			form.append('message', "Người dùng từ chối nhận cuộc gọi!");
+			const result = await axios.post(`http://localhost:8181/v1/chat/send-notification-declined`, form);
+			// console.log(result.data);
+			return result;
 			// You may want to send a message back to the caller indicating the call was declined
 		},
 
@@ -1518,6 +1541,12 @@ export default {
 					}
 				};
 			};
+		},
+		getMessageStyle(message) {
+			if (message.content.includes('đã bỏ lỡ cuộc gọi!')) {
+				return { color: 'red' };
+			}
+			return {};
 		}
 	}
 }

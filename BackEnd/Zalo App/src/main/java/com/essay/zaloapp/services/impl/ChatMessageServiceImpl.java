@@ -6,6 +6,7 @@ import com.essay.zaloapp.domain.models.*;
 import com.essay.zaloapp.domain.models.Composite.GroupChatUserId;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewChatMessageRequest;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewRoomRequest;
+import com.essay.zaloapp.domain.payload.request.ChatMessage.SendNotificationRequest;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.UpdateChatMessageRequest;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.ChatMessageResponse;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.ChatNotification;
@@ -1313,5 +1314,50 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     public class GetARoomInfo {
         private String message;
         private GetRoomInfo getRoomInfo;
+    }
+
+
+    @Override
+    public String sendNotificationDeclined(Long userId, SendNotificationRequest sendNotificationRequest) {
+        try {
+            Optional<GroupChat> groupChatOptional = groupChatRepository.findById(sendNotificationRequest.getRoomId());
+            if (groupChatOptional.isEmpty()) {
+                return "Phòng cần gửi thông báo không tồn tại!";
+            }
+
+            User receiver = userRepository.findById(sendNotificationRequest.getReceiverId());
+            if (receiver == null) {
+                return "Người dùng cần gửi thông báo không tồn tại!";
+            }
+
+            User sender = userRepository.findById(userId);
+
+            List<GroupChatUser> groupChatUserList = groupChatUserRepository.findAllByGroupId(sendNotificationRequest.getRoomId());
+            Boolean checkReceiverInRoom = false;
+            Boolean checkSenderInRoom = false;
+            for (GroupChatUser groupChatUser : groupChatUserList) {
+                if (groupChatUser.getId().getPhoneNumberUser().equals(receiver.getPhoneNumber())) {
+                    checkReceiverInRoom = true;
+                }
+                if(groupChatUser.getId().getPhoneNumberUser().equals(sender.getPhoneNumber())){
+                    checkSenderInRoom = true;
+                }
+            }
+
+            if (!checkSenderInRoom) {
+                return "Bạn không có quyền gửi thông báo!";
+            }
+
+            if (!checkReceiverInRoom) {
+                return "Người cần gửi thông báo không thuộc nhóm!";
+            }
+
+            notifyToUser(receiver.getId(), ChatNotification.builder().roomId(sendNotificationRequest.getRoomId()).typeNotification(TypeNotification.UPDATE).message(sendNotificationRequest.getMessage()).build());
+
+            return "Gửi thông báo thành công!";
+        } catch (Exception e) {
+            return "Gửi thông báo thất bại!";
+        }
+
     }
 }

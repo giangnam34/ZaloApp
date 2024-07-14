@@ -157,4 +157,18 @@ public class SocialMediaController {
         SocialMediaServiceImpl.GetAllInfoPostUser result = socialMediaService.getNewFeedUser(userPrincipal.getId());
         return result.getMesage().equals("Thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
+
+    @GetMapping("/get-post-user")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> getPostOfUser(@AuthenticationPrincipal UserPrincipal userPrincipal){
+        SocialMediaServiceImpl.GetAllInfoPostUser result = socialMediaService.getAllPostUser(userPrincipal.getId());
+        return result.getMesage().equals("Thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
+    }
+
+    @GetMapping("/get-all-users-liked-post/{postId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> getAllUsersLikedPost(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long postId){
+        SocialMediaServiceImpl.GetAllUsersLikedPost result = socialMediaService.getAllUsersLikedPost(postId);
+        return  result.getMesage().equals("Lấy danh sách người thích thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
+    }
 }

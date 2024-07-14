@@ -367,6 +367,7 @@ export default {
     .container {
         display: flex;
         width: 100%;
+        max-width: 100%;
         min-height: 100vh;
         flex-wrap: wrap;
         justify-content: center;

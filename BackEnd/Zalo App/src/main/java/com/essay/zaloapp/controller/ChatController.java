@@ -2,10 +2,7 @@ package com.essay.zaloapp.controller;
 
 import com.essay.zaloapp.domain.enums.TypeNotification;
 import com.essay.zaloapp.domain.models.User;
-import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewChatMessageRequest;
-import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewRoomRequest;
-import com.essay.zaloapp.domain.payload.request.ChatMessage.RTCConnection;
-import com.essay.zaloapp.domain.payload.request.ChatMessage.UpdateChatMessageRequest;
+import com.essay.zaloapp.domain.payload.request.ChatMessage.*;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.ChatNotification;
 import com.essay.zaloapp.secruity.UserPrincipal;
 import com.essay.zaloapp.services.ChatMessageService;
@@ -219,5 +216,12 @@ public class ChatController {
     public ResponseEntity<?> getRoomInfo(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long roomId) throws Exception {
         ChatMessageServiceImpl.GetARoomInfo result = chatMessageService.getRoomInfo(userPrincipal.getId(), roomId);
         return result.getMessage().equals("Lấy thông tin phòng thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
+    }
+
+    @PostMapping("/send-notification-declined")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> sendNotificationDeclined(@AuthenticationPrincipal UserPrincipal userPrincipal, @ModelAttribute SendNotificationRequest sendNotificationRequest){
+        String result = chatMessageService.sendNotificationDeclined(userPrincipal.getId(), sendNotificationRequest);
+        return result.equals("Gửi thông báo thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 }

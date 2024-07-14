@@ -2,6 +2,7 @@ package com.essay.zaloapp.services;
 
 import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewChatMessageRequest;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewRoomRequest;
+import com.essay.zaloapp.domain.payload.request.ChatMessage.SendNotificationRequest;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.UpdateChatMessageRequest;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.ChatMessageResponse;
 import com.essay.zaloapp.domain.payload.response.ChatMessage.ChatNotification;
@@ -36,4 +37,6 @@ public interface ChatMessageService {
     String getUserPhoneNumber(Long userId, Long roomId);
 
     void notifyToUser(Long userId, ChatNotification chatNotification);
+
+    String sendNotificationDeclined(Long userId, SendNotificationRequest sendNotificationRequest);
 }

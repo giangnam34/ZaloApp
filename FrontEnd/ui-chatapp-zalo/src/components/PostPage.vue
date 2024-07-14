@@ -10,7 +10,7 @@
 
                         <div id="display-number" class="mt-6 flex space-x-8 justify-around">
                             <p class="text-xs text-gray-500">{{ listFriends.length }} friends</p>
-                            <p id="display-number-element-2" class="text-xs text-gray-500">{{ feeds.length }} posts</p>
+                            <p id="display-number-element-2" class="text-xs text-gray-500">{{ myFeeds.length }} posts</p>
                         </div>
 
                     </div>
@@ -58,7 +58,7 @@
                                                     <font-awesome-icon icon="fa-solid fa-user-minus" />
                                                     <!-- Bạn bè ngoại trừ -->
                                                 </div>
-                                                <p class="text-gray-600 ml-2 date"> - {{ formatTimeDifference(new
+                                                <p class="text-gray-600 ml-2 date"> • {{ formatTimeDifference(new
                                                     Date(feed.updatedAt)) }}
                                                 </p>
                                             </div>
@@ -126,7 +126,7 @@
                             </div>
 
                             <div class="my-3 flex">
-                                <div v-if="!feed.isLike" class="flex-1 flex items-center mr-2">
+                                <div v-if="!feed.isLike" class="flex-1 flex items-center mr-2"  @click="openListLikedUserDialog">
                                     <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
                                         icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
                                     <span class="text-gray-500 text-lg hover:underline cursor-pointer">
@@ -138,7 +138,7 @@
                                         </template>
                                     </span>
                                 </div>
-                                <div v-else class="flex-1 flex items-center mr-2">
+                                <div v-else class="flex-1 flex items-center mr-2" @click="openListLikedUserDialog">
                                     <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
                                         icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
                                     <span class="text-gray-500 text-lg hover:underline cursor-pointer">
@@ -188,7 +188,7 @@
                         <div v-else>
                             <div v-if="feed.userLikeList.length === 0">
                                 <div class="mb-6 flex items-center justify-between">
-                                    <div class="flex items-center space-x-6 w-full" >
+                                    <div class="flex items-center space-x-6 w-full">
                                         <img :src="feed.userPost.imageAvatar"
                                             class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4 object-cover object-bottom">
                                         <div class="wrap-title flex justify-between w-full">
@@ -287,7 +287,7 @@
                                                             <font-awesome-icon icon="fa-solid fa-user-minus" />
                                                             <!-- Bạn bè ngoại trừ -->
                                                         </div>
-                                                        <p class="text-gray-600 ml-2 date"> - {{ formatTimeDifference(new
+                                                        <p class="text-gray-600 ml-2 date"> • {{ formatTimeDifference(new
                                                             Date(feed.postFather.updatedAt))
                                                         }}
                                                         </p>
@@ -302,7 +302,7 @@
 
 
                                 <div class="my-3 flex">
-                                    <div v-if="!feed.isLike" class="flex-1 flex items-center mr-2">
+                                    <div v-if="!feed.isLike" class="flex-1 flex items-center mr-2" @click="openListLikedUserDialog">
                                         <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
                                             icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
                                         <span class="text-gray-500 text-lg hover:underline cursor-pointer">
@@ -314,7 +314,7 @@
                                             </template>
                                         </span>
                                     </div>
-                                    <div v-else class="flex-1 flex items-center mr-2">
+                                    <div v-else class="flex-1 flex items-center mr-2" @click="openListLikedUserDialog">
                                         <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
                                             icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
                                         <span class="text-gray-500 text-lg hover:underline cursor-pointer">
@@ -358,7 +358,56 @@
                         </div>
                     </div>
                 </div>
-
+                <div class="main-right col-span-1 ">
+                    <div class="filter-wrapper bg-white border border-gray-200 rounded-lg">
+                        <div class="filter-contact" @blur="hidePopover" tabindex="0">
+                            <div class="filter-contact-child"
+                                :class="{ 'hoveredFilter': hoveredItem === 'filter', 'selected': selectedItem === 'filter' }"
+                                @mouseenter="(hoveredItem = 'filter')" @mouseleave="hoveredItem = ''"
+                                @click="(event) => handleClickFilter(event, 'filter')">
+                                <a id="filter-icon">
+                                    <font-awesome-icon icon="fa-solid fa-filter" />
+                                </a>
+                                <span>
+                                    {{ typeOfFilter }}
+                                </span>
+                                <a id="down-icon">
+                                    <font-awesome-icon icon="fa-solid fa-chevron-down" />
+                                </a>
+                            </div>
+                            <div class="popover" style="z-index: 20; opacity: 1;"
+                                :style="{ left: popoverLeftFilter, top: popoverTopFilter }"
+                                v-if="selectedItem === 'filter'">
+                                <!-- Nội dung của popover -->
+                                <div class="popover-content"
+                                    style="min-width: 240px; width: initial; box-sizing: border-box;">
+                                    <div class="popover-item" :class="{ 'hoveredFilter': hoveredItem === 'allPosts' }"
+                                        @mouseenter="(hoveredItem = 'allPosts')" @mouseleave="hoveredItem = ''"
+                                        @click="chooseTypeOfFilter(hoveredItem)">
+                                        <div style="width: 35px;" v-show="chosenFilter === 'myPosts'"></div>
+                                        <a id="check-icon" v-show="chosenFilter === 'allPosts'">
+                                            <font-awesome-icon icon="fa-solid fa-check" />
+                                        </a>
+                                        <div class="truncate">
+                                            <span>Tất cả bài viết</span>
+                                        </div>
+                                    </div>
+                                    <div class="popover-item" :class="{ 'hoveredFilter': hoveredItem === 'myPosts' }"
+                                        @mouseenter="(hoveredItem = 'myPosts')" @mouseleave="hoveredItem = ''"
+                                        @click="chooseTypeOfFilter(hoveredItem)">
+                                        <div style="width: 35px;" v-show="chosenFilter === 'allPosts'"></div>
+                                        <a id="check-icon" v-show="chosenFilter === 'myPosts'">
+                                            <font-awesome-icon icon="fa-solid fa-check" />
+                                        </a>
+                                        <div class="truncate">
+                                            <span>Bài viết của tôi</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -653,7 +702,7 @@
                                             <font-awesome-icon icon="fa-solid fa-user-minus" />
                                             Bạn bè ngoại trừ
                                         </div>
-                                        <p class="text-gray-600 ml-2 date"> - {{ formatTimeDifference(new
+                                        <p class="text-gray-600 ml-2 date"> • {{ formatTimeDifference(new
                                             Date(showingFeed.updatedAt))
                                         }}
                                         </p>
@@ -732,7 +781,7 @@
                     </div> -->
 
                     <div class="my-3 flex">
-                        <div v-if="!showingFeed.isLike" class="flex-1 flex items-center mr-2">
+                        <div v-if="!showingFeed.isLike" class="flex-1 flex items-center mr-2" @click="openListLikedUserDialog">
                             <font-awesome-icon icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
                             <span class="text-gray-500 text-lg hover:underline cursor-pointer">{{
                                 showingFeed.userLikeList.length
@@ -740,7 +789,7 @@
                         </div>
 
                         <!-- Test -->
-                        <div v-else class="flex-1 flex items-center mr-2">
+                        <div v-else class="flex-1 flex items-center mr-2" @click="openListLikedUserDialog">
                             <font-awesome-icon
                                 v-if="showingFeed.userLikeList !== null && showingFeed.userLikeList.length > 0"
                                 icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
@@ -1025,6 +1074,38 @@
             </v-card-text>
         </v-card>
     </v-dialog>
+    <v-dialog class="dialog-container-liked-user" v-model="showVisibleLikedUsers" max-width="500px"
+        @click:outside="closeListLikedUserDialog">
+        <v-card class="dialog-component-liked-user">
+            <v-card-title class="dialog-title-liked-user">
+                <h2 class="title-liked-user">Danh sách người dùng thích bài viết
+                    <div class="icon-close-liked-user" @click="closeListLikedUserDialog"><font-awesome-icon icon="fa-solid fa-x" />
+                    </div>
+                </h2>
+            </v-card-title>
+            <hr style="border: none; border-bottom: 1px solid #ccc;">
+            <v-card-text class="dialog-content-liked-user">
+                <div class="pt-1 pl-4 pr-4 pb-2">
+                    <div class="mt-4"><span>Người dùng đã thích bài viết: {{ likedUsers.length }}</span></div>
+                    <div class="friend-list-container-liked-user">
+                        <div v-for="user in likedUsers" v-bind:key="user.phoneNumber" class="position-relative">
+                            <div class="friend-info-liked-user friend-container-liked-user">
+                                <div class="avatar-container-liked-user">
+                                    <div class="avatar-wrapper-liked-user">
+                                        <img :src="user.imageAvatar" class="avatar-liked-user">
+                                    </div>
+                                </div>
+                                <div class="detail-liked-user">
+                                    <span>{{ user.userName }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-2"></div>
+            </v-card-text>
+        </v-card>
+    </v-dialog>
 </template>
 
 <script>
@@ -1034,13 +1115,12 @@ import { useToast } from "vue-toastification";
 import { Swiper, SwiperSlide } from 'vue-awesome-swiper';
 import 'swiper/css';
 import 'swiper/css/navigation'
-
 export default {
     name: 'FeedView',
 
     components: {
         Swiper,
-        SwiperSlide,
+        SwiperSlide
     },
     setup() {
         // Get toast interface
@@ -1058,6 +1138,7 @@ export default {
             this.user = JSON.parse(userString);
         }
         this.fetchFeed();
+        this.fetchMyFeed();
         this.getListOfFriends();
     },
     computed: {
@@ -1078,17 +1159,15 @@ export default {
     },
     data() {
         return {
-            // swiperOptions: {
-            //     navigation: {
-            //         nextEl: '.swiper-button-next',
-            //         prevEl: '.swiper-button-prev',
-            //     },
-            // },
             hoveredItem: '',
             selectedItem: '',
+            typeOfFilter: 'Tất cả bài viết',
+            chosenFilter: 'allPosts',
             popoverRight: 0,
             popoverTop: 0,
             popoverLeft: 0,
+            popoverLeftFilter: 0,
+            popoverTopFilter: 0,
             posts: [],
             newComment: {
                 postId: null,
@@ -1119,18 +1198,87 @@ export default {
                 'Chỉ mình tôi'
             ],
             feeds: [],
+            myFeeds: [],
             comments: [],
             friends: [],
             searchText: "",
             chosenUpdateComment: null,
+            showVisibleLikedUsers: false,
+            likedUsers: [
+                { phoneNumber: '0965556651', userName: "Võ Giang Nam", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
+                { phoneNumber: '0965556652', userName: "Từ Thanh Thoại", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
+                { phoneNumber: '0965556653', userName: "Kẻ Áo Đen", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
+                { phoneNumber: '0965556654', userName: "Kẻ Áo Vàng", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
+                { phoneNumber: '0965556655', userName: "Kẻ Áo Xanh", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
+                { phoneNumber: '0965556656', userName: "Kẻ Áo Đỏ", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
+                { phoneNumber: '0965556657', userName: "Kẻ Áo Tím", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
+                { phoneNumber: '0965556658', userName: "Kẻ Áo Cam", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' }
+            ],
         }
     },
     mounted() {
         this.fetchFeed();
+        this.fetchMyFeed();
         this.fetchAvatar();
     },
 
     methods: {
+        handleClickFilter(event, item) {
+            // const rect = event.target.getBoundingClientRect();
+            // const mouseX = rect.left;
+            // const mouseY = rect.top;
+
+            // const windowWidth = window.innerWidth + window.scrollX;
+            // const windowHeight = window.innerHeight + window.scrollY;
+
+            // const popupWidth = 180;
+            // const popupHeight = 120;
+
+            // let popupLeft, popupTop;
+
+            // if (mouseX + popupWidth > windowWidth) {
+            //     popupLeft = mouseX - popupWidth;
+            // } else {
+            //     popupLeft = mouseX;
+            // }
+
+            // if (mouseY + popupHeight > windowHeight) {
+            //     popupTop = mouseY - popupHeight;
+            // } else {
+            //     popupTop = mouseY;
+            // }
+
+            // if (popupLeft < window.scrollX) {
+            //     popupLeft = window.scrollX;
+            // }
+
+            // if (popupTop < window.scrollY) {
+            //     popupTop = window.scrollY;
+            // }
+
+            // this.popoverLeftFilter = popupLeft + 'px';
+            // this.popoverTopFilter = popupTop + 'px';
+            this.popoverLeftFilter = "1514px";
+            this.popoverTopFilter = "69px";
+            this.togglePopover(item);
+            event.stopPropagation();
+        },
+        chooseTypeOfFilter(item) {
+            this.chosenFilter = item;
+            if (item == 'allPosts') {
+                this.typeOfFilter = 'Tất cả bài viết';
+                this.fetchFeed();
+                this.clearSelectedItem();
+            } else {
+                this.typeOfFilter = 'Bài viết của tôi';
+                this.fetchMyFeed();
+                this.feeds = this.myFeeds;
+                this.clearSelectedItem();
+            }
+        },
+        handleChange(value) {
+            console.log(value);
+        },
         selectItem(item) {
             this.selectedItem = item;
         },
@@ -1143,6 +1291,10 @@ export default {
         hidePopover() {
             console.log("in")
             this.showPopupVisible = false;
+            this.clearSelectedItem();
+        },
+        clearSelectedItem() {
+            this.selectedItem = '';
         },
         handleClickAction(event, feed) {
             // const rect = event.target.getBoundingClientRect();
@@ -1303,6 +1455,27 @@ export default {
                     this.feeds = response.data.getInfoPostResponse;
                     this.feeds.forEach(feed => this.updateIsUserLikePost(feed));
                     console.log("Danh sách bài viết: ", this.feeds);
+                })
+                .catch(error => {
+                    console.log('error', error)
+                })
+        },
+        fetchMyFeed() {
+            console.log("Gọi hàm: fetchFeed()");
+            // console.log("User đang đăng nhập: " + this.user);
+            axios
+                .get('/social-media/get-post-user',/**{
+                    headers: {
+                        'Authorization': localStorage.getItem("token"),
+                        'Content-Type': 'multipart/form-data',
+                    }
+                }**/)
+                .then(response => {
+                    //console.log("Response status: " + response.status)
+                    //response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))
+                    this.myFeeds = response.data.getInfoPostResponse;
+                    this.myFeeds.forEach(feed => this.updateIsUserLikePost(feed));
+                    console.log("Danh sách bài viết: ", this.myFeeds);
                 })
                 .catch(error => {
                     console.log('error', error)
@@ -2018,6 +2191,12 @@ export default {
                 }
 
             }
+        },
+        openListLikedUserDialog(){
+            this.showVisibleLikedUsers = true;
+        },
+        closeListLikedUserDialog(){
+            this.showVisibleLikedUsers = false;
         }
     }
 }
@@ -2212,6 +2391,144 @@ export default {
 
     .color-blue {
         color: #007BFF;
+    }
+}
+
+.dialog-container-liked-user {
+
+    width: 500px;
+
+    .dialog-component-liked-user {
+        .dialog-title-liked-user {
+            .title-liked-user {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+
+                .icon-close-liked-user {
+                    cursor: pointer;
+                }
+            }
+        }
+
+        .dialog-content-liked-user {
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            height: auto;
+
+            .text-sea-green {
+                color: #0077cc;
+            }
+
+            .text-leaf-green {
+                color: #00aa33;
+            }
+
+            .avatar-container-liked-user {
+                height: 80px;
+                display: flex;
+                align-items: center;
+                margin-left: 14px;
+                margin-right: 4px;
+            }
+
+            .avatar-wrapper-liked-user {
+                width: 50px;
+                height: 50px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                overflow: hidden;
+                border-radius: 50%;
+                margin-right: 16px;
+            }
+
+            .avatar-liked-user {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .detail-liked-user {
+                flex: 1;
+
+                .form-control {
+                    background-color: #cccc;
+                    border-radius: 5%;
+                    text-align: center;
+                }
+            }
+
+            .friend-info-liked-user {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .profile-action-liked-user {
+                height: 40px;
+                display: flex;
+            }
+        }
+    }
+
+    .position-relative {
+        position: relative;
+    }
+
+    .friend-container-liked-user {
+        overflow-x: hidden;
+        display: flex;
+        justify-content: space-between;
+        margin-right: 10px;
+        transition: box-shadow 0.3s, transform 0.3s;
+        cursor: pointer;
+    }
+
+    .friend-container-liked-user:hover {
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        transform: scale(1.05);
+    }
+
+    .search-input-liked-user {
+        margin-top: 8px;
+        padding: 4px;
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+    }
+
+    .friend-list-container-liked-user {
+        height: 250px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+    }
+
+    .action-liked-user {
+        margin-left: 8px;
+        cursor: pointer;
+    }
+
+    .add-friend-button-liked-user {
+        background-color: #007BFF;
+        color: #ffffff;
+        border-radius: 5px;
+        padding: 8px 16px;
+        border: none;
+    }
+
+    .add-friend-button-liked-user:hover {
+        transform: scale(1.05);
+    }
+
+    .cancel-button-liked-user,
+    .search-button-liked-user {
+        padding: 8px 16px;
     }
 }
 
@@ -2596,6 +2913,104 @@ export default {
     }
 }
 
+.filter-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff;
+}
+
+.filter-contact {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding-top: 16px;
+    padding-bottom: 16px;
+
+    .popover {
+        display: inline-block;
+        position: absolute;
+        //background: #fff;
+        //padding: 8px;
+        border-radius: 4px;
+        z-index: 9999;
+        box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+        border: 1px solid #d6dbe1;
+    }
+
+    .popover-content {
+        position: absolute;
+        background-color: #fff;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+
+        .popover-item {
+            display: flex;
+            align-items: center;
+            height: 40px;
+            cursor: pointer;
+
+            #check-icon {
+                color: #005ae0;
+                margin-left: 8px;
+                margin-right: 14px;
+            }
+
+            .truncate {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+    }
+}
+
+.filter-contact-child {
+    flex-grow: 1;
+    flex-basis: 0;
+    display: flex;
+    height: 30px;
+    width: 240px;
+    align-items: center;
+    padding: 4px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f4f4f4;
+    cursor: pointer;
+    /* Thêm margin-bottom để tạo khoảng cách giữa các phần tử */
+
+    span {
+        margin-left: 16px;
+    }
+}
+
+.filter-contact-child:not(:last-child) {
+    margin-right: 8px;
+    margin-bottom: 8px;
+    /* Thêm margin-bottom để tạo khoảng cách giữa các phần tử */
+}
+
+#down-icon {
+    margin-left: auto;
+    margin-right: 6px;
+}
+
+.hoveredFilter {
+    background-color: #d6dbe1;
+}
+
+.hovered {
+    cursor: pointer;
+    background-color: #f3f5f6;
+}
+
+.selected {
+    color: #005ae0;
+    background: #e5efff;
+    border: #e5efff;
+}
+
 @media only screen and (min-width:768px) and (max-width:787px) {
     #general_image {
         height: 115px;
@@ -2618,6 +3033,6 @@ export default {
     .container {
         max-width: 1920px;
     }
-    
+
 }
 </style>

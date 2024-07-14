@@ -475,7 +475,7 @@ public class FriendServiceImpl implements FriendService {
                     for (Long groupId : groupChatIds) {
                         List<MessageChat> messages = messageChatRepository.findAllByGroupIdNoPagination(groupId);
                         for (MessageChat message : messages) {
-                            if (message.getIsSystem()) {
+                            if (message.getIsSystem() && message.getContent().contains("Không thể tiếp tục gửi tin nhắn do đã bị chặn từ người dùng")) {
                                 message.setDeleted(true);
                                 messageChatRepository.save(message);
                             }

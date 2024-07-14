@@ -45,4 +45,6 @@ public interface SocialMediaService {
     List<InfoComment> getAllInfoComment(Long postId, Long userId) throws Exception;
 
     InfoComment getInfoComment(Long commentId) throws Exception;
+
+    SocialMediaServiceImpl.GetAllUsersLikedPost getAllUsersLikedPost(Long postId);
 }
