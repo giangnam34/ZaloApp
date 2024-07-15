@@ -1225,6 +1225,7 @@ export default {
             //     { phoneNumber: '0965556658', userName: "Kẻ Áo Cam", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' }
             // ],
             likedUsers: [],
+            isUserScrollToBottom:false
         }
     },
     mounted() {
@@ -2240,19 +2241,20 @@ export default {
         closeListLikedUserDialog() {
             this.showVisibleLikedUsers = false;
         },
-        handleScroll() {
+        async handleScroll() {
             const container = this.$refs.scrollContainer;
-            console.log(container.scrollHeight);
-            console.log(container.scrollTop);
-            console.log(container.clientHeight);
-            if (container.clientHeight + container.scrollTop >= container.scrollHeight - 70) {
-                // Gọi fetch API khi người dùng đã cuộn đến cuối
-                if (this.chosenFilter == 'allPosts') {
-                    this.fetchFeed();
+            if (container.clientHeight + container.scrollTop > container.scrollHeight - 1000) {
+                if (!this.isUserScrollToBottom){
+                    this.isUserScrollToBottom = true;
+                    if (this.chosenFilter == 'allPosts') {
+                        await this.fetchFeed();
+                    }
+                    else {
+                        await this.fetchMyFeed();
+                    }
                 }
-                else {
-                    this.fetchMyFeed();
-                }
+            } else {
+                this.isUserScrollToBottom = false;
             }
         },
         async getAllUserLiked(id) {
