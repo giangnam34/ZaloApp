@@ -127,7 +127,7 @@ public class FriendServiceImpl implements FriendService {
 
                     AddNewRoomRequest addNewRoomRequest = new AddNewRoomRequest();
                     List<Long> ids = new ArrayList<>();
-                    ids.add(user1.getId());
+                    ids.add(user1.getId().equals(userId) ? user2.getId() : user1.getId());
                     addNewRoomRequest.setReceiverIds(ids);
                     chatMessageService.createRoom(userId, addNewRoomRequest);
                     return ResponseEntity.ok("Chấp nhận lời mời kết bạn thành công!!!");
@@ -475,7 +475,7 @@ public class FriendServiceImpl implements FriendService {
                     for (Long groupId : groupChatIds) {
                         List<MessageChat> messages = messageChatRepository.findAllByGroupIdNoPagination(groupId);
                         for (MessageChat message : messages) {
-                            if (message.getIsSystem()) {
+                            if (message.getIsSystem() && message.getContent().contains("Không thể tiếp tục gửi tin nhắn do đã bị chặn từ người dùng")) {
                                 message.setDeleted(true);
                                 messageChatRepository.save(message);
                             }

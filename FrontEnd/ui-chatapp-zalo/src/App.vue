@@ -18,22 +18,7 @@
       <div v-if="chosenPage === 2" class="width-100">
         <ContactNav></ContactNav>
       </div>
-      <div v-if="chosenPage === 3" class="width-100">
-        <ToDo></ToDo>
-      </div>
-      <div v-if="chosenPage === 4" class="width-100">
-        <ChatSidebarNav></ChatSidebarNav>
-        <HomeChat></HomeChat>
-      </div>
-      <div v-if="chosenPage === 5" class="width-100">
-        <ChatSidebarNav></ChatSidebarNav>
-        <HomeChat></HomeChat>
-      </div>
-      <div v-if="chosenPage === 6" class="width-100">
-        <ChatSidebarNav></ChatSidebarNav>
-        <HomeChat></HomeChat>
-      </div>
-      <div v-if="chosenPage === 10" class="width-100 height-100">
+      <div v-if="chosenPage === 3" class="width-100 height-100">
         <PostPage></PostPage>
       </div>
     </div>
@@ -42,10 +27,8 @@
 
 <script>
 import MainSidebarNav from './components/MainSidebarNav.vue';
-import HomeChat from './components/HomeChat.vue'
 import ChatSidebarNav from './components/ChatSidebarNav.vue';
 import ContactNav from './components/ContactNav.vue';
-import ToDo from './components/ToDo.vue';
 import TestChat from './components/ChatComponent.vue';
 import SignIn from './components/SignIn.vue';
 import PostPage from './components/PostPage.vue';
@@ -69,12 +52,9 @@ export default {
   },
   components: {
     MainSidebarNav,
-    HomeChat,
-    ChatSidebarNav,
     SignIn,
     TestChat,
     ContactNav,
-    ToDo,
     PostPage,
     AdminPage
   },

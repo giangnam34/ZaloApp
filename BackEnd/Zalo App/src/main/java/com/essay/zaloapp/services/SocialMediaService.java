@@ -24,9 +24,9 @@ public interface SocialMediaService {
 
     String deletePost(Long userId, Long postId);
 
-    SocialMediaServiceImpl.GetAllInfoPostUser getAllPostUser(Long userId);
+    SocialMediaServiceImpl.GetAllInfoPostUser getAllPostUser(Long userId, Long page);
 
-    SocialMediaServiceImpl.GetAllInfoPostUser getNewFeedUser(Long userId) throws IOException, TasteException;
+    SocialMediaServiceImpl.GetAllInfoPostUser getNewFeedUser(Long userId, Long page) throws IOException, TasteException;
 
     List<GetInfoPostResponse> mapListPostEntityToResponse(List<Post> postList);
 
@@ -47,4 +47,6 @@ public interface SocialMediaService {
     List<InfoComment> getAllInfoComment(Long postId, Long userId) throws Exception;
 
     InfoComment getInfoComment(Long commentId) throws Exception;
+
+    SocialMediaServiceImpl.GetAllUsersLikedPost getAllUsersLikedPost(Long postId);
 }

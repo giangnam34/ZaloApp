@@ -4,6 +4,7 @@ import com.essay.zaloapp.domain.models.Composite.GroupChatUserId;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Entity
 @Table(name = "group_chat_user")
@@ -28,6 +29,8 @@ public class GroupChatUser {
 
 	@Column(name = "isDeleted", nullable = false, columnDefinition = "boolean default false")
 	private Boolean isDeleted = false;
+
+	private Date joinedAt;
 
 	@ManyToOne
 	@JoinColumn(name = "category_id")

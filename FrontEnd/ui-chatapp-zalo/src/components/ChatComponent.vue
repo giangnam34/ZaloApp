@@ -9,15 +9,16 @@
 			:templates-text="JSON.stringify(templatesText)" @delete-message="deleteMessage($event.detail[0])"
 			@send-message-reaction="sendMessageReaction($event.detail[0])" :theme="theme"
 			@room-info="showRoomInfo($event.detail[0])" @edit-message="editMessage($event.detail[0])"
-			@room-action-handler="roomActionHandler($event.detail[0])"
-			@menu-action-handler="menuActionHandler($event.detail[0])" :emoji-data-source="emojiDataSource" />
+			@room-action-handler="roomActionHandler($event.detail[0])" @add-room="addRoom()"
+			@menu-action-handler="menuActionHandler($event.detail[0])" :emoji-data-source="emojiDataSource"
+			@typing-message="typingMessage($event.detail[0])">
+		</vue-advanced-chat>
 		<v-dialog class="dialog-container-user" v-model="showPopUpInfoRoomWith2Members" max-width="352px"
 			@click:outside="closePopupInfoRoom">
 			<v-card class="dialog-component-user">
 				<v-card-title class="dialog-title-user">
 					<h2 class="title-user">Thông tin tài khoản
-						<div class="icon-close-user" @click="closePopupInfoRoom"><font-awesome-icon
-								icon="fa-solid fa-x" />
+						<div class="icon-close-user" @click="closePopupInfoRoom"><font-awesome-icon icon="fa-solid fa-x" />
 						</div>
 					</h2>
 				</v-card-title>
@@ -70,8 +71,7 @@
 			<v-card class="dialog-component-user">
 				<v-card-title class="dialog-title-user">
 					<h2 class="title-user">Thông tin nhóm chat
-						<div class="icon-close-user" @click="closePopupInfoRoom"><font-awesome-icon
-								icon="fa-solid fa-x" />
+						<div class="icon-close-user" @click="closePopupInfoRoom"><font-awesome-icon icon="fa-solid fa-x" />
 						</div>
 					</h2>
 				</v-card-title>
@@ -79,8 +79,7 @@
 				<v-card-text class="dialog-content-user">
 					<div class="profile-photo-user">
 						<div class="cover-avatar-user">
-							<img class="cover-image-user" :src="roomDetail.roomAvatar" alt="None"
-								crossorigin="anonymous">
+							<img class="cover-image-user" :src="roomDetail.roomAvatar" alt="None" crossorigin="anonymous">
 						</div>
 						<div class="ava-name-container-user">
 							<div class="avatar-profile-user">
@@ -137,8 +136,7 @@
 			<v-card class="dialog-component">
 				<v-card-title class="dialog-title">
 					<h2 class="title">Mời bạn bè vào nhóm
-						<div class="icon-close" @click="closeChooseFriendDialog"><font-awesome-icon
-								icon="fa-solid fa-x" />
+						<div class="icon-close" @click="closeChooseFriendDialog"><font-awesome-icon icon="fa-solid fa-x" />
 						</div>
 					</h2>
 				</v-card-title>
@@ -149,8 +147,7 @@
 						<div v-if="addedFriends.length !== 0"><span>Đã chọn để thêm vào nhóm ({{ addedFriends.length }} bạn
 								bè)</span></div>
 						<div class="update-file-container" style="height:100px" v-if="addedFriends.length !== 0">
-							<div v-for="friend in addedFriends" v-bind:key="friend.phoneNumber"
-								class="position-relative">
+							<div v-for="friend in addedFriends" v-bind:key="friend.phoneNumber" class="position-relative">
 								<div class="friend-info cursor-pointer m-2" @click="deleteFriendTag(friend)">
 									<div :class="{ 'wrap': shouldWrap }" class="detail" style="border: 1px solid #ccc;
                                                            border-radius: 8px;
@@ -272,10 +269,10 @@
 
 		<template>
 			<div>
-				<a-modal v-if="callIncoming" title="Incoming Call" ok-text="Accept" cancel-text="Decline"
-					@ok="acceptCall" @cancel="declineCall">
+				<!-- <a-modal v-if="callIncoming" title="Incoming Call" ok-text="Accept" cancel-text="Decline" @ok="acceptCall"
+					@cancel="declineCall">
 					<p>You have an incoming call. Do you want to accept it?</p>
-				</a-modal>
+				</a-modal> -->
 
 				<v-dialog v-model="videoCallDialog" max-width="90%" max-height="90%" persistent class="custom-dialog">
 					<v-card>
@@ -302,9 +299,14 @@ import SockJS from 'sockjs-client';
 import Stomp from "webstomp-client";
 import VideoCallComponent from './VideoCallComponent.vue';
 import { Modal } from 'ant-design-vue';
-
+import newMessageSound from '../assets/messageNotificationSound.mp3';
 // import { register } from '../../vue-advanced-chat/dist/vue-advanced-chat.es.js'
 register()
+
+var audio = new Audio(newMessageSound);
+let originalTitle = document.title;
+let blinkInterval;
+let isBlinking = false;
 
 export default {
 	components: {
@@ -325,7 +327,7 @@ export default {
 			);
 		},
 		hasSystemMessage() {
-			return this.messages.some(message => message.system);
+			return this.messages.some(message => message.system && message.content.includes('Không thể tiếp tục gửi tin nhắn do đã bị chặn từ người dùng'));
 		},
 		checkValidForCreateRoom() {
 			return this.addedFriends.length >= 2 && this.groupAvatarFile !== null && this.groupName !== "";
@@ -351,6 +353,7 @@ export default {
 			socket: null,
 			stompClient: null,
 			currentUserId: null,
+			currentUser: null,
 			userFound: null,
 			listFriends: [],
 			addedFriends: [],
@@ -364,6 +367,7 @@ export default {
 			roomDetail: null,
 			roomsLoaded: false,
 			loadingRooms: true,
+			roomForNotification: null,
 			loadFirstRoom: true,
 			roomInfo: true,
 			roomActions: [
@@ -408,15 +412,26 @@ export default {
 			listFriendsForCreateRoom: [],
 			displayedDate: '',
 			groupAvatarFile: null,
-			emojiDataSource: "https://cdn.jsdelivr.net/npm/emoji-picker-element-data@%5E1/en/emojibase/data.json"
+			emojiDataSource: "https://cdn.jsdelivr.net/npm/emoji-picker-element-data@%5E1/en/emojibase/data.json",
+			timeoutId: null,
+			callAccepted: false,
+			timeout: null,
+			callDeclined: false,
+			confirmModal: null,
+			user: null,
+			receiverId: null,
 		}
 	},
 
 	created() {
-		document.title = "Hehehe";
+		document.title = "NathApp";
 		this.getCurrentUserId();
 		this.fetchMoreRooms();
 		this.subscribeSpecificUserWebSocket();
+		const userString = localStorage.getItem('user');
+		if (userString) {
+			this.user = JSON.parse(userString);
+		}
 		window.addEventListener("focus", () => {
 			// console.log("Tab is active");
 			this.messages = this.messages.map(message => {
@@ -430,13 +445,32 @@ export default {
 				}
 				return message;
 			});
+			this.stopTitleBlinking();
+			document.title = "NathApp";
 			// console.log(this.messages);
 			// this.messages.forEach(message => this.callApiUpdateMessage(this.currentRoom, message));
 		});
 	},
-
+	watch: {
+		callAccepted(newVal) {
+			if (newVal && this.timeout) {
+				clearTimeout(this.timeout);
+				if (this.confirmModal) {
+					this.confirmModal.destroy();
+				}
+			}
+		},
+		callDeclined(newVal) {
+			if (newVal && this.timeout) {
+				clearTimeout(this.timeout);
+				if (this.confirmModal) {
+					this.confirmModal.destroy();
+				}
+				this.videoCallDialog = false;
+			}
+		},
+	},
 	methods: {
-
 		closeDialog() {
 			console.log("closeDialog called"); // Kiểm tra xem phương thức có được gọi không
 			if (this.localStream) {
@@ -445,11 +479,20 @@ export default {
 				});
 			}
 			this.videoCallDialog = false;
+			clearTimeout(this.timeout);
 		},
 		formattedBirthday() {
 			if (this.userFound && this.userFound.birthDay) {
 				const parsedDate = parseISO(this.userFound.birthDay);
 				this.displayedDate = format(parsedDate, "dd 'tháng' MM, yyyy", { locale: viLocale });
+			}
+		},
+		typingMessage({ roomId, message }) {
+
+			const roomIndex = this.rooms.findIndex(room => room.roomId === roomId);
+
+			if (roomIndex !== -1) {
+				this.rooms[roomIndex].typingUsers = [...this.rooms[roomIndex].typingUsers, this.currentUserId];
 			}
 		},
 		async fetchMessages({ room = {}, options = {} }) {
@@ -458,8 +501,7 @@ export default {
 			if (room.users.length === 2) {
 				// console.log("This is private chat");
 				menuActionList = [
-					{ name: 'callUser', title: 'Call User' },
-					{ name: 'sendMessageToUser', title: 'Send Message To User' }
+					{ name: 'callUser', title: 'Call User' }
 				];
 			}
 			else {
@@ -507,9 +549,12 @@ export default {
 			let messages = result.data.chatMessageResponses;
 			messages = messages.filter(message => !(message.system === true && message.deleted === true));
 			messages.forEach(element => {
+				if (element.isBlock === true) {
+					element.content = "Tin nhắn đã bị ẩn!";
+				}
 				element.files.forEach(file => {
 					delete file.progress;
-				})
+				});
 			});
 			// console.log(messages);
 			this.messages = [...messages, ...this.messages];
@@ -608,6 +653,10 @@ export default {
 			}
 		},
 
+		playSound() {
+			audio.play();
+		},
+
 		async addRoom() {
 			console.log("Enter add room");
 			this.addedFriends = [];
@@ -620,7 +669,7 @@ export default {
 			const formData = new FormData();
 			formData.append('groupName', this.groupName);
 			formData.append('groupAvatarFile', this.groupAvatarFile);
-			const receiversPhoneNumber= this.addedFriends.map(friend => friend.phoneNumber);
+			const receiversPhoneNumber = this.addedFriends.map(friend => friend.phoneNumber);
 			console.log(receiversPhoneNumber);
 			formData.append('receiversPhoneNumber', JSON.stringify(receiversPhoneNumber));
 			try {
@@ -725,6 +774,7 @@ export default {
 			// console.log(result.data);
 			return result;
 		},
+
 		async sendMessage({ roomId, content, files, replyMessage, usersTag }) {
 			// console.log("Call send message");
 			// console.log("RoomId: ", roomId);
@@ -732,6 +782,8 @@ export default {
 			// console.log("Files: ", files);
 			// console.log("ReplyMessage: ", replyMessage);
 			// console.log("User tag:", usersTag);
+
+			const MAX_FILE_SIZE = 100 * 1024 * 1024;
 			const form = new FormData();
 			form.append('roomId', roomId);
 			form.append('content', content);
@@ -742,13 +794,16 @@ export default {
 			form.append('failure', false);
 			form.append('disableActions', false);
 			if (files) {
-				files.forEach(file => {
-					const convertFile = new File([file.blob], file.type === 'audio/mp3' ? file.name : (file.extension ? file.name.concat('.').concat(file.extension) : file.name.concat('.').concat(file.type)), {
-						type: file.type
+				for (const file of files) {
+					if (file.size > MAX_FILE_SIZE) {
+						alert(`File "${file.name}" không được hỗ trợ do có kích thước lớn hơn 100MB!`);
+					} else {
+						const convertFile = new File([file.blob], file.type === 'audio/mp3' ? file.name : (file.extension ? file.name.concat('.').concat(file.extension) : file.name.concat('.').concat(file.type)), {
+							type: file.type
+						});
+						form.append('files', convertFile);
 					}
-					);
-					form.append('files', convertFile);
-				});
+				}
 			}
 			if (replyMessage)
 				form.append('replyMessageId', replyMessage ? parseInt(replyMessage._id) : null);
@@ -762,17 +817,21 @@ export default {
 				});
 				if (result.status === 200) {
 					// console.log(result);
-					result.data.chatMessageResponse.saved = true;
-					result.data.chatMessageResponse.distributed = true;
-					if (files) {
-						result.data.chatMessageResponse.files.forEach(file => {
-							delete file.progress;
-						});
-					}
+					result.data.chatMessageResponses.forEach(chatMessageResponse => {
+						chatMessageResponse.saved = true;
+						chatMessageResponse.distributed = true;
+						if (files) {
+							chatMessageResponse.files.forEach(file => {
+								delete file.progress;
+							});
+						}
+						this.messages = [...this.messages, chatMessageResponse];
+					});
 				} else {
-					result.data.chatMessageResponse.failure = true;
+					result.data.chatMessageResponses.forEach(chatMessageResponse => {
+						chatMessageResponse.failure = true;
+					});
 				}
-				this.messages = [...this.messages, result.data.chatMessageResponse];
 				// const room 
 			} catch (exception) {
 				// console.log("Loi roi");
@@ -912,6 +971,7 @@ export default {
 			// console.log("Action", action);
 			const room = this.rooms.find(room => room.roomId === roomId);
 			if (action.name === 'callUser') {
+				this.videoCallDialog = true;
 				this.callToSpecificUser(room);
 			} else if (action.name === 'sendMessageToUser') {
 				console.log("Call sendMessageToUser");
@@ -1095,6 +1155,7 @@ export default {
 
 		getCurrentUserId() {
 			const user = JSON.parse(localStorage.getItem('user'));
+			this.currentUser = user;
 			this.currentUserId = user.id;
 			// console.log(this.currentUserId);
 		},
@@ -1107,7 +1168,26 @@ export default {
 			// console.log("Call fetchNewInfoMessage" + roomId);
 		},
 
+		startTitleBlinking(newTitle) {
+			if (isBlinking) return;
+			isBlinking = true;
+			blinkInterval = setInterval(() => {
+				if (document.title === originalTitle) {
+					document.title = newTitle;
+				} else {
+					document.title = originalTitle;
+				}
+			}, 1000); // Thay đổi mỗi giây
+		},
+
+		stopTitleBlinking() {
+			clearInterval(blinkInterval);
+			document.title = originalTitle;
+			isBlinking = false;
+		},
+
 		async handleNewUpdate(message) {
+			console.log("zo test")
 			const notification = JSON.parse(message.body);
 			const userSend = message.headers.userSend;
 			if (notification.typeNotification === "RTC_CONNECTION") {
@@ -1130,24 +1210,85 @@ export default {
 						});
 					}
 					if (notification.typeNotification === "CREATE") {
+						console.log("Notification")
+						console.log(notification)
+						this.playSound();
+						console.log("zo")
 						this.messages = [...this.messages, notification.message];
+						if (document.hidden) {
+							console.log("zo roi ne")
+							this.startTitleBlinking(notification.message.username + " đã gửi tin nhắn cho bạn");
+						}
 					} else if (notification.typeNotification === "UPDATE") {
 						// console.log("Message is update");
-						let message = this.messages.find(message => message._id == notification.message._id);
-						// console.log(message);
-						if (message) {
-							const indexMessage = this.messages.indexOf(message);
-							this.messages[indexMessage] = notification.message;
-							this.messages = [...this.messages];
+						if (notification.message === "Người dùng từ chối nhận cuộc gọi!") {
+							this.callDeclined = true;
+							this.toast.error("Người dùng từ chối nhận cuộc gọi!", { timeout: 1500 });
+						} else {
+							let message = this.messages.find(message => message._id == notification.message._id);
+							// console.log(message);
+							if (message) {
+								const indexMessage = this.messages.indexOf(message);
+								this.messages[indexMessage] = notification.message;
+								this.messages = [...this.messages];
+							}
 						}
 					}
 				}
 				console.log(this.rooms);
 				const indexRoom = this.rooms.indexOf(this.rooms.find(room => room.roomId == notification.roomInfo.roomId));
-				if (indexRoom !== -1){
+				if (indexRoom !== -1) {
 					this.rooms[indexRoom] = notification.roomInfo;
 					this.rooms = [...this.rooms];
 				}
+			}
+		},
+
+		clearTimeouts() {
+			if (this.timeoutId) {
+				clearTimeout(this.timeoutId);
+				this.timeoutId = null;
+			}
+		},
+
+		async createMissedCallMessage() {
+
+			const user = this.roomForNotification.users.find(element => element._id != this.currentUserId);
+			if (user) {
+				const messageContent = `${user.username} đã bỏ lỡ cuộc gọi!`;
+				const form = new FormData();
+
+				form.append('roomId', this.roomForNotification.roomId);
+				form.append('content', messageContent);
+				form.append('system', true);
+				form.append('saved', false);
+				form.append('distributed', false);
+				form.append('seen', false);
+				form.append('failure', false);
+				form.append('disableActions', false);
+
+				try {
+					const result = await axios.post(`http://localhost:8181/v1/chat/create-message`, form, {
+						headers: {
+							'Content-Type': 'multipart/form-data'
+						}
+					});
+					if (result.status === 200) {
+						result.data.chatMessageResponses.forEach(chatMessageResponse => {
+							chatMessageResponse.saved = true;
+							chatMessageResponse.distributed = true;
+							this.messages = [...this.messages, chatMessageResponse];
+						});
+					} else {
+						result.data.chatMessageResponses.forEach(chatMessageResponse => {
+							chatMessageResponse.failure = true;
+						});
+					}
+				} catch (exception) {
+					console.log('Error creating message:', exception);
+				}
+
+				this.videoCallDialog = false;
 			}
 		},
 
@@ -1159,12 +1300,14 @@ export default {
 			// console.log(room);
 			try {
 				const user = room.users.filter(element => element._id != this.currentUserId);
+				this.roomForNotification = room;
 				await this.initializeRTCPeerConnection(this.currentUserId);
 				const stream = await this.getStream();
 				this.localStream = stream;
 				stream.getTracks().forEach((track) => {
 					this.peerConnection.addTrack(track, stream);
 				});
+				// const timeout = setTimeout(await this.createOffer(), 10000, user[0]._id);
 				await this.createOffer(user[0]._id);
 			} catch (exception) {
 				console.log(exception);
@@ -1242,6 +1385,7 @@ export default {
 			this.peerConnection.ontrack = ev => {
 				console.log("On track functin fire");
 				if (ev.streams && ev.streams[0]) {
+					this.callAccepted = true;
 					this.remoteStream = ev.streams[0];
 				}
 			};
@@ -1255,16 +1399,21 @@ export default {
 					event: "offer",
 					data: offer
 				}), userId);
+
+				this.timeout = setTimeout(this.createMissedCallMessage, 10000);
 			} catch (error) {
 				console.log("Error creating an offer");
 			}
 		},
 
 		async handleOffer(offer, remoteUser) {
+			console.log("Handle")
 			this.callIncoming = true;
+			this.callAccepted = false;
+			this.callDeclined = false;
 			this.offerData = offer;
 			this.remoteUser = remoteUser;
-			Modal.confirm({
+			this.confirmModal = Modal.confirm({
 				title: 'Incoming Call',
 				content: 'You have an incoming call. Do you want to accept it?',
 				onOk: () => {
@@ -1274,6 +1423,20 @@ export default {
 					this.declineCall();
 				}
 			});
+			this.timeout = setTimeout(() => {
+				this.closeForm();
+				if (this.confirmModal) {
+					this.confirmModal.destroy();
+				}
+			}, 10000);
+		},
+
+		closeForm() {
+			this.callAccepted = false;
+			this.callDeclined = false;
+			this.callIncoming = false;
+			this.offerData = null;
+			this.remoteUser = null;
 		},
 
 		async handleCandidate(candidate) {
@@ -1328,6 +1491,7 @@ export default {
 
 		async acceptCall() {
 			this.callIncoming = false;
+			this.callAccepted = true;
 			this.videoCallDialog = true;
 			try {
 				await this.peerConnection.setRemoteDescription(new RTCSessionDescription(this.offerData));
@@ -1347,10 +1511,21 @@ export default {
 				console.log(exception);
 			}
 		},
-		declineCall() {
+		async declineCall() {
 			this.callIncoming = false;
 			this.offerData = null;
 			this.remoteUser = null;
+			this.callDeclined = true;
+			const room = this.rooms.filter(element => element.roomId === this.currentRoom)[0];
+			const user = room.users.filter(element => element._id !== this.currentUserId)[0];
+			const receiverId = user._id;
+			const form = new FormData();
+			form.append('roomId', this.currentRoom);
+			form.append('receiverId', receiverId);
+			form.append('message', "Người dùng từ chối nhận cuộc gọi!");
+			const result = await axios.post(`http://localhost:8181/v1/chat/send-notification-declined`, form);
+			// console.log(result.data);
+			return result;
 			// You may want to send a message back to the caller indicating the call was declined
 		},
 
@@ -1366,6 +1541,12 @@ export default {
 					}
 				};
 			};
+		},
+		getMessageStyle(message) {
+			if (message.content.includes('đã bỏ lỡ cuộc gọi!')) {
+				return { color: 'red' };
+			}
+			return {};
 		}
 	}
 }

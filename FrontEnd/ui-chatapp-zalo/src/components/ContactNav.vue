@@ -8,9 +8,6 @@
                     <div title="Thêm bạn" class="cursor-pointer" @click="showFindFriendDialog">
                         <font-awesome-icon icon="fa-solid fa-user-plus" />
                     </div>
-                    <div title="Tạo nhóm chat">
-                        <font-awesome-icon icon="fa-solid fa-users" />
-                    </div>
                 </div>
                 <div id="menu-friend">
                     <div class="menu-contact">
@@ -23,17 +20,6 @@
                             </a>
                             <p class="menu-name">
                                 <span>Danh sách bạn bè</span>
-                            </p>
-                        </div>
-                        <div class="menu-item"
-                            :class="{ 'selected': selectedMenuItem === 'groups', 'hovered': hoveredItem === 'groups', 'hovering': selectedMenuItem === 'groups' }"
-                            @mouseenter="!isSelected('groups') && (hoveredItem = 'groups')" @mouseleave="hoveredItem = ''"
-                            @click="selectMenuItem('groups')">
-                            <a id="group-list-icon">
-                                <font-awesome-icon icon="fa-solid fa-users-line" />
-                            </a>
-                            <p class="menu-name">
-                                <span>Danh sách nhóm</span>
                             </p>
                         </div>
                         <div class="menu-item"
@@ -66,9 +52,6 @@
             <div class="set-width" v-if="selectedMenuItem === 'friends'">
                 <FriendList></FriendList>
             </div>
-            <div class="set-width" v-if="selectedMenuItem === 'groups'">
-                <GroupList></GroupList>
-            </div>
             <div class="set-width" v-if="selectedMenuItem === 'friendRequests'">
                 <InvitationFriendManage></InvitationFriendManage>
             </div>
@@ -90,24 +73,6 @@
                     <div class="pt-1 pl-4 pr-4 pb-2">
                         <input type="text" v-model="searchPhoneNumber" placeholder="Số điện thoại"
                             title="Vui lòng nhập số điện thoại" class="search-input" />
-                        <div class="mt-4"><span>Có thể bạn quen</span></div>
-                        <div class="friend-list-container">
-                            <div v-for="friend in friends" v-bind:key="friend.phoneNumber" class="position-relative">
-                                <div class="friend-info friend-container">
-                                    <div class="avatar-container" @click="showUserInfoDialog(friend)">
-                                        <div class="avatar-wrapper">
-                                            <img :src="friend.imageAvatar" class="avatar">
-                                        </div>
-                                    </div>
-                                    <div class="detail" @click="showUserInfoDialog(friend)">
-                                        <span>{{ friend.userName }}</span>
-                                    </div>
-                                    <div class="action" @click="test2">
-                                        <button class="add-friend-button">Thêm bạn</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                     <div class="profile-action">
                         <div class="cancel-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mx-4 w-1/2"
@@ -204,7 +169,6 @@
 <script>
 import axios from 'axios';
 import FriendList from './FriendList.vue';
-import GroupList from './GroupList.vue';
 import BlockList from './BlockList.vue';
 import InvitationFriendManage from './InvitationFriendManage.vue';
 import { format, parseISO } from 'date-fns';
@@ -213,7 +177,6 @@ import { useToast } from "vue-toastification";
 export default {
     components: {
         FriendList,
-        GroupList,
         InvitationFriendManage,
         BlockList
     },
@@ -235,16 +198,6 @@ export default {
             hoveredItem: '',
             showVisibleFindFriendDialog: false,
             showVisibleUserInfo: false,
-            friends: [
-                { phoneNumber: '0965556651', userName: "Võ Giang Nam", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
-                { phoneNumber: '0965556652', userName: "Từ Thanh Thoại", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
-                { phoneNumber: '0965556653', userName: "Kẻ Áo Đen", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
-                { phoneNumber: '0965556654', userName: "Kẻ Áo Vàng", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
-                { phoneNumber: '0965556655', userName: "Kẻ Áo Xanh", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
-                { phoneNumber: '0965556656', userName: "Kẻ Áo Đỏ", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
-                { phoneNumber: '0965556657', userName: "Kẻ Áo Tím", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
-                { phoneNumber: '0965556658', userName: "Kẻ Áo Cam", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' }
-            ],
             listOfFriends: [],
             searchPhoneNumber: '',
             userFound: null,

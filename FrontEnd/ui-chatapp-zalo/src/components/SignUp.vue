@@ -30,6 +30,18 @@
                         <em class="error" v-if="isError === true">{{ validationErrorPhoneNumber }}</em>
                         <hr style="border: none; border-bottom: 2px solid #d9d9d9; margin-left: 8px;">
                     </div>
+                    <div class="phone">
+                        <span class="label-input">Ngày sinh</span>
+                        <div class="phone-input">
+                            <div class="icon-phone">
+                                <font-awesome-icon icon="fa-solid fa-calendar-days" />
+                            </div>
+                            <flat-pickr class="input" v-model="birthDay" placeholder="Chọn ngày sinh"
+                                :config="flatpickrConfig" @change="validateBirthday" @keyup.enter="signUp"></flat-pickr>
+                        </div>
+                        <em class="error" v-if="isError === true">{{ validationErrorBirthday }}</em>
+                        <hr style="border: none; border-bottom: 2px solid #d9d9d9; margin-left: 8px;">
+                    </div>
                     <div class="password">
                         <span class="label-input">Mật khẩu</span>
                         <div class="password-input">
@@ -78,7 +90,8 @@
                 </div>
             </div>
             <div class="wrap-otp" v-if="showOTP">
-                <OTP style="width: 100%;" @update:showOTP="updateShowOTP" :phoneNumber="phoneNumber" @update:showingPage="showSignIn"></OTP>
+                <OTP style="width: 100%;" @update:showOTP="updateShowOTP" :phoneNumber="phoneNumber"
+                    @update:showingPage="showSignIn"></OTP>
             </div>
         </div>
     </div>
@@ -89,6 +102,8 @@
 import axios from 'axios';
 import OTP from './OTP.vue';
 import { useToast } from "vue-toastification";
+import FlatPickr from 'vue-flatpickr-component';
+import 'flatpickr/dist/flatpickr.css';
 
 export default {
     data() {
@@ -98,12 +113,14 @@ export default {
             hoveredItem: '',
             username: '',
             phoneNumber: '',
+            birthDay: null,
             password: '',
             confirmPassword: '',
             validationErrorName: '',
             validationErrorPhoneNumber: '',
             validationErrorPassword: '',
             validationErrorConfirmPassword: '',
+            validationErrorBirthday: '',
             validationError: '',
             registerUser: null,
             showOTP: false,
@@ -111,16 +128,52 @@ export default {
             flag2: true,
             flag3: true,
             flag4: true,
+            flatpickrConfig: {
+                dateFormat: 'Y-m-d',
+            }
         };
     },
     components: {
-        OTP
+        OTP,
+        FlatPickr
     }, setup() {
         // Get toast interface
         const toast = useToast();
         return { toast }
     },
     methods: {
+        validateBirthday() {
+            if (!this.birthDay) {
+                this.isError = true;
+                this.validationErrorBirthday = 'Vui lòng chọn ngày sinh.';
+                return;
+            }
+
+            let regexDate = /^\d{4}-\d{2}-\d{2}$/;
+            if (!regexDate.test(this.birthDay)) {
+                this.isError = true;
+                this.validationErrorBirthday = 'Định dạng ngày sinh không hợp lệ (VD: YYYY-MM-DD).';
+                return;
+            }
+
+            let selectedDate = new Date(this.birthDay);
+            let currentDate = new Date();
+
+            if (selectedDate > currentDate) {
+                this.isError = true;
+                this.validationErrorBirthday = 'Ngày sinh không thể lớn hơn ngày hiện tại.';
+                return;
+            }
+
+            if (isNaN(selectedDate.getTime())) {
+                this.isError = true;
+                this.validationErrorBirthday = 'Ngày sinh không hợp lệ.';
+                return;
+            }
+
+            this.isError = false;
+            this.validationErrorBirthday = '';
+        },
         togglePasswordVisibility() {
             this.showPassword = !this.showPassword;
             const passwordInput = document.querySelector('input[name="password"]');
@@ -237,12 +290,13 @@ export default {
 
                 if (!this.isError) {
                     try {
-
+                        let selectedDate = new Date(this.birthDay);
                         const registerUser = {
                             fullName: this.username,
                             phoneNumber: this.phoneNumber,
                             password: this.password,
-                            reEnterPassword: this.confirmPassword
+                            reEnterPassword: this.confirmPassword,
+                            birthDay: selectedDate
                         }
 
                         console.log(registerUser);
@@ -313,6 +367,7 @@ export default {
     .container {
         display: flex;
         width: 100%;
+        max-width: 100%;
         min-height: 100vh;
         flex-wrap: wrap;
         justify-content: center;

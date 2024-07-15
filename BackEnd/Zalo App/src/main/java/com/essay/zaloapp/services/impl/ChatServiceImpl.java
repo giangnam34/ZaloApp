@@ -59,9 +59,26 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public Long getChatRoomId(String senderPhoneNumber,
                               String receiverPhoneNumber) {
-        Optional<GroupChat> opGroupChat = groupChatRepository.findById(groupChatUserRepository.findGroupChatIdsBySenderAndReceiverPhoneNumbers(senderPhoneNumber, receiverPhoneNumber).get(0));
-        if (opGroupChat.isPresent()) {
-            return opGroupChat.get().getId();
+        Boolean check = false;
+        Long groupId = null;
+        List<GroupChatUser> sender = groupChatUserRepository.findByIdPhoneNumberUser(senderPhoneNumber);
+        List<GroupChatUser> receiver = groupChatUserRepository.findByIdPhoneNumberUser(receiverPhoneNumber);
+
+        for (GroupChatUser groupChatSender : sender) {
+            for (GroupChatUser groupChatReceiver : receiver) {
+                if (groupChatReceiver.getId().getGroupId() == groupChatSender.getId().getGroupId()) {
+                    List<GroupChatUser> groupChatUsers = groupChatUserRepository.findAllByGroupId(groupChatReceiver.getId().getGroupId());
+                    if (groupChatUsers.size() == 2) {
+                        check = true;
+                        groupId = groupChatReceiver.getId().getGroupId();
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (check) {
+            return groupId;
         } else {
             return createChatRoom(senderPhoneNumber, receiverPhoneNumber);
         }

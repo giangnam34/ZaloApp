@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
+import java.util.Date;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -23,5 +24,6 @@ public class SignUpRequest {
     private String reEnterPassword;
     @NotNull
     private String fullName;
-
+    @NotNull
+    private Date birthDay;
 }

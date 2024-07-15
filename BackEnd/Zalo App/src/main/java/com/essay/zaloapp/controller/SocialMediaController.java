@@ -67,7 +67,7 @@ public class SocialMediaController {
     @GetMapping(value = "/get-all-info-post", produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> getAllInfoPost(@AuthenticationPrincipal UserPrincipal userPrincipal){
-        SocialMediaServiceImpl.GetAllInfoPostUser result = socialMediaService.getAllPostUser(userPrincipal.getId());
+        SocialMediaServiceImpl.GetAllInfoPostUser result = socialMediaService.getAllPostUser(userPrincipal.getId(),0L);
         return result.getMesage().equals("Thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
@@ -153,10 +153,24 @@ public class SocialMediaController {
     }
 
     // Hiển thị bản tin
-    @GetMapping("/get-post")
+    @GetMapping("/get-post/{page}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> getPostUser(@AuthenticationPrincipal UserPrincipal userPrincipal) throws IOException, TasteException {
-        SocialMediaServiceImpl.GetAllInfoPostUser result = socialMediaService.getNewFeedUser(userPrincipal.getId());
+    public ResponseEntity<?> getPostUser(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long page) throws IOException, TasteException {
+        SocialMediaServiceImpl.GetAllInfoPostUser result = socialMediaService.getNewFeedUser(userPrincipal.getId(), page);
         return result.getMesage().equals("Thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
+    }
+
+    @GetMapping("/get-post-user/{page}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> getPostOfUser(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long page){
+        SocialMediaServiceImpl.GetAllInfoPostUser result = socialMediaService.getAllPostUser(userPrincipal.getId(), page);
+        return result.getMesage().equals("Thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
+    }
+
+    @GetMapping("/get-all-users-liked-post/{postId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> getAllUsersLikedPost(@AuthenticationPrincipal UserPrincipal userPrincipal, @PathVariable Long postId){
+        SocialMediaServiceImpl.GetAllUsersLikedPost result = socialMediaService.getAllUsersLikedPost(postId);
+        return  result.getMesage().equals("Lấy danh sách người thích thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 }
