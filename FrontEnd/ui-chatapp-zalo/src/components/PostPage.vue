@@ -20,9 +20,8 @@
                 <div class="main-center col-span-2 space-y-4">
                     <div class="bg-white border border-gray-200 rounded-lg">
                         <div class="p-4">
-                            <span class="p-4 bg-gray-100 rounded-lg cursor-pointer d-block w-100"
-                                @click="showPostOption">{{
-            user.fullName }} ơi, bạn đang nghĩ gì thế?</span>
+                            <span class="p-4 bg-gray-100 rounded-lg cursor-pointer d-block w-100" @click="showPostOption">{{
+                                user.fullName }} ơi, bạn đang nghĩ gì thế?</span>
                         </div>
                     </div>
 
@@ -61,7 +60,7 @@
                                                     <!-- Bạn bè ngoại trừ -->
                                                 </div>
                                                 <p class="text-gray-600 ml-2 date"> • {{ formatTimeDifference(new
-            Date(feed.updatedAt)) }}
+                                                    Date(feed.updatedAt)) }}
                                                 </p>
                                             </div>
                                         </div>
@@ -141,8 +140,7 @@
                                         </template>
                                     </span>
                                 </div>
-                                <div v-else class="flex-1 flex items-center mr-2"
-                                    @click="openListLikedUserDialog(feed.id)">
+                                <div v-else class="flex-1 flex items-center mr-2" @click="openListLikedUserDialog(feed.id)">
                                     <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
                                         icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
                                     <span class="text-gray-500 text-lg hover:underline cursor-pointer">
@@ -182,8 +180,7 @@
                                     luận</button>
                                 <button class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
                                     @click="sharePost(feed)" @mouseover="handleMouseOver"
-                                    @mouseout="handleMouseOut"><font-awesome-icon icon="fa-solid fa-share"
-                                        class="mr-2" />
+                                    @mouseout="handleMouseOut"><font-awesome-icon icon="fa-solid fa-share" class="mr-2" />
                                     Chia
                                     sẻ
                                 </button>
@@ -268,7 +265,7 @@
                                                 <div>
                                                     <div class="flex">
                                                         <p class="name"><strong>{{ feed.postFather.userPost.userName
-                                                                }}</strong>
+                                                        }}</strong>
                                                         </p>
                                                     </div>
                                                     <div class="wrap-icon flex">
@@ -293,9 +290,9 @@
                                                             <!-- Bạn bè ngoại trừ -->
                                                         </div>
                                                         <p class="text-gray-600 ml-2 date"> • {{
-            formatTimeDifference(new
-                Date(feed.postFather.updatedAt))
-        }}
+                                                            formatTimeDifference(new
+                                                                Date(feed.postFather.updatedAt))
+                                                        }}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -310,12 +307,10 @@
                                 <div class="my-3 flex">
                                     <div v-if="!feed.isLike" class="flex-1 flex items-center mr-2"
                                         @click="openListLikedUserDialog(feed.id)">
-                                        <font-awesome-icon
-                                            v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
+                                        <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
                                             icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
                                         <span class="text-gray-500 text-lg hover:underline cursor-pointer">
-                                            <template
-                                                v-if="feed.userLikeList == null || feed.userLikeList.length === 0">
+                                            <template v-if="feed.userLikeList == null || feed.userLikeList.length === 0">
 
                                             </template>
                                             <template v-else>
@@ -325,8 +320,7 @@
                                     </div>
                                     <div v-else class="flex-1 flex items-center mr-2"
                                         @click="openListLikedUserDialog(feed.id)">
-                                        <font-awesome-icon
-                                            v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
+                                        <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
                                             icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
                                         <span class="text-gray-500 text-lg hover:underline cursor-pointer">
                                             <template v-if="feed.userLikeList.length === 1">
@@ -358,8 +352,7 @@
                                         @mouseover="handleMouseOver" @mouseout="handleMouseOut"
                                         @click="likePost(feed)"><font-awesome-icon icon="fa-regular fa-thumbs-up"
                                             class="mr-2" />Thích</button>
-                                    <button
-                                        class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
+                                    <button class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
                                         @click="openFeedInfo(feed)" @mouseover="handleMouseOver"
                                         @mouseout="handleMouseOut"><font-awesome-icon icon="fa-regular fa-comment"
                                             class="mr-2" />Bình
@@ -458,8 +451,7 @@
                     <div class="pl-4 pr-4">
                         <div v-for="(file, index) in newFeed.files" :key="index">
                             <div v-if="index === 0" class="cursor-pointer" @click="showUpdateFileDialog">
-                                <img class="upload-file" v-if="isImage(file)" :src="getUrl(file)"
-                                    alt="Selected Image" />
+                                <img class="upload-file" v-if="isImage(file)" :src="getUrl(file)" alt="Selected Image" />
                                 <video v-else controls width="300" class="upload-file">
                                     <source :src="getUrl(file)" type="video/mp4" />
                                     Trình duyệt không hỗ trợ định dạng này
@@ -511,8 +503,7 @@
             </v-card-text>
         </v-card>
     </v-dialog>
-    <v-dialog class="dialog-container" v-model="showUpdateFile" max-width="500px"
-        @click:outside="closeUpdateFileDialog">
+    <v-dialog class="dialog-container" v-model="showUpdateFile" max-width="500px" @click:outside="closeUpdateFileDialog">
         <v-card class="dialog-component">
             <v-card-title class="dialog-title">
                 <h2 class="title">Chỉnh sửa ảnh và video tải lên
@@ -526,8 +517,7 @@
                     <div class="pt-4 pl-4 pr-4">
                         <div class="update-file-container">
                             <div v-for="(file, index) in newFeed.files" :key="index" class="position-relative">
-                                <img class="upload-file" v-if="isImage(file)" :src="getUrl(file)"
-                                    alt="Selected Image" />
+                                <img class="upload-file" v-if="isImage(file)" :src="getUrl(file)" alt="Selected Image" />
                                 <video v-else controls width="300" class="upload-file">
                                     <source :src="getUrl(file)" type="video/mp4" />
                                     Your browser does not support the video tag.
@@ -576,8 +566,8 @@
                             Thêm ảnh/video
                         </div>
                     </label>
-                    <input type="file" id="addFileInput" ref="fileInput" @change="addFile" style="display: none;"
-                        multiple accept="image/*,video/*">
+                    <input type="file" id="addFileInput" ref="fileInput" @change="addFile" style="display: none;" multiple
+                        accept="image/*,video/*">
                 </div>
             </v-card-text>
         </v-card>
@@ -635,8 +625,7 @@
                     <div class="pt-4 pl-4 pr-4">
                         <input type="text" v-model="searchText" placeholder="Tìm kiếm theo tên" class="search-input" />
                         <div v-if="updateFeed.userTagList.length !== 0"><span>Đã gắn thẻ</span></div>
-                        <div class="update-file-container" style="height:100px"
-                            v-if="updateFeed.userTagList.length !== 0">
+                        <div class="update-file-container" style="height:100px" v-if="updateFeed.userTagList.length !== 0">
                             <div v-for="friend in updateFeed.userTagList" v-bind:key="friend.phoneNumber"
                                 class="position-relative">
                                 <div class="friend-info cursor-pointer m-2" @click="deleteFriendTag(friend)">
@@ -680,8 +669,7 @@
         </v-card>
     </v-dialog>
     <!-- Pop up bài viết người dùng -->
-    <v-dialog class="dialog-container-feed" v-model="showVisibleInfoFeed" max-width="800px"
-        @click:outside="closeFeedInfo">
+    <v-dialog class="dialog-container-feed" v-model="showVisibleInfoFeed" max-width="800px" @click:outside="closeFeedInfo">
         <v-card class="dialog-component-1">
             <v-card-title class="dialog-title">
                 <h2 class="title">Bài viết của {{ showingFeed.userPost.userName }}
@@ -722,16 +710,15 @@
                                             Bạn bè ngoại trừ
                                         </div>
                                         <p class="text-gray-600 ml-2 date"> • {{ formatTimeDifference(new
-            Date(showingFeed.updatedAt))
-                                            }}
+                                            Date(showingFeed.updatedAt))
+                                        }}
                                         </p>
                                     </div>
                                 </div>
                                 <div id="more-icon">
                                     <div class="action cursor-pointer">
                                         <div class="popover-action-container" @click:outside="hidePopover">
-                                            <a id="ellipsis-icon"
-                                                @click="(event) => handleClickAction(event, showingFeed)">
+                                            <a id="ellipsis-icon" @click="(event) => handleClickAction(event, showingFeed)">
                                                 <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
                                             </a>
                                             <div class="popoverAction"
@@ -805,13 +792,12 @@
                             @click="openListLikedUserDialog(showingFeed.id)">
                             <font-awesome-icon icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
                             <span class="text-gray-500 text-lg hover:underline cursor-pointer">{{
-            showingFeed.userLikeList.length
-        }}</span>
+                                showingFeed.userLikeList.length
+                            }}</span>
                         </div>
 
                         <!-- Test -->
-                        <div v-else class="flex-1 flex items-center mr-2"
-                            @click="openListLikedUserDialog(showingFeed.id)">
+                        <div v-else class="flex-1 flex items-center mr-2" @click="openListLikedUserDialog(showingFeed.id)">
                             <font-awesome-icon
                                 v-if="showingFeed.userLikeList !== null && showingFeed.userLikeList.length > 0"
                                 icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
@@ -847,9 +833,8 @@
                             @click="likePost(showingFeed)"><font-awesome-icon icon="fa-regular fa-thumbs-up"
                                 class="mr-2" />Thích</button>
                         <button class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
-                            @click="focusComment" @mouseover="handleMouseOver"
-                            @mouseout="handleMouseOut"><font-awesome-icon icon="fa-regular fa-comment"
-                                class="mr-2" />Bình
+                            @click="focusComment" @mouseover="handleMouseOver" @mouseout="handleMouseOut"><font-awesome-icon
+                                icon="fa-regular fa-comment" class="mr-2" />Bình
                             luận</button>
                         <button class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
                             @click="sharePost(showingFeed)" @mouseover="handleMouseOver"
@@ -941,8 +926,8 @@
                         <input type="file" @change="handleFileChange" ref="fileInputComment" style="display: none;" />
                         <v-btn v-if="newComment.file === null" @click="openFilePicker">Chọn file</v-btn>
                         <div v-else class="cursor-pointer" @click="openFilePicker">
-                            <img class="upload-file-comment" v-if="isImage(newComment.file)"
-                                :src="getUrl(newComment.file)" alt="Selected Image" />
+                            <img class="upload-file-comment" v-if="isImage(newComment.file)" :src="getUrl(newComment.file)"
+                                alt="Selected Image" />
                             <video v-else controls width="300" class="upload-file-comment">
                                 <source :src="getUrl(newComment.file)" type="video/mp4" />
                                 Trình duyệt không hỗ trợ định dạng này
@@ -1030,8 +1015,7 @@
                                 </div>
                                 <div v-if="index === 1" class="cursor-pointer" @click="showUpdateFileDialog">
                                     <div class="image-container">
-                                        <img class="upload-file" v-if="isImage(file)" :src="file"
-                                            alt="Selected Image" />
+                                        <img class="upload-file" v-if="isImage(file)" :src="file" alt="Selected Image" />
                                         <video v-else controls width="300" class="upload-file">
                                             <source :src="file" type="video/mp4" />
                                             Your browser does not support the video tag.
@@ -1480,10 +1464,10 @@ export default {
             // Hiển thị ảnh full màn hình và điều hướng qua các ảnh
 
         },
-        async fetchFeed() {
+        fetchFeed() {
             console.log("Gọi hàm: fetchFeed()");
             // console.log("User đang đăng nhập: " + this.user);
-            await axios
+            axios
                 .get(`/social-media/get-post/${this.currentPage++}`,/**{
                     headers: {
                         'Authorization': localStorage.getItem("token"),
@@ -1495,16 +1479,16 @@ export default {
                     //response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))
                     this.myFeeds.push(...response.data.getInfoPostResponse);
                     this.myFeeds.forEach(feed => this.updateIsUserLikePost(feed));
-                    console.log("Danh sách bài viết: ", this.myFeeds);
+                    console.log("Danh sách bài viết: ", this.feeds);
                 })
                 .catch(error => {
                     console.log('error', error)
                 })
         },
-        async fetchMyFeed() {
+        fetchMyFeed() {
             console.log("Gọi hàm: fetchMyFeed()");
             // console.log("User đang đăng nhập: " + this.user);
-            await axios
+            axios
                 .get(`/social-media/get-post-user/${this.currentPage++}`,/**{
                     headers: {
                         'Authorization': localStorage.getItem("token"),
@@ -2256,18 +2240,18 @@ export default {
         closeListLikedUserDialog() {
             this.showVisibleLikedUsers = false;
         },
-        async handleScroll() {
+        handleScroll() {
             const container = this.$refs.scrollContainer;
             console.log(container.scrollHeight);
             console.log(container.scrollTop);
             console.log(container.clientHeight);
-            if (container.clientHeight + container.scrollTop >= container.scrollHeight) {
+            if (container.clientHeight + container.scrollTop >= container.scrollHeight - 70) {
                 // Gọi fetch API khi người dùng đã cuộn đến cuối
                 if (this.chosenFilter == 'allPosts') {
-                    await this.fetchFeed();
+                    this.fetchFeed();
                 }
                 else {
-                    await this.fetchMyFeed();
+                    this.fetchMyFeed();
                 }
             }
         },
