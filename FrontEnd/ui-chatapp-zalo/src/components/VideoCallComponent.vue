@@ -1,7 +1,7 @@
 <template>
   <div class="video-call">
     <div class="video-container">
-      <video ref="localVideo" id="localVideo" autoplay playsinline muted></video>
+      <video ref="localVideo" id="localVideo" autoplay playsinline></video>
       <video ref="remoteVideo" id="remoteVideo" autoplay playsinline></video>
     </div>
     <div class="controls">
