@@ -2259,7 +2259,7 @@ export default {
         },
         async handleScroll() {
             const container = this.$refs.scrollContainer;
-            if (container.clientHeight + container.scrollTop > container.scrollHeight - 100) {
+            if (container.clientHeight + container.scrollTop > container.scrollHeight - 1000) {
                 if (!this.isUserScrollToBottom){
                     this.isUserScrollToBottom = true;
                     if (this.chosenFilter == 'allPosts') {
