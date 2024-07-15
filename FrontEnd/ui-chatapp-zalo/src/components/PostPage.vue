@@ -1274,7 +1274,7 @@ export default {
 
             // this.popoverLeftFilter = popupLeft + 'px';
             // this.popoverTopFilter = popupTop + 'px';
-            this.popoverLeftFilter = "1180px";
+            this.popoverLeftFilter = "1516px";
             this.popoverTopFilter = "69px";
             this.togglePopover(item);
             event.stopPropagation();
@@ -1580,11 +1580,11 @@ export default {
                             this.showVisibleInfoFeed = false;
                         }
                         if (this.chosenFilter === 'allPosts') {
-                        this.fetchFeed();
-                    }
-                    else {
-                        this.fetchMyFeed();
-                    }
+                            this.fetchFeed();
+                        }
+                        else {
+                            this.fetchMyFeed();
+                        }
                     }
                     else
                         this.toast.error("Có lỗi xảy ra, vui lòng thử lại!", 1500);
@@ -1855,7 +1855,12 @@ export default {
                 if (response.status === 200) {
                     this.showPostVisible = false;
                     this.newFeed.content = '';
-                    this.fetchFeed();
+                    if (this.chosenFilter === 'allPosts') {
+                        this.fetchFeed();
+                    }
+                    else {
+                        this.fetchMyFeed();
+                    }
                     this.toast.success(response.data, { timeout: 3000 });
                 } else {
                     this.toast.error(response.data, { timeout: 3000 });
