@@ -67,7 +67,7 @@
 
                                     </div>
                                 </div>
-                                <div id="more-icon">
+                                <div v-if="user.phoneNumber === feed.userPost.phoneNumber" id="more-icon">
                                     <div class="action cursor-pointer">
                                         <div class="popover-action-container" @click:outside="hidePopover">
                                             <a id="ellipsis-icon" @click="(event) => handleClickAction(event, feed)">
@@ -205,7 +205,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div id="more-icon">
+                                            <div v-if="user.phoneNumber === feed.userPost.phoneNumber" id="more-icon">
                                                 <div class="action cursor-pointer">
                                                     <div class="popover-action-container" @click:outside="hidePopover">
                                                         <a id="ellipsis-icon"
@@ -715,7 +715,7 @@
                                         </p>
                                     </div>
                                 </div>
-                                <div id="more-icon">
+                                <div v-if="user.phoneNumber === showingFeed.userPost.phoneNumber" id="more-icon">
                                     <div class="action cursor-pointer">
                                         <div class="popover-action-container" @click:outside="hidePopover">
                                             <a id="ellipsis-icon" @click="(event) => handleClickAction(event, showingFeed)">
@@ -1214,16 +1214,6 @@ export default {
             chosenUpdateComment: null,
             showVisibleLikedUsers: false,
             currentPage: 0,
-            // likedUsers: [
-            //     { phoneNumber: '0965556651', userName: "Võ Giang Nam", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
-            //     { phoneNumber: '0965556652', userName: "Từ Thanh Thoại", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
-            //     { phoneNumber: '0965556653', userName: "Kẻ Áo Đen", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
-            //     { phoneNumber: '0965556654', userName: "Kẻ Áo Vàng", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
-            //     { phoneNumber: '0965556655', userName: "Kẻ Áo Xanh", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
-            //     { phoneNumber: '0965556656', userName: "Kẻ Áo Đỏ", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
-            //     { phoneNumber: '0965556657', userName: "Kẻ Áo Tím", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
-            //     { phoneNumber: '0965556658', userName: "Kẻ Áo Cam", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' }
-            // ],
             likedUsers: [],
             isUserScrollToBottom:false
         }
