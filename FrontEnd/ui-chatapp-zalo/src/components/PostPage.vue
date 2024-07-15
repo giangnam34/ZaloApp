@@ -126,7 +126,8 @@
                             </div>
 
                             <div class="my-3 flex">
-                                <div v-if="!feed.isLike" class="flex-1 flex items-center mr-2"  @click="openListLikedUserDialog">
+                                <div v-if="!feed.isLike" class="flex-1 flex items-center mr-2"
+                                    @click="openListLikedUserDialog(feed.id)">
                                     <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
                                         icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
                                     <span class="text-gray-500 text-lg hover:underline cursor-pointer">
@@ -138,7 +139,7 @@
                                         </template>
                                     </span>
                                 </div>
-                                <div v-else class="flex-1 flex items-center mr-2" @click="openListLikedUserDialog">
+                                <div v-else class="flex-1 flex items-center mr-2" @click="openListLikedUserDialog(feed.id)">
                                     <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
                                         icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
                                     <span class="text-gray-500 text-lg hover:underline cursor-pointer">
@@ -302,7 +303,8 @@
 
 
                                 <div class="my-3 flex">
-                                    <div v-if="!feed.isLike" class="flex-1 flex items-center mr-2" @click="openListLikedUserDialog">
+                                    <div v-if="!feed.isLike" class="flex-1 flex items-center mr-2"
+                                        @click="openListLikedUserDialog(feed.id)">
                                         <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
                                             icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
                                         <span class="text-gray-500 text-lg hover:underline cursor-pointer">
@@ -314,7 +316,8 @@
                                             </template>
                                         </span>
                                     </div>
-                                    <div v-else class="flex-1 flex items-center mr-2" @click="openListLikedUserDialog">
+                                    <div v-else class="flex-1 flex items-center mr-2"
+                                        @click="openListLikedUserDialog(feed.id)">
                                         <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
                                             icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
                                         <span class="text-gray-500 text-lg hover:underline cursor-pointer">
@@ -781,7 +784,8 @@
                     </div> -->
 
                     <div class="my-3 flex">
-                        <div v-if="!showingFeed.isLike" class="flex-1 flex items-center mr-2" @click="openListLikedUserDialog">
+                        <div v-if="!showingFeed.isLike" class="flex-1 flex items-center mr-2"
+                            @click="openListLikedUserDialog(showingFeed.id)">
                             <font-awesome-icon icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
                             <span class="text-gray-500 text-lg hover:underline cursor-pointer">{{
                                 showingFeed.userLikeList.length
@@ -789,7 +793,7 @@
                         </div>
 
                         <!-- Test -->
-                        <div v-else class="flex-1 flex items-center mr-2" @click="openListLikedUserDialog">
+                        <div v-else class="flex-1 flex items-center mr-2" @click="openListLikedUserDialog(showingFeed.id)">
                             <font-awesome-icon
                                 v-if="showingFeed.userLikeList !== null && showingFeed.userLikeList.length > 0"
                                 icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
@@ -1079,7 +1083,8 @@
         <v-card class="dialog-component-liked-user">
             <v-card-title class="dialog-title-liked-user">
                 <h2 class="title-liked-user">Danh sách người dùng thích bài viết
-                    <div class="icon-close-liked-user" @click="closeListLikedUserDialog"><font-awesome-icon icon="fa-solid fa-x" />
+                    <div class="icon-close-liked-user" @click="closeListLikedUserDialog"><font-awesome-icon
+                            icon="fa-solid fa-x" />
                     </div>
                 </h2>
             </v-card-title>
@@ -1204,16 +1209,17 @@ export default {
             searchText: "",
             chosenUpdateComment: null,
             showVisibleLikedUsers: false,
-            likedUsers: [
-                { phoneNumber: '0965556651', userName: "Võ Giang Nam", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
-                { phoneNumber: '0965556652', userName: "Từ Thanh Thoại", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
-                { phoneNumber: '0965556653', userName: "Kẻ Áo Đen", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
-                { phoneNumber: '0965556654', userName: "Kẻ Áo Vàng", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
-                { phoneNumber: '0965556655', userName: "Kẻ Áo Xanh", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
-                { phoneNumber: '0965556656', userName: "Kẻ Áo Đỏ", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
-                { phoneNumber: '0965556657', userName: "Kẻ Áo Tím", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
-                { phoneNumber: '0965556658', userName: "Kẻ Áo Cam", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' }
-            ],
+            // likedUsers: [
+            //     { phoneNumber: '0965556651', userName: "Võ Giang Nam", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
+            //     { phoneNumber: '0965556652', userName: "Từ Thanh Thoại", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
+            //     { phoneNumber: '0965556653', userName: "Kẻ Áo Đen", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
+            //     { phoneNumber: '0965556654', userName: "Kẻ Áo Vàng", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
+            //     { phoneNumber: '0965556655', userName: "Kẻ Áo Xanh", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
+            //     { phoneNumber: '0965556656', userName: "Kẻ Áo Đỏ", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
+            //     { phoneNumber: '0965556657', userName: "Kẻ Áo Tím", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' },
+            //     { phoneNumber: '0965556658', userName: "Kẻ Áo Cam", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' }
+            // ],
+            likedUsers: [],
         }
     },
     mounted() {
@@ -2192,13 +2198,39 @@ export default {
 
             }
         },
-        openListLikedUserDialog(){
-            this.showVisibleLikedUsers = true;
+        openListLikedUserDialog(id) {
+            this.getAllUserLiked(id);
         },
-        closeListLikedUserDialog(){
+        closeListLikedUserDialog() {
             this.showVisibleLikedUsers = false;
+        },
+        async getAllUserLiked(id) {
+            try {
+                const response = await axios.get(`social-media/get-all-users-liked-post/${id}`);
+
+                if (response.status === 200) {
+                    console.log(response)
+                    this.likedUsers = response.data;
+                    this.showVisibleLikedUsers = true;
+                } else {
+                    this.toast.error(response.data, { timeout: 3000 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 3000 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 3000 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 3000 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 3000 });
+                }
+            }
+
         }
-    }
+    },
 }
 </script>
 
@@ -3034,5 +3066,4 @@ export default {
         max-width: 1920px;
     }
 
-}
-</style>
+}</style>

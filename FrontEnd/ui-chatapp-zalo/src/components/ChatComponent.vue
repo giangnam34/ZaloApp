@@ -10,8 +10,7 @@
 			@send-message-reaction="sendMessageReaction($event.detail[0])" :theme="theme"
 			@room-info="showRoomInfo($event.detail[0])" @edit-message="editMessage($event.detail[0])"
 			@room-action-handler="roomActionHandler($event.detail[0])" @add-room="addRoom()"
-			@menu-action-handler="menuActionHandler($event.detail[0])" :emoji-data-source="emojiDataSource"
-			@typing-message="typingMessage($event.detail[0])">
+			@menu-action-handler="menuActionHandler($event.detail[0])" :emoji-data-source="emojiDataSource">
 		</vue-advanced-chat>
 		<v-dialog class="dialog-container-user" v-model="showPopUpInfoRoomWith2Members" max-width="352px"
 			@click:outside="closePopupInfoRoom">
