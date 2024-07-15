@@ -222,14 +222,28 @@ public class SocialMediaServiceImpl implements SocialMediaService {
                             (post.getAudienceValue() == Audience.AllFriend || (post.getAudienceValue() == Audience.SomeOneCanSee && !post.getPostUserList().stream().filter(postUser -> postUser.getPostUserType() == PostUserType.TagUser && postUser.getUser().getId() == userId).collect(Collectors.toList()).isEmpty())
                                     || (post.getAudienceValue() == Audience.AllExceptSomeOne && post.getPostUserList().stream().filter(postUser -> postUser.getPostUserType() == PostUserType.TagUser && postUser.getUser().getId() == userId).collect(Collectors.toList()).isEmpty()))));
         }).collect(Collectors.toList());
-        if (postList.isEmpty()){
-            postList = postRepository.findAll(PageRequest.of(1,10)).stream().filter(post -> {
+        Set<Long> postIdSet = new HashSet<>();
+        for (Post post: postList){
+            postIdSet.add(post.getId());
+        }
+        if ( (page + 1) * 10 <= postList.size()){
+            postList = postList.subList(page.intValue()*10, (page.intValue()+1)*10);
+        } else {
+            List <Post> socialPost = postRepository.findAll().stream().filter(post -> {
+                if (postIdSet.contains(post.getId())) {
+                    return false;
+                } else {
+                    postIdSet.add(post.getId());
+                }
                 return (post.getAudienceValue() == Audience.Public ||
                         post.getUser().getId() == userId ||
-                        (friendService.isFriendUser(userId,post.getUser().getId()) &&
+                        (friendService.isFriendUser(userId, post.getUser().getId()) &&
                                 (post.getAudienceValue() == Audience.AllFriend || (post.getAudienceValue() == Audience.SomeOneCanSee && !post.getPostUserList().stream().filter(postUser -> postUser.getPostUserType() == PostUserType.TagUser && postUser.getUser().getId() == userId).collect(Collectors.toList()).isEmpty())
                                         || (post.getAudienceValue() == Audience.AllExceptSomeOne && post.getPostUserList().stream().filter(postUser -> postUser.getPostUserType() == PostUserType.TagUser && postUser.getUser().getId() == userId).collect(Collectors.toList()).isEmpty()))));
-            }).collect(Collectors.toList());
+            }).sorted(Comparator.comparing(Post::getCreatedAt))  // Sort by posting date
+                .toList();
+            postList.addAll(socialPost);
+            postList = postList.subList(page.intValue()*10, (page.intValue()+1)*10);
         }
         return new GetAllInfoPostUser("Thành công!", mapListPostEntityToResponse(postList));
     }
