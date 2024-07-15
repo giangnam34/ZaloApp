@@ -135,7 +135,7 @@
                                                     Xem thông tin
                                                 </div>
                                             </div>
-                                            <div class="separator"></div>
+                                            <!-- <div class="separator"></div>
                                             <div class="popover-item" :class="{ 'hoveredFilter': hoveredItem === 'type' }"
                                                 @mouseenter="(hoveredItem = 'type')" @mouseleave="hoveredItem = ''">
                                                 <div>
@@ -148,7 +148,7 @@
                                                     Đặt tên ghi nhớ
                                                 </div>
                                             </div>
-                                            <div class="separator"></div>
+                                            <div class="separator"></div> -->
                                             <div class="popover-item" :class="{ 'hoveredFilter': hoveredItem === 'block' }"
                                                 @mouseenter="(hoveredItem = 'block')" @mouseleave="hoveredItem = ''"
                                                 @click="blockUser(friend.phoneNumber)">
@@ -729,7 +729,7 @@ export default {
                     position: absolute;
                     background-color: #fff;
                     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-                    height: 210px;
+                    height: 120px;
                     width: 180px;
                     justify-content: space-between;
 
