@@ -48,7 +48,8 @@
         <v-card class="dialog-component">
             <v-card-title class="dialog-title">
                 <h2 class="title">Thêm bạn
-                    <div class="icon-close" @click="closeFindFriendDialog"><font-awesome-icon icon="fa-solid fa-x" /></div>
+                    <div class="icon-close" @click="closeFindFriendDialog"><font-awesome-icon icon="fa-solid fa-x" />
+                    </div>
                 </h2>
             </v-card-title>
             <hr style="border: none; border-bottom: 1px solid #ccc;">
@@ -76,10 +77,12 @@
                     </div>
                 </div>
                 <div class="profile-action">
-                    <div class="cancel-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mx-4 w-1/2">
+                    <div
+                        class="cancel-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mx-4 w-1/2">
                         Hủy
                     </div>
-                    <div class="search-button text-center cursor-pointer bg-blue-500 text-white rounded-lg h-10 mx-4 w-1/2">
+                    <div
+                        class="search-button text-center cursor-pointer bg-blue-500 text-white rounded-lg h-10 mx-4 w-1/2">
                         Tìm kiếm
                     </div>
                 </div>
@@ -138,10 +141,12 @@
                 <hr style="border: none; border-bottom: 1px solid #ccc;">
                 <div class="mt-2"></div>
                 <div class="profile-action-user">
-                    <div class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/2">
+                    <div
+                        class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/2">
                         Chặn
                     </div>
-                    <div class="add-friend-button text-center cursor-pointer bg-blue-500 text-white rounded-lg h-10 ml-2 w-1/2">
+                    <div
+                        class="add-friend-button text-center cursor-pointer bg-blue-500 text-white rounded-lg h-10 ml-2 w-1/2">
                         Kết bạn
                     </div>
                 </div>
@@ -182,61 +187,77 @@ export default {
     },
     methods: {
         formattedBirthday() {
-            if (this.user && this.user.birthDay) {
-                const parsedDate = parseISO(this.user.birthDay);
-                this.displayedDate = format(parsedDate, "dd 'tháng' MM, yyyy", { locale: viLocale });
+            try {
+                if (this.user && this.user.birthDay) {
+                    const parsedDate = parseISO(this.user.birthDay);
+                    this.displayedDate = format(parsedDate, "dd 'tháng' MM, yyyy", { locale: viLocale });
+                }
+            } catch (exception) {
+                console.log("Error in formattedBirthday", exception);
             }
         },
         showFindFriendDialog() {
-            this.showVisibleFindFriendDialog = true;
+            try {
+                this.showVisibleFindFriendDialog = true;
+            } catch (exception) {
+                console.log("Error in showFindFriendDialog", exception);
+            }
         },
         closeFindFriendDialog() {
-            this.showVisibleFindFriendDialog = false;
+            try {
+                this.showVisibleFindFriendDialog = false;
+            } catch (exception) {
+                console.log("Error in closeFindFriendDialog", exception);
+            }
         },
         showUserInfoDialog(friend) {
-            // try {
-            //     const response = await axios.get(`users/findUserByPhoneNumber/${friend.phoneNumber}`, {
-            //         headers: {
-            //             'Authorization': localStorage.getItem("token")
-            //         }
-            //     });
+            try {
+                // const response = await axios.get(`users/findUserByPhoneNumber/${friend.phoneNumber}`, {
+                //     headers: {
+                //         'Authorization': localStorage.getItem("token")
+                //     }
+                // });
 
-            //     if (response.status === 200) {
+                // if (response.status === 200) {
 
-            //         const userInfo = response.data;
+                //     const userInfo = response.data;
 
-            //         this.user = userInfo;
+                //     this.user = userInfo;
 
-            console.log(friend)
+                console.log(friend);
 
-            this.user = friend;
+                this.user = friend;
+                this.formattedBirthday();
+                this.showVisibleUserInfo = true;
+                this.showVisibleFindFriendDialog = false;
 
-            this.formattedBirthday();
+                // } else {
+                //     console.error(response.body);
+                //     this.toast.error(response.body, { timeout: 3000 });
+                // }
+            } catch (exception) {
+                console.log("Error in showUserInfoDialog", exception);
 
-            this.showVisibleUserInfo = true;
-            this.showVisibleFindFriendDialog = false;
-
-            //     } else {
-            //         console.error(response.body);
-            //         this.toast.error(response.body, { timeout: 3000 });
-            //     }
-            // } catch (error) {
-            //     if (error.response) {
-            //         if (error.response.status === 400) {
-            //             this.toast.error(error.response.data, { timeout: 3000 });
-            //         } else {
-            //             this.toast.error(error.response.data, { timeout: 3000 });
-            //         }
-            //     } else if (error.request) {
-            //         this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 3000 });
-            //     } else {
-            //         this.toast.error('Error setting up the request:' + error.message, { timeout: 3000 });
-            //     }
-            // }
+                // if (error.response) {
+                //     if (error.response.status === 400) {
+                //         this.toast.error(error.response.data, { timeout: 3000 });
+                //     } else {
+                //         this.toast.error(error.response.data, { timeout: 3000 });
+                //     }
+                // } else if (error.request) {
+                //     this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 3000 });
+                // } else {
+                //     this.toast.error('Error setting up the request:' + error.message, { timeout: 3000 });
+                // }
+            }
         },
         closeUserInfoDialog() {
-            this.showVisibleUserInfo = false;
-            this.showVisibleFindFriendDialog = true;
+            try {
+                this.showVisibleUserInfo = false;
+                this.showVisibleFindFriendDialog = true;
+            } catch (exception) {
+                console.log("Error in closeUserInfoDialog", exception);
+            }
         },
         test2() {
             console.log(2)
@@ -245,7 +266,7 @@ export default {
     name: 'ChatSidebarNav',
 }
 </script>
-<style scoped lang = "scss">
+<style scoped lang="scss">
 div {
 
     #chat-message {

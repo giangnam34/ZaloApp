@@ -11,8 +11,8 @@
                                 <font-awesome-icon icon="fa-solid fa-user" />
                             </div>
                             <input class="input" type="text" v-model="username" name="name"
-                                placeholder="Nhập tên người dùng" @blur="validateName" ref="nameInput" required tabindex="1"
-                                @keyup.enter="signUp">
+                                placeholder="Nhập tên người dùng" @blur="validateName" ref="nameInput" required
+                                tabindex="1" @keyup.enter="signUp">
                         </div>
                         <em class="error" v-if="isError === true">{{ validationErrorName }}</em>
                         <hr style="border: none; border-bottom: 2px solid #d9d9d9; margin-left: 8px;">
@@ -65,8 +65,8 @@
                                 <font-awesome-icon icon="fa-solid fa-key" />
                             </div>
                             <input class="input" type="password" v-model="confirmPassword" name="confirmPassword"
-                                placeholder="Nhập lại mật khẩu" @blur="validateConfirmPassword" ref="confirmPasswordInput"
-                                required tabindex="5" @keyup.enter="signUp">
+                                placeholder="Nhập lại mật khẩu" @blur="validateConfirmPassword"
+                                ref="confirmPasswordInput" required tabindex="5" @keyup.enter="signUp">
                             <button class="toggle-password" @click="togglePasswordVisibility">
                                 <font-awesome-icon :icon="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" />
                             </button>
@@ -84,7 +84,8 @@
                     <div class="signin">
                         <span class="signin-title">Đã có tài khoản?</span>
                         <span class="signin-link" :class="{ 'hovered': hoveredItem === 'signin' }"
-                            @mouseenter="(hoveredItem = 'signin')" @mouseleave="hoveredItem = ''" @click="showSignIn">Đăng
+                            @mouseenter="(hoveredItem = 'signin')" @mouseleave="hoveredItem = ''"
+                            @click="showSignIn">Đăng
                             nhập</span>
                     </div>
                 </div>
@@ -143,218 +144,257 @@ export default {
     },
     methods: {
         validateBirthday() {
-            if (!this.birthDay) {
-                this.isError = true;
-                this.validationErrorBirthday = 'Vui lòng chọn ngày sinh.';
-                return;
+            try {
+                if (!this.birthDay) {
+                    this.isError = true;
+                    this.validationErrorBirthday = 'Vui lòng chọn ngày sinh.';
+                    return;
+                }
+
+                let regexDate = /^\d{4}-\d{2}-\d{2}$/;
+                if (!regexDate.test(this.birthDay)) {
+                    this.isError = true;
+                    this.validationErrorBirthday = 'Định dạng ngày sinh không hợp lệ (VD: YYYY-MM-DD).';
+                    return;
+                }
+
+                let selectedDate = new Date(this.birthDay);
+                let currentDate = new Date();
+
+                if (selectedDate > currentDate) {
+                    this.isError = true;
+                    this.validationErrorBirthday = 'Ngày sinh không thể lớn hơn ngày hiện tại.';
+                    return;
+                }
+
+                if (isNaN(selectedDate.getTime())) {
+                    this.isError = true;
+                    this.validationErrorBirthday = 'Ngày sinh không hợp lệ.';
+                    return;
+                }
+
+                this.isError = false;
+                this.validationErrorBirthday = '';
+            } catch (exception) {
+                console.log("Error in validateBirthday ", exception);
             }
-
-            let regexDate = /^\d{4}-\d{2}-\d{2}$/;
-            if (!regexDate.test(this.birthDay)) {
-                this.isError = true;
-                this.validationErrorBirthday = 'Định dạng ngày sinh không hợp lệ (VD: YYYY-MM-DD).';
-                return;
-            }
-
-            let selectedDate = new Date(this.birthDay);
-            let currentDate = new Date();
-
-            if (selectedDate > currentDate) {
-                this.isError = true;
-                this.validationErrorBirthday = 'Ngày sinh không thể lớn hơn ngày hiện tại.';
-                return;
-            }
-
-            if (isNaN(selectedDate.getTime())) {
-                this.isError = true;
-                this.validationErrorBirthday = 'Ngày sinh không hợp lệ.';
-                return;
-            }
-
-            this.isError = false;
-            this.validationErrorBirthday = '';
         },
         togglePasswordVisibility() {
-            this.showPassword = !this.showPassword;
-            const passwordInput = document.querySelector('input[name="password"]');
-            const confirmPasswordInput = document.querySelector('input[name="confirmPassword"]');
-            if (this.showPassword) {
-                passwordInput.setAttribute('type', 'text');
-                confirmPasswordInput.setAttribute('type', 'text');
-            } else {
-                passwordInput.setAttribute('type', 'password');
-                confirmPasswordInput.setAttribute('type', 'password');
+            try {
+                this.showPassword = !this.showPassword;
+                const passwordInput = document.querySelector('input[name="password"]');
+                const confirmPasswordInput = document.querySelector('input[name="confirmPassword"]');
+                if (this.showPassword) {
+                    passwordInput.setAttribute('type', 'text');
+                    confirmPasswordInput.setAttribute('type', 'text');
+                } else {
+                    passwordInput.setAttribute('type', 'password');
+                    confirmPasswordInput.setAttribute('type', 'password');
+                }
+            } catch (exception) {
+                console.log("Error in togglePasswordVisibility ", exception);
             }
         },
         validatePhoneNumber() {
-            this.phoneNumber = this.phoneNumber + '';
-            if (this.phoneNumber.length == 9 && this.phoneNumber.at(0) != '0') {
-                this.phoneNumber = '0' + this.phoneNumber;
-            }
-            const phoneNumber = this.phoneNumber;
-            const isValidPhoneNumber = /^0\d{9}$/.test(phoneNumber);
+            try {
+                this.phoneNumber = this.phoneNumber + '';
+                if (this.phoneNumber.length == 9 && this.phoneNumber.at(0) != '0') {
+                    this.phoneNumber = '0' + this.phoneNumber;
+                }
+                const phoneNumber = this.phoneNumber;
+                const isValidPhoneNumber = /^0\d{9}$/.test(phoneNumber);
 
-            if (!isValidPhoneNumber) {
-                this.isError = true;
-                this.validationErrorPhoneNumber = 'Số điện thoại không hợp lệ!';
-                this.flag2 = true;
-            } else {
-                this.validationErrorPhoneNumber = '';
-                this.flag2 = false;
+                if (!isValidPhoneNumber) {
+                    this.isError = true;
+                    this.validationErrorPhoneNumber = 'Số điện thoại không hợp lệ!';
+                    this.flag2 = true;
+                } else {
+                    this.validationErrorPhoneNumber = '';
+                    this.flag2 = false;
+                }
+                if (!(this.flag1 || this.flag2 || this.flag3 || this.flag4)) this.isError = false;
+            } catch (exception) {
+                console.log("Error in validatePhoneNumber ", exception);
             }
-            if (!(this.flag1 || this.flag2 || this.flag3 || this.flag4)) this.isError = false;
         },
         validatePassword() {
-            const password = this.password;
-            const confirmPassword = this.confirmPassword;
-            const regex = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,20}$/;
-            if (password.length == 0) {
-                this.isError = true;
-                this.validationErrorPassword = 'Vui lòng nhập mật khẩu!';
-                this.flag3 = true;
-            } else if (!password.match(regex)) {
-                this.isError = true;
-                this.validationErrorPassword = "Vui lòng nhập mật khẩu ít nhất 8 ký tự gồm chữ hoa, chữ thường, số và 1 ký tự đặc biệt!";
-                this.flag3 = true;
-            } else {
-                this.validationErrorPassword = '';
+            try {
+                const password = this.password;
+                const confirmPassword = this.confirmPassword;
+                const regex = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,20}$/;
+                if (password.length == 0) {
+                    this.isError = true;
+                    this.validationErrorPassword = 'Vui lòng nhập mật khẩu!';
+                    this.flag3 = true;
+                } else if (!password.match(regex)) {
+                    this.isError = true;
+                    this.validationErrorPassword = "Vui lòng nhập mật khẩu ít nhất 8 ký tự gồm chữ hoa, chữ thường, số và 1 ký tự đặc biệt!";
+                    this.flag3 = true;
+                } else {
+                    this.validationErrorPassword = '';
+                }
+                if ((password == confirmPassword) && confirmPassword.length != 0) {
+                    this.validationErrorPassword = '';
+                    this.flag3 = false;
+                }
+                if (!(this.flag1 || this.flag2 || this.flag3 || this.flag4)) this.isError = false;
+            } catch (exception) {
+                console.log("Error in validatePassword ", exception);
             }
-            if ((password == confirmPassword) && confirmPassword.length != 0) {
-                this.validationErrorPassword = '';
-                this.flag3 = false;
-            }
-            if (!(this.flag1 || this.flag2 || this.flag3 || this.flag4)) this.isError = false;
         },
         validateConfirmPassword() {
-            const password = this.password;
-            const confirmPassword = this.confirmPassword;
-            if (confirmPassword.length == 0) {
-                this.isError = true;
-                this.validationErrorConfirmPassword = 'Vui lòng nhập xác nhận mật khẩu!';
-                this.flag4 = true;
+            try {
+                const password = this.password;
+                const confirmPassword = this.confirmPassword;
+                if (confirmPassword.length == 0) {
+                    this.isError = true;
+                    this.validationErrorConfirmPassword = 'Vui lòng nhập xác nhận mật khẩu!';
+                    this.flag4 = true;
+                }
+                if (!(password == confirmPassword)) {
+                    this.isError = true;
+                    this.validationErrorConfirmPassword = 'Mật khẩu và xác nhận mật khẩu không khớp!';
+                    this.flag3 = true;
+                    this.flag4 = true;
+                } else {
+                    this.validationErrorConfirmPassword = '';
+                    this.flag3 = false;
+                    this.flag4 = false;
+                }
+                if (!(this.flag1 || this.flag2 || this.flag3 || this.flag4)) this.isError = false;
+            } catch (exception) {
+                console.log("Error in validateConfirmPassword ", exception);
             }
-            if (!(password == confirmPassword)) {
-                this.isError = true;
-                this.validationErrorConfirmPassword = 'Mật khẩu và xác nhận mật khẩu không khớp!';
-                this.flag3 = true;
-                this.flag4 = true;
-            } else {
-                this.validationErrorConfirmPassword = '';
-                this.flag3 = false;
-                this.flag4 = false;
-            }
-            if (!(this.flag1 || this.flag2 || this.flag3 || this.flag4)) this.isError = false;
         },
         validateName() {
-            const username = this.username;
-            if (username.length == 0) {
-                this.isError = true;
-                this.validationErrorName = 'Vui lòng nhập tên người dùng!';
-                this.flag1 = true;
+            try {
+                const username = this.username;
+                if (username.length == 0) {
+                    this.isError = true;
+                    this.validationErrorName = 'Vui lòng nhập tên người dùng!';
+                    this.flag1 = true;
+                }
+                else {
+                    this.validationErrorName = '';
+                    this.flag1 = false;
+                }
+                if (!(this.flag1 || this.flag2 || this.flag3 || this.flag4)) this.isError = false;
+            } catch (exception) {
+                console.log("Error in validateName ", exception);
             }
-            else {
-                this.validationErrorName = '';
-                this.flag1 = false;
-            }
-            if (!(this.flag1 || this.flag2 || this.flag3 || this.flag4)) this.isError = false;
         },
         showSignIn() {
-            this.$emit('update:showingPage', 'signIn');
+            try {
+                this.$emit('update:showingPage', 'signIn');
+            } catch (exception) {
+                console.log("Error in showSignIn ", exception);
+            }
         },
         updateShowOTP(value) {
-            this.showOTP = value;
+            try {
+                this.showOTP = value;
+            } catch (exception) {
+                console.log("Error in updateShowOTP ", exception);
+            }
         },
         async signUp() {
+            try {
+                if (this.phoneNumber == '' && this.password == '' && this.username == '' && this.confirmPassword == '') {
+                    this.isError = true;
+                    this.validationError = "Vui lòng nhập đầy đủ thông tin!"
+                } else if (this.phoneNumber == '') {
+                    this.isError = true;
+                    this.validationError = "Vui lòng nhập số điện thoại!"
+                } else if (this.password == '') {
+                    this.isError = true;
+                    this.validationError = "Vui lòng nhập mật khẩu!"
+                } else if (this.username == '') {
+                    this.isError = true;
+                    this.validationError = "Vui lòng nhập tên người dùng!"
+                } else if (this.confirmPassword == '') {
+                    this.isError = true;
+                    this.validationError = "Vui lòng nhập xác nhận mật khẩu!"
+                } else {
 
-            if (this.phoneNumber == '' && this.password == '' && this.username == '' && this.confirmPassword == '') {
-                this.isError = true;
-                this.validationError = "Vui lòng nhập đầy đủ thông tin!"
-            } else if (this.phoneNumber == '') {
-                this.isError = true;
-                this.validationError = "Vui lòng nhập số điện thoại!"
-            } else if (this.password == '') {
-                this.isError = true;
-                this.validationError = "Vui lòng nhập mật khẩu!"
-            } else if (this.username == '') {
-                this.isError = true;
-                this.validationError = "Vui lòng nhập tên người dùng!"
-            } else if (this.confirmPassword == '') {
-                this.isError = true;
-                this.validationError = "Vui lòng nhập xác nhận mật khẩu!"
-            } else {
+                    this.validateName();
+                    this.validatePhoneNumber();
+                    this.validatePassword();
+                    this.validateConfirmPassword();
 
-                this.validateName();
-                this.validatePhoneNumber();
-                this.validatePassword();
-                this.validateConfirmPassword();
-
-                if (!this.isError) {
-                    try {
-                        let selectedDate = new Date(this.birthDay);
-                        const registerUser = {
-                            fullName: this.username,
-                            phoneNumber: this.phoneNumber,
-                            password: this.password,
-                            reEnterPassword: this.confirmPassword,
-                            birthDay: selectedDate
-                        }
-
-                        console.log(registerUser);
-
-                        const response = await axios.post('auth/sign-up', registerUser);
-
-                        console.log(response);
-
-                        // Kiểm tra trạng thái phản hồi
-                        if (response.status === 200) {
-
-                            this.toast.success(response.data.msg, { timeout: 3000 });
-
-                            this.showOTP = true;
-
-                        } else {
-                            console.log(response);
-                            console.error('Đăng ký không thành công:', response.statusText);
-                            this.isError = true;
-                            this.validationError = 'Đã xảy ra lỗi khi đăng ký. Vui lòng thử lại!';
-                        }
-                    } catch (error) {
-                        console.error('Đăng ký không thành công:');
-                        console.log(error.response);
-                        if (error.response) {
-                            console.error('Server responded with an error status:', error.response.status);
-
-                            if (error.response.status === 400) {
-                                this.isError = true;
-                                this.validationError = error.response.data.msg;
-                            } else {
-                                this.isError = true;
-                                this.validationError = error.response.data.msg;
+                    if (!this.isError) {
+                        try {
+                            let selectedDate = new Date(this.birthDay);
+                            const registerUser = {
+                                fullName: this.username,
+                                phoneNumber: this.phoneNumber,
+                                password: this.password,
+                                reEnterPassword: this.confirmPassword,
+                                birthDay: selectedDate
                             }
-                        } else if (error.request) {
-                            console.error('No response received from the server:', error.request);
-                            this.isError = true;
-                            this.validationError = 'Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!';
-                        } else {
-                            console.error('Error setting up the request:', error.message);
-                            this.isError = true;
-                            this.validationError = 'Đã xảy ra lỗi khi đăng ký. Vui lòng thử lại!';
-                        }
-                    }
 
+                            console.log(registerUser);
+
+                            const response = await axios.post('auth/sign-up', registerUser);
+
+                            console.log(response);
+
+                            // Kiểm tra trạng thái phản hồi
+                            if (response.status === 200) {
+
+                                this.toast.success(response.data.msg, { timeout: 3000 });
+
+                                this.showOTP = true;
+
+                            } else {
+                                console.log(response);
+                                console.error('Đăng ký không thành công:', response.statusText);
+                                this.isError = true;
+                                this.validationError = 'Đã xảy ra lỗi khi đăng ký. Vui lòng thử lại!';
+                            }
+                        } catch (error) {
+                            console.error('Đăng ký không thành công:');
+                            console.log(error.response);
+                            if (error.response) {
+                                console.error('Server responded with an error status:', error.response.status);
+
+                                if (error.response.status === 400) {
+                                    this.isError = true;
+                                    this.validationError = error.response.data.msg;
+                                } else {
+                                    this.isError = true;
+                                    this.validationError = error.response.data.msg;
+                                }
+                            } else if (error.request) {
+                                console.error('No response received from the server:', error.request);
+                                this.isError = true;
+                                this.validationError = 'Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!';
+                            } else {
+                                console.error('Error setting up the request:', error.message);
+                                this.isError = true;
+                                this.validationError = 'Đã xảy ra lỗi khi đăng ký. Vui lòng thử lại!';
+                            }
+                        }
+
+                    }
                 }
+            } catch (exception) {
+                console.log("Error in signUp ", exception);
             }
         },
         handleEnterKey(event) {
-            if (event.key === 'Enter') {
-                this.signUp();
+            try {
+                if (event.key === 'Enter') {
+                    this.signUp();
+                }
+            } catch (exception) {
+                console.log("Error in handleEnterKey ", exception);
             }
         },
     }
 };
 </script>
 
-<style scoped lang = "scss">
+<style scoped lang="scss">
 .limiter {
     width: 100%;
     margin: 0 auto;

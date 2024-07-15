@@ -91,155 +91,202 @@ export default {
     props: ['phoneNumber'],
     methods: {
         validatePassword() {
-            const password = this.password;
-            const confirmPassword = this.confirmPassword;
-            const regex = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,20}$/;
-            if (password.length == 0) {
-                this.isError = true;
-                this.validationErrorPassword = 'Vui lòng nhập mật khẩu!';
-                this.flag3 = true;
-            } else if (!password.match(regex)) {
-                this.isError = true;
-                this.validationErrorPassword = "Vui lòng nhập mật khẩu ít nhất 8 ký tự gồm chữ hoa, chữ thường, số và 1 ký tự đặc biệt!";
-                this.flag3 = true;
-            } else {
-                if ((password == confirmPassword) && confirmPassword.length != 0) {
-                    this.validationErrorPassword = '';
-                    this.flag3 = false;
-                } else {
+            try {
+                const password = this.password;
+                const confirmPassword = this.confirmPassword;
+                const regex = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,20}$/;
+
+                if (password.length === 0) {
                     this.isError = true;
+                    this.validationErrorPassword = 'Vui lòng nhập mật khẩu!';
                     this.flag3 = true;
+                } else if (!password.match(regex)) {
+                    this.isError = true;
+                    this.validationErrorPassword = "Vui lòng nhập mật khẩu ít nhất 8 ký tự gồm chữ hoa, chữ thường, số và 1 ký tự đặc biệt!";
+                    this.flag3 = true;
+                } else {
+                    if (password === confirmPassword && confirmPassword.length !== 0) {
+                        this.validationErrorPassword = '';
+                        this.flag3 = false;
+                    } else {
+                        this.isError = true;
+                        this.flag3 = true;
+                    }
                 }
-            }
 
-            if (!(this.flag1 || this.flag3 || this.flag4)) this.isError = false;
+                if (!(this.flag1 || this.flag3 || this.flag4)) this.isError = false;
+            } catch (error) {
+                console.error("Error in validatePassword:", error);
+                // Optionally handle or log the error further if needed
+            }
         },
+
         validateConfirmPassword() {
-            const password = this.password;
-            const confirmPassword = this.confirmPassword;
-            if (confirmPassword.length == 0) {
-                this.isError = true;
-                this.validationErrorConfirmPassword = 'Vui lòng nhập xác nhận mật khẩu!';
-                this.flag4 = true;
-            }
-            if (!(password == confirmPassword)) {
-                this.isError = true;
-                this.validationErrorConfirmPassword = 'Mật khẩu và xác nhận mật khẩu không khớp!';
-                this.flag3 = true;
-                this.flag4 = true;
-            } else {
-                this.validationErrorConfirmPassword = '';
-                this.flag3 = false;
-                this.flag4 = false;
-            }
-            this.validatePassword();
-            if (!(this.flag1 || this.flag3 || this.flag4)) this.isError = false;
-        },
-        validateOTP() {
-            const otpRegex = /^\d{6}$/;
+            try {
+                const password = this.password;
+                const confirmPassword = this.confirmPassword;
 
-            if (!this.otp.match(otpRegex)) {
-                this.isError = true;
-                this.validationError = "Mã OTP không hợp lệ!";
-                this.flag1 = true;
-            } else {
-                this.validationError = "";
-                this.flag1 = false;
+                if (confirmPassword.length === 0) {
+                    this.isError = true;
+                    this.validationErrorConfirmPassword = 'Vui lòng nhập xác nhận mật khẩu!';
+                    this.flag4 = true;
+                }
+                if (!(password === confirmPassword)) {
+                    this.isError = true;
+                    this.validationErrorConfirmPassword = 'Mật khẩu và xác nhận mật khẩu không khớp!';
+                    this.flag3 = true;
+                    this.flag4 = true;
+                } else {
+                    this.validationErrorConfirmPassword = '';
+                    this.flag3 = false;
+                    this.flag4 = false;
+                }
+                this.validatePassword();
+                if (!(this.flag1 || this.flag3 || this.flag4)) this.isError = false;
+            } catch (error) {
+                console.error("Error in validateConfirmPassword:", error);
+                // Optionally handle or log the error further if needed
             }
-            if (!(this.flag1 || this.flag3 || this.flag4)) this.isError = false;
         },
+
+        validateOTP() {
+            try {
+                const otpRegex = /^\d{6}$/;
+
+                if (!this.otp.match(otpRegex)) {
+                    this.isError = true;
+                    this.validationError = "Mã OTP không hợp lệ!";
+                    this.flag1 = true;
+                } else {
+                    this.validationError = "";
+                    this.flag1 = false;
+                }
+                if (!(this.flag1 || this.flag3 || this.flag4)) this.isError = false;
+            } catch (error) {
+                console.error("Error in validateOTP:", error);
+                // Optionally handle or log the error further if needed
+            }
+        },
+
         togglePasswordVisibility() {
-            this.showPassword = !this.showPassword;
-            const passwordInput = document.querySelector('input[name="password"]');
-            const confirmPasswordInput = document.querySelector('input[name="confirmPassword"]');
-            if (this.showPassword) {
-                passwordInput.setAttribute('type', 'text');
-                confirmPasswordInput.setAttribute('type', 'text');
-            } else {
-                passwordInput.setAttribute('type', 'password');
-                confirmPasswordInput.setAttribute('type', 'password');
+            try {
+                this.showPassword = !this.showPassword;
+                const passwordInput = document.querySelector('input[name="password"]');
+                const confirmPasswordInput = document.querySelector('input[name="confirmPassword"]');
+                if (this.showPassword) {
+                    passwordInput.setAttribute('type', 'text');
+                    confirmPasswordInput.setAttribute('type', 'text');
+                } else {
+                    passwordInput.setAttribute('type', 'password');
+                    confirmPasswordInput.setAttribute('type', 'password');
+                }
+            } catch (error) {
+                console.error("Error in togglePasswordVisibility:", error);
+                // Optionally handle or log the error further if needed
             }
         },
+
         showSignIn() {
-            this.$emit('update:showingPage', 'signIn');
+            try {
+                this.$emit('update:showingPage', 'signIn');
+            } catch (error) {
+                console.error("Error in showSignIn:", error);
+                // Optionally handle or log the error further if needed
+            }
         },
+
         showSignUp() {
-            this.$emit('update:showOTP', false);
+            try {
+                this.$emit('update:showOTP', false);
+            } catch (error) {
+                console.error("Error in showSignUp:", error);
+                // Optionally handle or log the error further if needed
+            }
         },
+
         handleEnterKey(event) {
-            if (event.key === 'Enter') {
-                this.confirm();
+            try {
+                if (event.key === 'Enter') {
+                    this.confirm();
+                }
+            } catch (error) {
+                console.error("Error in handleEnterKey:", error);
+                // Optionally handle or log the error further if needed
             }
         },
         async confirm() {
-            if (this.password == '' && this.otp == '' && this.confirmPassword == '') {
-                this.isError = true;
-                this.validationError = "Vui lòng nhập đầy đủ thông tin!"
-            } else if (this.otp == '') {
-                this.isError = true;
-                this.validationError = "Vui lòng nhập mã OTP!"
-            } else if (this.password == '') {
-                this.isError = true;
-                this.validationError = "Vui lòng nhập mật khẩu!"
-            } else if (this.confirmPassword == '') {
-                this.isError = true;
-                this.validationError = "Vui lòng nhập xác nhận mật khẩu!"
-            } else {
+            try {
+                if (this.password == '' && this.otp == '' && this.confirmPassword == '') {
+                    this.isError = true;
+                    this.validationError = "Vui lòng nhập đầy đủ thông tin!"
+                } else if (this.otp == '') {
+                    this.isError = true;
+                    this.validationError = "Vui lòng nhập mã OTP!"
+                } else if (this.password == '') {
+                    this.isError = true;
+                    this.validationError = "Vui lòng nhập mật khẩu!"
+                } else if (this.confirmPassword == '') {
+                    this.isError = true;
+                    this.validationError = "Vui lòng nhập xác nhận mật khẩu!"
+                } else {
 
-                this.validateOTP();
-                this.validatePassword();
-                this.validateConfirmPassword();
-                if (!this.isError) {
-                    try {
+                    this.validateOTP();
+                    this.validatePassword();
+                    this.validateConfirmPassword();
+                    if (!this.isError) {
+                        try {
 
-                        const OTPResponse = {
-                            phoneNumber: this.phoneNumber,
-                            otpCode: this.otp,
-                            newPassword: this.password,
-                            reEnterPassword: this.confirmPassword,
-                        }
-
-                        console.log(OTPResponse);
-
-                        const response = await axios.put('auth/forgetPassword', OTPResponse);
-
-                        console.log(response);
-
-                        // Kiểm tra trạng thái phản hồi
-                        if (response.status === 200) {
-
-                            this.toast.success(response.data, { timeout: 3000 });
-
-                            this.showSignIn();
-
-                        } else {
-                            console.error('Xác thực không thành công:', response.statusText);
-                            this.isError = true;
-                            this.validationError = response.data;
-                        }
-                    } catch (error) {
-                        if (error.response) {
-                            console.error('Server responded with an error status:', error.response.status);
-
-                            if (error.response.status === 400) {
-                                this.isError = true;
-                                this.validationError = error.response.data;
-                            } else {
-                                this.isError = true;
-                                this.validationError = error.response.data;
+                            const OTPResponse = {
+                                phoneNumber: this.phoneNumber,
+                                otpCode: this.otp,
+                                newPassword: this.password,
+                                reEnterPassword: this.confirmPassword,
                             }
-                        } else if (error.request) {
-                            console.error('No response received from the server:', error.request);
-                            this.isError = true;
-                            this.validationError = 'Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!';
-                        } else {
-                            console.error('Error setting up the request:', error.message);
-                            this.isError = true;
-                            this.validationError = 'Đã xảy ra lỗi khi xác thực. Vui lòng thử lại!';
-                        }
-                    }
 
+                            console.log(OTPResponse);
+
+                            const response = await axios.put('auth/forgetPassword', OTPResponse);
+
+                            console.log(response);
+
+                            // Kiểm tra trạng thái phản hồi
+                            if (response.status === 200) {
+
+                                this.toast.success(response.data, { timeout: 3000 });
+
+                                this.showSignIn();
+
+                            } else {
+                                console.error('Xác thực không thành công:', response.statusText);
+                                this.isError = true;
+                                this.validationError = response.data;
+                            }
+                        } catch (error) {
+                            if (error.response) {
+                                console.error('Server responded with an error status:', error.response.status);
+
+                                if (error.response.status === 400) {
+                                    this.isError = true;
+                                    this.validationError = error.response.data;
+                                } else {
+                                    this.isError = true;
+                                    this.validationError = error.response.data;
+                                }
+                            } else if (error.request) {
+                                console.error('No response received from the server:', error.request);
+                                this.isError = true;
+                                this.validationError = 'Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!';
+                            } else {
+                                console.error('Error setting up the request:', error.message);
+                                this.isError = true;
+                                this.validationError = 'Đã xảy ra lỗi khi xác thực. Vui lòng thử lại!';
+                            }
+                        }
+
+                    }
                 }
+            } catch (exception) {
+                console.log("Error in confirm ", exception);
             }
         },
         async sendOtp() {
@@ -285,7 +332,7 @@ export default {
 };
 </script>
 
-<style scoped lang = "scss">
+<style scoped lang="scss">
 .hovered {
     cursor: pointer;
     color: #235dc7;

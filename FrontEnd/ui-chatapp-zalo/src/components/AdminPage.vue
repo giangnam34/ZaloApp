@@ -31,7 +31,8 @@
                     </div>
                     <div class="w-[200px] ">
                         <div class="flex items-center justify-start space-x-4 cursor-pointer" @click="toggleDrop">
-                            <img class="w-10 h-10 rounded-full border-2 border-gray-50" :src="user.imageAvatarUrl" alt="">
+                            <img class="w-10 h-10 rounded-full border-2 border-gray-50" :src="user.imageAvatarUrl"
+                                alt="">
                             <div class="font-semibold dark:text-white text-left">
                                 <div>{{ user.fullName }}</div>
                                 <div class="text-xs text-gray-500 dark:text-gray-400">Admin</div>
@@ -106,45 +107,63 @@ export default {
     methods: {
         // hide show side bar
         toggleSideBar() {
-            this.showSide = !this.showSide
-
+            try {
+                this.showSide = !this.showSide;
+            } catch (exception) {
+                console.log("Error in toggleSideBar ", exception);
+            }
         },
         // toggle user 
         toggleDrop() {
-            this.showDropDown = !this.showDropDown
-
+            try {
+                this.showDropDown = !this.showDropDown;
+            } catch (exception) {
+                console.log("Error in toggleDrop ", exception);
+            }
         },
         logout() {
-            localStorage.removeItem("token");
-            localStorage.setItem("isValid", false);
-            localStorage.removeItem("user");
-            this.$emit("userLoggedIn", '');
-            event.preventDefault();
-            event.stopPropagation();
+            try {
+                localStorage.removeItem("token");
+                localStorage.setItem("isValid", false);
+                localStorage.removeItem("user");
+                this.$emit("userLoggedIn", '');
+                event.preventDefault();
+                event.stopPropagation();
+            } catch (exception) {
+                console.log("Error in logout ", exception);
+            }
         },
         fetchAvatar() {
-            axios.get(`users/imageAvatar`, {
-                headers: {
-                    'Authorization': localStorage.getItem("token"),
-                },
-                responseType: 'blob',
-            }).then(response => {
-                if (this.user.imageAvatarUrl) {
-                    URL.revokeObjectURL(this.user.imageAvatarUrl);
-                }
-                this.user.imageAvatarUrl = URL.createObjectURL(response.data);
-            }).catch(error => {
-                console.error('Error fetching avatar:', error);
-            });
-            //console.log('user.imageAvatarUrl changed:', this.user.imageAvatarUrl);
+            try {
+                axios.get(`users/imageAvatar`, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token"),
+                    },
+                    responseType: 'blob',
+                }).then(response => {
+                    if (this.user.imageAvatarUrl) {
+                        URL.revokeObjectURL(this.user.imageAvatarUrl);
+                    }
+                    this.user.imageAvatarUrl = URL.createObjectURL(response.data);
+                }).catch(error => {
+                    console.error('Error fetching avatar:', error);
+                });
+                //console.log('user.imageAvatarUrl changed:', this.user.imageAvatarUrl);
+            } catch (exception) {
+                console.log("Error in fetchAvatar ", exception);
+            }
         },
         updateChosenPage(page) {
-            this.chosenPage = page;
+            try {
+                this.chosenPage = page;
+            } catch (exception) {
+                console.log("Error in updateChosenPage ", exception);
+            }
         },
     }
 }
 </script>
-  
+
 <style>
 #main {
     font-family: Avenir, Helvetica, Arial, sans-serif;

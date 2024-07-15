@@ -1,5 +1,5 @@
 <template>
-    <div class="post-container">
+       <div class="post-container">
         <div class="container px-8 py-6 bg-gray-100 overflow-y-auto" ref="scrollContainer" @scroll="handleScroll">
             <div class="max-w-none w-auto mx-auto grid grid-cols-4 gap-4">
                 <div class="main-left col-span-1">
@@ -25,7 +25,8 @@
                         </div>
                     </div>
 
-                    <div v-for="feed in feeds" v-bind:key="feed.id" class="p-4 bg-white border border-gray-200 rounded-lg">
+                    <div v-for="feed in feeds" v-bind:key="feed.id"
+                        class="p-4 bg-white border border-gray-200 rounded-lg">
                         <div v-if="feed.postFather === null">
                             <div class="mb-6 flex items-center justify-between">
                                 <div class="flex items-center space-x-6">
@@ -1113,7 +1114,6 @@
         </v-card>
     </v-dialog>
 </template>
-
 <script>
 import axios from 'axios';
 import { format } from 'date-fns';
@@ -1129,8 +1129,9 @@ export default {
     name: 'FeedView',
 
     components: {
-        Swiper,
-        SwiperSlide
+        // Swiper,
+        // SwiperSlide,
+        // ShowImage
     },
     setup() {
         // Get toast interface
@@ -1214,16 +1215,7 @@ export default {
             showVisibleLikedUsers: false,
             currentPage: 0,
             likedUsers: [],
-            isUserScrollToBottom: false,
-            navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
-            },
-            swiperInstance: null,
-            swiperOptions: {
-                slidesPerView: 1,
-                spaceBetween: 0,
-            },
+            isUserScrollToBottom: false
         }
     },
     mounted() {

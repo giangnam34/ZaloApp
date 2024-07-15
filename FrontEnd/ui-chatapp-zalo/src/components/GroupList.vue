@@ -36,7 +36,8 @@
                         <div class="popover" style="z-index: 20; opacity: 1; top: 47.6px; left: 291px;"
                             v-if="selectedItem === 'sort'">
                             <!-- Nội dung của popover -->
-                            <div class="popover-content" style="min-width: 240px; width: initial; box-sizing: border-box;">
+                            <div class="popover-content"
+                                style="min-width: 240px; width: initial; box-sizing: border-box;">
                                 <div class="popover-item" :class="{ 'hoveredFilter': hoveredItem === 'ascending' }"
                                     @mouseenter="(hoveredItem = 'ascending')" @mouseleave="hoveredItem = ''"
                                     @click="chooseTypeOfSort(hoveredItem)">
@@ -100,7 +101,8 @@
                         <div class="popover" style="z-index: 20; opacity: 1; top: 47.6px; left: 539px;"
                             v-if="selectedItem === 'filter'">
                             <!-- Nội dung của popover -->
-                            <div class="popover-content" style="min-width: 240px; width: initial; box-sizing: border-box;">
+                            <div class="popover-content"
+                                style="min-width: 240px; width: initial; box-sizing: border-box;">
                                 <div class="popover-item" :class="{ 'hoveredFilter': hoveredItem === 'all' }"
                                     @mouseenter="(hoveredItem = 'all')" @mouseleave="hoveredItem = ''"
                                     @click="chooseTypeOfFilter(hoveredItem)">
@@ -166,7 +168,8 @@
                                     <div class="popoverAction" v-show="group.id === selectedItem"
                                         :style="{ left: popoverLeft, top: popoverTop }">
                                         <div class="popover-body">
-                                            <div class="popover-item" :class="{ 'hoveredFilter': hoveredItem === 'type' }"
+                                            <div class="popover-item"
+                                                :class="{ 'hoveredFilter': hoveredItem === 'type' }"
                                                 @mouseenter="(hoveredItem = 'type')" @mouseleave="hoveredItem = ''">
                                                 <div>
                                                     Phân loại
@@ -191,7 +194,7 @@
         </div>
     </div>
 </template>
-  
+
 <script>
 export default {
     data() {
@@ -220,92 +223,137 @@ export default {
     },
     methods: {
         selectItem(item) {
-            this.selectedItem = item;
+            try {
+                this.selectedItem = item;
+            } catch (exception) {
+                console.log("Error in selectItem", exception);
+            }
         },
+
         clearSelectedItem() {
-            this.selectedItem = '';
+            try {
+                this.selectedItem = '';
+            } catch (exception) {
+                console.log("Error in clearSelectedItem", exception);
+            }
         },
+
         isSelected(item) {
-            return this.selectedItem === item;
+            try {
+                return this.selectedItem === item;
+            } catch (exception) {
+                console.log("Error in isSelected", exception);
+                return false;
+            }
         },
+
         togglePopover(item) {
-            this.selectItem(item);
+            try {
+                this.selectItem(item);
+            } catch (exception) {
+                console.log("Error in togglePopover", exception);
+            }
         },
+
         hidePopover() {
-            this.clearSelectedItem();
+            try {
+                this.clearSelectedItem();
+            } catch (exception) {
+                console.log("Error in hidePopover", exception);
+            }
         },
+
         chooseTypeOfSort(item) {
-            this.chosenType = item;
-            if (item == 'ascending') {
-                this.typeOfSort = 'Tên (A-Z)';
-            } else if (item == 'descending') {
-                this.typeOfSort = 'Tên (Z-A)';
-            } else if (item == 'newest') {
-                this.typeOfSort = 'Hoạt động (mới → cũ)';
-            } else {
-                this.typeOfSort = 'Hoạt động (cũ → mới)';
+            try {
+                this.chosenType = item;
+                if (item === 'ascending') {
+                    this.typeOfSort = 'Tên (A-Z)';
+                } else if (item === 'descending') {
+                    this.typeOfSort = 'Tên (Z-A)';
+                } else if (item === 'newest') {
+                    this.typeOfSort = 'Hoạt động (mới → cũ)';
+                } else {
+                    this.typeOfSort = 'Hoạt động (cũ → mới)';
+                }
+            } catch (exception) {
+                console.log("Error in chooseTypeOfSort", exception);
             }
         },
+
         chooseTypeOfFilter(item) {
-            this.chosenFilter = item;
-            if (item == 'all') {
-                this.typeOfFilter = 'Tất cả';
-            } else if (item == 'classify') {
-                this.typeOfFilter = 'Phân loại';
-            } else {
-                this.typeOfFilter = 'Nhóm tôi quản lý';
+            try {
+                this.chosenFilter = item;
+                if (item === 'all') {
+                    this.typeOfFilter = 'Tất cả';
+                } else if (item === 'classify') {
+                    this.typeOfFilter = 'Phân loại';
+                } else {
+                    this.typeOfFilter = 'Nhóm tôi quản lý';
+                }
+            } catch (exception) {
+                console.log("Error in chooseTypeOfFilter", exception);
             }
         },
+
         handleClickAction(id, event) {
-            this.selectedItem = id;
-            const rect = event.target.getBoundingClientRect();
-            const mouseX = rect.left;
-            const mouseY = rect.top;
+            try {
+                this.selectedItem = id;
+                const rect = event.target.getBoundingClientRect();
+                const mouseX = rect.left;
+                const mouseY = rect.top;
 
-            const windowWidth = window.innerWidth + window.scrollX;
-            const windowHeight = window.innerHeight + window.scrollY;
+                const windowWidth = window.innerWidth + window.scrollX;
+                const windowHeight = window.innerHeight + window.scrollY;
 
-            const popupWidth = 180;
-            const popupHeight = 120;
+                const popupWidth = 180;
+                const popupHeight = 120;
 
-            let popupLeft, popupTop;
+                let popupLeft, popupTop;
 
-            if (mouseX + popupWidth > windowWidth) {
-                popupLeft = mouseX - popupWidth;
-            } else {
-                popupLeft = mouseX;
+                if (mouseX + popupWidth > windowWidth) {
+                    popupLeft = mouseX - popupWidth;
+                } else {
+                    popupLeft = mouseX;
+                }
+
+                if (mouseY + popupHeight > windowHeight) {
+                    popupTop = mouseY - popupHeight;
+                } else {
+                    popupTop = mouseY;
+                }
+
+                if (popupLeft < window.scrollX) {
+                    popupLeft = window.scrollX;
+                }
+
+                if (popupTop < window.scrollY) {
+                    popupTop = window.scrollY;
+                }
+
+                this.popoverLeft = popupLeft + 'px';
+                this.popoverTop = popupTop + 'px';
+                event.stopPropagation();
+            } catch (exception) {
+                console.log("Error in handleClickAction", exception);
             }
-
-            if (mouseY + popupHeight > windowHeight) {
-                popupTop = mouseY - popupHeight;
-            } else {
-                popupTop = mouseY;
-            }
-
-            if (popupLeft < window.scrollX) {
-                popupLeft = window.scrollX;
-            }
-
-            if (popupTop < window.scrollY) {
-                popupTop = window.scrollY;
-            }
-
-            this.popoverLeft = popupLeft + 'px';
-            this.popoverTop = popupTop + 'px';
-            event.stopPropagation();
         },
+
         quitGroup(id) {
-            const index = this.groups.findIndex(group => group.id === id);
-            if (index !== -1) {
-                this.groups.splice(index, 1);
+            try {
+                const index = this.groups.findIndex(group => group.id === id);
+                if (index !== -1) {
+                    this.groups.splice(index, 1);
+                }
+            } catch (exception) {
+                console.log("Error in quitGroup", exception);
             }
         },
     },
     name: 'GroupList'
 }
 </script>
-  
-<style scoped lang = "scss">
+
+<style scoped lang="scss">
 .contact {
     display: flex;
     flex-direction: column;

@@ -12,8 +12,8 @@
                                     <font-awesome-icon icon="fa-solid fa-phone" />
                                 </div>
                                 <input class="input" type="text" pattern="[0-9]*" v-model="phoneNumber" name="phone"
-                                    placeholder="Nhập số điện thoại" @blur="validatePhoneNumber" ref="phoneInput" required
-                                    @keypress="isNumber($event)" @keyup.enter="signIn">
+                                    placeholder="Nhập số điện thoại" @blur="validatePhoneNumber" ref="phoneInput"
+                                    required @keypress="isNumber($event)" @keyup.enter="signIn">
                             </div>
                             <hr style="border: none; border-bottom: 2px solid #d9d9d9; margin-left: 8px;">
                             <em class="error" v-if="isError === true">{{ validationErrorPhoneNumber }}</em>
@@ -28,7 +28,8 @@
                                     placeholder="Nhập mật khẩu" @blur="validatePassword" ref="passwordInput" required
                                     @keyup.enter="signIn">
                                 <button class="toggle-password" @click="togglePasswordVisibility">
-                                    <font-awesome-icon :icon="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" />
+                                    <font-awesome-icon
+                                        :icon="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" />
                                 </button>
                             </div>
                             <hr style="border: none; border-bottom: 2px solid #d9d9d9; margin-left: 8px;">
@@ -97,130 +98,166 @@ export default {
     emits: ['userLoggedIn'],
     methods: {
         togglePasswordVisibility() {
-            this.showPassword = !this.showPassword;
-            const passwordInput = document.querySelector('input[name="password"]');
-            if (this.showPassword) {
-                passwordInput.setAttribute('type', 'text');
-            } else {
-                passwordInput.setAttribute('type', 'password');
+            try {
+                this.showPassword = !this.showPassword;
+                const passwordInput = document.querySelector('input[name="password"]');
+                if (this.showPassword) {
+                    passwordInput.setAttribute('type', 'text');
+                } else {
+                    passwordInput.setAttribute('type', 'password');
+                }
+            } catch (exception) {
+                console.log("Error in togglePasswordVisibility ", exception);
             }
         },
         validatePhoneNumber() {
-            const phoneNumber = this.phoneNumber;
-            const isValidPhoneNumber = /^0\d{9}$/.test(phoneNumber);
+            try {
+                const phoneNumber = this.phoneNumber;
+                const isValidPhoneNumber = /^0\d{9}$/.test(phoneNumber);
 
-            if (phoneNumber.length && !isValidPhoneNumber) {
-                this.isError = true;
-                this.validationErrorPhoneNumber = 'Số điện thoại không hợp lệ!';
-                this.flag1 = true;
-            } else {
-                this.validationErrorPhoneNumber = '';
-                this.flag1 = false;
+                if (phoneNumber.length && !isValidPhoneNumber) {
+                    this.isError = true;
+                    this.validationErrorPhoneNumber = 'Số điện thoại không hợp lệ!';
+                    this.flag1 = true;
+                } else {
+                    this.validationErrorPhoneNumber = '';
+                    this.flag1 = false;
+                }
+                if (!this.flag1 && !this.flag2) this.isError = false;
+            } catch (exception) {
+                console.log("Error in validatePhoneNumber ", exception);
             }
-            if (!this.flag1 && !this.flag2) this.isError = false;
         },
         validatePassword() {
-            if (this.password.length > 0) {
-                this.flag2 = false;
-                this.validationError = '';
+            try {
+                if (this.password.length > 0) {
+                    this.flag2 = false;
+                    this.validationError = '';
+                }
+                else this.flag2 = true;
+                if (!this.flag1 && !this.flag2) this.isError = false;
+            } catch (exception) {
+                console.log("Error in validatePassword ", exception);
             }
-            else this.flag2 = true;
-            if (!this.flag1 && !this.flag2) this.isError = false;
         },
         isNumber(evt) {
-            evt = (evt) ? evt : window.event;
-            var charCode = (evt.which) ? evt.which : evt.keyCode;
-            if ((charCode > 31 && (charCode < 48 || charCode > 57)) && charCode !== 46) {
-                evt.preventDefault();
-            } else {
-                return true;
+            try {
+                evt = (evt) ? evt : window.event;
+                var charCode = (evt.which) ? evt.which : evt.keyCode;
+                if ((charCode > 31 && (charCode < 48 || charCode > 57)) && charCode !== 46) {
+                    evt.preventDefault();
+                } else {
+                    return true;
+                }
+            } catch (exception) {
+                console.log("Exception in isNumber ", exception);
             }
         },
         showSignUp() {
-            this.showingPage = 'signUp';
+            try {
+                this.showingPage = 'signUp';
+            } catch (exception) {
+                console.log("Error in showSignUp ", exception);
+            }
         },
         showForgotPassword() {
-            this.showingPage = 'forgotPassword';
+            try {
+                this.showingPage = 'forgotPassword';
+            } catch (exception) {
+                console.log("Error in showForgotPassword ", exception);
+            }
         },
         updateShowingPage(value) {
-            this.showingPage = value;
+            try {
+                this.showingPage = value;
+            } catch (exception) {
+                console.log("Error in updateShowingPage ", exception);
+            }
         },
         async signIn() {
-            if (this.phoneNumber == '' && this.password == '') {
-                this.isError = true;
-                this.validationError = "Vui lòng nhập đầy đủ số điện thoại và mật khẩu!"
-            } else if (this.phoneNumber == '') {
-                this.isError = true;
-                this.validationError = "Vui lòng nhập số điện thoại!"
-            } else if (this.password == '') {
-                this.isError = true;
-                this.validationError = "Vui lòng nhập mật khẩu!"
-            } else {
-                this.validatePhoneNumber();
-                this.validatePassword();
-                if (!this.isError) {
-                    try {
-                        const response = await axios.post('auth/login', {
-                            userName: this.phoneNumber,
-                            password: this.password
-                        });
+            try {
+                if (this.phoneNumber == '' && this.password == '') {
+                    this.isError = true;
+                    this.validationError = "Vui lòng nhập đầy đủ số điện thoại và mật khẩu!"
+                } else if (this.phoneNumber == '') {
+                    this.isError = true;
+                    this.validationError = "Vui lòng nhập số điện thoại!"
+                } else if (this.password == '') {
+                    this.isError = true;
+                    this.validationError = "Vui lòng nhập mật khẩu!"
+                } else {
+                    this.validatePhoneNumber();
+                    this.validatePassword();
+                    if (!this.isError) {
+                        try {
+                            const response = await axios.post('auth/login', {
+                                userName: this.phoneNumber,
+                                password: this.password
+                            });
 
-                        // Kiểm tra trạng thái phản hồi
-                        if (response.status === 200) {
-                            // Đăng nhập thành công
+                            // Kiểm tra trạng thái phản hồi
+                            if (response.status === 200) {
+                                // Đăng nhập thành công
 
-                            const jwtToken = response.data.jwt;
+                                const jwtToken = response.data.jwt;
 
-                            localStorage.setItem('token', jwtToken);
+                                localStorage.setItem('token', jwtToken);
 
-                            this.toast.success("Đăng nhập thành công!", { timeout: 1500 });
+                                this.toast.success("Đăng nhập thành công!", { timeout: 1500 });
 
-                            this.$emit("userLoggedIn", jwtToken);
+                                this.$emit("userLoggedIn", jwtToken);
 
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 1000);
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 1000);
 
-                        } else {
-                            console.error('Đăng nhập không thành công:', response.statusText);
-                            this.isError = true;
-                            this.validationError = 'Tên đăng nhập hoặc mật khẩu không đúng! Vui lòng nhập lại!';
-                        }
-                    } catch (error) {
-                        if (error.response) {
-                            console.error('Server responded with an error status:', error.response.status);
-
-                            if (error.response.status === 400) {
-                                this.isError = true;
-                                this.validationError = 'Xảy ra lỗi trong quá trình đăng nhập!';
                             } else {
+                                console.error('Đăng nhập không thành công:', response.statusText);
                                 this.isError = true;
                                 this.validationError = 'Tên đăng nhập hoặc mật khẩu không đúng! Vui lòng nhập lại!';
                             }
-                        } else if (error.request) {
-                            console.error('No response received from the server:', error.request);
-                            this.isError = true;
-                            this.validationError = 'Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!';
-                        } else {
-                            console.error('Error setting up the request:', error.message);
-                            this.isError = true;
-                            this.validationError = 'Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại!';
+                        } catch (error) {
+                            if (error.response) {
+                                console.error('Server responded with an error status:', error.response.status);
+
+                                if (error.response.status === 400) {
+                                    this.isError = true;
+                                    this.validationError = 'Xảy ra lỗi trong quá trình đăng nhập!';
+                                } else {
+                                    this.isError = true;
+                                    this.validationError = 'Tên đăng nhập hoặc mật khẩu không đúng! Vui lòng nhập lại!';
+                                }
+                            } else if (error.request) {
+                                console.error('No response received from the server:', error.request);
+                                this.isError = true;
+                                this.validationError = 'Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!';
+                            } else {
+                                console.error('Error setting up the request:', error.message);
+                                this.isError = true;
+                                this.validationError = 'Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại!';
+                            }
                         }
                     }
                 }
+            } catch (exception) {
+                console.log("Error in signIn ", exception);
             }
 
         },
         handleEnterKey(event) {
-            if (event.key === 'Enter') {
-                this.signIn();
+            try {
+                if (event.key === 'Enter') {
+                    this.signIn();
+                }
+            } catch (exception) {
+                console.log("handleEnterKey ", exception);
             }
         },
     }
 };
 </script>
 
-<style scoped lang = "scss">
+<style scoped lang="scss">
 .limiter {
     width: 100%;
     display: flex;
