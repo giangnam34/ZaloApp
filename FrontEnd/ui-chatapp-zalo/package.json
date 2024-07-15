@@ -27,7 +27,7 @@
     "sockjs": "^0.3.24",
     "sockjs-client": "^1.6.1",
     "stream-browserify": "^3.0.0",
-    "swiper": "^8.4.7",
+    "swiper": "^11.1.5",
     "util": "^0.12.5",
     "v-img": "^0.2.0",
     "v-viewer": "^1.6.4",

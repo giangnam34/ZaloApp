@@ -25,8 +25,7 @@
                         </div>
                     </div>
 
-                    <div v-for="feed in sortedFeeds" v-bind:key="feed.id"
-                        class="p-4 bg-white border border-gray-200 rounded-lg">
+                    <div v-for="feed in feeds" v-bind:key="feed.id" class="p-4 bg-white border border-gray-200 rounded-lg">
                         <div v-if="feed.postFather === null">
                             <div class="mb-6 flex items-center justify-between">
                                 <div class="flex items-center space-x-6">
@@ -755,17 +754,13 @@
                     <!-- Hiển thị ảnh -->
 
                     <div>
-                        <!-- Single Image -->
-                        <!-- <img v-if="showingFeed.files.length === 1" :src="showingFeed.files[0]"
-                            class="w-full h-[500px] rounded-lg cursor-pointer" @click="openFullImage(showingFeed.files)" /> -->
-
-                        <!-- Multiple Images -->
-                        <swiper class="swiper" :modules="modules">
+                        <swiper :slides-per-view="1" @swiper="onSwiper" @slideChange="onSlideChange" :modules="modules"
+                        navigation>
                             <swiper-slide v-for="(image, index) in showingFeed.files" :key="index">
                                 <div class="image-container-feed cursor-pointer"
                                     @click="openFullImage(showingFeed.files, index)">
                                     <img v-if="isImage(image)" :src="image" class="w-full h-[500px] rounded-lg" />
-                                    <video v-else controls width="300" class="w-full h-[500px] rounded-lg">
+                                    <video v-else controls class="w-full h-[500px] rounded-lg">
                                         <source :src="image" type="video/mp4" />
                                         Your browser does not support the video tag.
                                     </video>
@@ -1124,8 +1119,12 @@ import axios from 'axios';
 import { format } from 'date-fns';
 import { useToast } from "vue-toastification";
 import { Swiper, SwiperSlide } from 'vue-awesome-swiper';
+import { Navigation } from 'swiper/modules';
+import 'swiper/swiper-bundle.css';
 import 'swiper/css';
-import 'swiper/css/navigation'
+import 'swiper/css/navigation';
+
+
 export default {
     name: 'FeedView',
 
@@ -1138,10 +1137,10 @@ export default {
         const toast = useToast(
 
         );
-        const onSwiper = (s) => {
-            console.log('kjjsnjkanjkdsn', s)
+        return {
+            toast,
+            modules: [Navigation]
         }
-        return { toast, onSwiper }
     },
     created() {
         const userString = localStorage.getItem('user');
@@ -1215,7 +1214,16 @@ export default {
             showVisibleLikedUsers: false,
             currentPage: 0,
             likedUsers: [],
-            isUserScrollToBottom:false
+            isUserScrollToBottom: false,
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            swiperInstance: null,
+            swiperOptions: {
+                slidesPerView: 1,
+                spaceBetween: 0,
+            },
         }
     },
     mounted() {
@@ -2234,7 +2242,7 @@ export default {
         async handleScroll() {
             const container = this.$refs.scrollContainer;
             if (container.clientHeight + container.scrollTop > container.scrollHeight - 1000) {
-                if (!this.isUserScrollToBottom){
+                if (!this.isUserScrollToBottom) {
                     this.isUserScrollToBottom = true;
                     if (this.chosenFilter == 'allPosts') {
                         await this.fetchFeed();
@@ -2272,7 +2280,19 @@ export default {
                 }
             }
 
-        }
+        },
+        onSwiper(swiper) {
+            // Store swiper instance in data
+            this.swiperInstance = swiper;
+            console.log('Swiper instance:', swiper);
+        },
+        onSlideChange() {
+            // Check if swiperInstance is defined
+            if (this.swiperInstance) {
+                // Access activeIndex from swiperInstance
+                console.log('Slide changed:', this.swiperInstance.activeIndex);
+            }
+        },
     },
 }
 </script>
@@ -3084,6 +3104,55 @@ export default {
     color: #005ae0;
     background: #e5efff;
     border: #e5efff;
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+    color: #fff;
+    /* Text color */
+    background-color: rgba(0, 0, 0, 0.5);
+    /* Semi-transparent background for visibility */
+    border-radius: 50%;
+    /* Circular shape */
+    width: 60px;
+    /* Size of the button */
+    height: 60px;
+    /* Size of the button */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s, transform 0.3s;
+    /* Smooth transitions */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    /* Subtle shadow for better contrast */
+}
+
+.swiper-button-next::after,
+.swiper-button-prev::after {
+    font-size: 30px;
+    /* Size of the arrow icons */
+}
+
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+    background-color: rgba(0, 0, 0, 0.7);
+    /* Darker on hover */
+    transform: scale(1.1);
+    /* Slightly larger on hover */
+}
+
+.swiper-button-next:active,
+.swiper-button-prev:active {
+    background-color: rgba(0, 0, 0, 0.9);
+    /* Even darker when active */
+}
+
+.swiper-button-next:focus,
+.swiper-button-prev:focus {
+    outline: none;
+    /* Remove default focus outline */
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.7);
+    /* Custom focus outline */
 }
 
 @media only screen and (min-width:768px) and (max-width:787px) {
