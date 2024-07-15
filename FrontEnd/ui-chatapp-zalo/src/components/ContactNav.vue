@@ -13,8 +13,8 @@
                     <div class="menu-contact">
                         <div class="menu-item"
                             :class="{ 'selected': selectedMenuItem === 'friends', 'hovered': hoveredItem === 'friends', 'hovering': selectedMenuItem === 'friends' }"
-                            @mouseenter="!isSelected('friends') && (hoveredItem = 'friends')" @mouseleave="hoveredItem = ''"
-                            @click="selectMenuItem('friends')">
+                            @mouseenter="!isSelected('friends') && (hoveredItem = 'friends')"
+                            @mouseleave="hoveredItem = ''" @click="selectMenuItem('friends')">
                             <a id="user-group-icon">
                                 <font-awesome-icon icon="fa-solid fa-user-group" />
                             </a>
@@ -64,7 +64,8 @@
             <v-card class="dialog-component">
                 <v-card-title class="dialog-title">
                     <h2 class="title">Thêm bạn
-                        <div class="icon-close" @click="closeFindFriendDialog"><font-awesome-icon icon="fa-solid fa-x" />
+                        <div class="icon-close" @click="closeFindFriendDialog"><font-awesome-icon
+                                icon="fa-solid fa-x" />
                         </div>
                     </h2>
                 </v-card-title>
@@ -93,7 +94,8 @@
             <v-card class="dialog-component-user">
                 <v-card-title class="dialog-title-user">
                     <h2 class="title-user">Thông tin tài khoản
-                        <div class="icon-close-user" @click="closeUserInfoDialog"><font-awesome-icon icon="fa-solid fa-x" />
+                        <div class="icon-close-user" @click="closeUserInfoDialog"><font-awesome-icon
+                                icon="fa-solid fa-x" />
                         </div>
                     </h2>
                 </v-card-title>
@@ -165,7 +167,7 @@
         </v-dialog>
     </div>
 </template>
-  
+
 <script>
 import axios from 'axios';
 import FriendList from './FriendList.vue';
@@ -210,36 +212,63 @@ export default {
     },
     methods: {
         selectMenuItem(item) {
-            this.selectedMenuItem = item;
+            try {
+                this.selectedMenuItem = item;
+            } catch (exception) {
+                console.log("Error in selectMenuItem", exception);
+            }
         },
         isSelected(item) {
-            return this.selectedMenuItem === item;
+            try {
+                return this.selectedMenuItem === item;
+            } catch (exception) {
+                console.log("Error in isSelected", exception);
+                return false;
+            }
         },
         formattedBirthday() {
-            if (this.userFound && this.userFound.birthDay) {
-                const parsedDate = parseISO(this.userFound.birthDay);
-                this.displayedDate = format(parsedDate, "dd 'tháng' MM, yyyy", { locale: viLocale });
+            try {
+                if (this.userFound && this.userFound.birthDay) {
+                    const parsedDate = parseISO(this.userFound.birthDay);
+                    this.displayedDate = format(parsedDate, "dd 'tháng' MM, yyyy", { locale: viLocale });
+                }
+            } catch (exception) {
+                console.log("Error in formattedBirthday", exception);
             }
         },
         showFindFriendDialog() {
-            this.searchPhoneNumber = '';
-            this.showVisibleFindFriendDialog = true;
+            try {
+                this.searchPhoneNumber = '';
+                this.showVisibleFindFriendDialog = true;
+            } catch (exception) {
+                console.log("Error in showFindFriendDialog", exception);
+            }
         },
         closeFindFriendDialog() {
-            this.showVisibleFindFriendDialog = false;
+            try {
+                this.showVisibleFindFriendDialog = false;
+            } catch (exception) {
+                console.log("Error in closeFindFriendDialog", exception);
+            }
         },
         showUserInfoDialog(friend) {
-            this.userFound = friend;
-
-            this.formattedBirthday();
-
-            this.showVisibleUserInfo = true;
-            this.showVisibleFindFriendDialog = false;
+            try {
+                this.userFound = friend;
+                this.formattedBirthday();
+                this.showVisibleUserInfo = true;
+                this.showVisibleFindFriendDialog = false;
+            } catch (exception) {
+                console.log("Error in showUserInfoDialog", exception);
+            }
         },
         closeUserInfoDialog() {
-            this.showVisibleUserInfo = false;
-            this.sended = false;
-            this.showVisibleFindFriendDialog = true;
+            try {
+                this.showVisibleUserInfo = false;
+                this.sended = false;
+                this.showVisibleFindFriendDialog = true;
+            } catch (exception) {
+                console.log("Error in closeUserInfoDialog", exception);
+            }
         },
         async showFoundUserDialog() {
             try {
@@ -380,28 +409,33 @@ export default {
             }
         },
         async checkUser() {
-            await this.getInviteFriend();
-            await this.getListOfFriends();
-            const isFriend = this.listOfFriends.some(friend => friend.phoneNumber === this.searchPhoneNumber);
-            const isInvited = this.inviteList.some(friend => friend.phoneNumber === this.searchPhoneNumber);
+            try {
+                await this.getInviteFriend();
+                await this.getListOfFriends();
 
-            if (isFriend) {
-                this.isFriend = true;
-                this.sended = false;
-            } else {
-                this.isFriend = false;
+                const isFriend = this.listOfFriends.some(friend => friend.phoneNumber === this.searchPhoneNumber);
+                const isInvited = this.inviteList.some(friend => friend.phoneNumber === this.searchPhoneNumber);
 
-                if (isInvited) {
-                    this.sended = true;
+                if (isFriend) {
+                    this.isFriend = true;
+                    this.sended = false;
                 } else {
+                    this.isFriend = false;
+
+                    if (isInvited) {
+                        this.sended = true;
+                    } else {
+                        this.sended = false;
+                    }
+                }
+
+                // Additional checks
+                if (this.listOfFriends.length === 0 && this.inviteList.length === 0) {
+                    this.isFriend = false;
                     this.sended = false;
                 }
-            }
-
-            // Additional checks
-            if (this.listOfFriends.length === 0 && this.inviteList.length === 0) {
-                this.isFriend = false;
-                this.sended = false;
+            } catch (exception) {
+                console.log("Error in checkUser", exception);
             }
         },
         async getListOfFriends() {
@@ -437,9 +471,9 @@ export default {
     name: 'ContactNav'
 }
 </script>
-  
-  <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang = "scss">
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped lang="scss">
 ::placeholder {
     //padding-left: 18px;
     font-size: 14px;
@@ -527,7 +561,8 @@ export default {
                 font-weight: bold;
             }
 
-            #request-list-icon, #block-list-icon{
+            #request-list-icon,
+            #block-list-icon {
                 width: 20px;
             }
 

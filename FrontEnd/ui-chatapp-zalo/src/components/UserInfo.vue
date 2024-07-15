@@ -101,7 +101,7 @@
         </v-card>
     </v-dialog>
 </template>
-  
+
 <script>
 import { format, parseISO } from 'date-fns';
 import viLocale from 'date-fns/locale/vi';
@@ -155,50 +155,99 @@ export default {
     },
     methods: {
         formattedBirthday() {
-            if (this.user && this.user.birthDay) {
-                const parsedDate = parseISO(this.user.birthDay);
-                this.displayedDate = format(parsedDate, "dd 'tháng' MM, yyyy", { locale: viLocale });
+            try {
+                if (this.user && this.user.birthDay) {
+                    const parsedDate = parseISO(this.user.birthDay);
+                    this.displayedDate = format(parsedDate, "dd 'tháng' MM, yyyy", { locale: viLocale });
+                }
+            } catch (error) {
+                console.error("Error in formattedBirthday:", error);
+                // Optionally handle or log the error further if needed
             }
         },
         openDialog() {
-            this.dialogVisible = true;
-            this.$emit('update:showPopup', true); // emit sự kiện để cập nhật showPopup trong component cha
+            try {
+                this.dialogVisible = true;
+                this.$emit('update:showPopup', true);
+            } catch (error) {
+                console.error("Error in openDialog:", error);
+                // Optionally handle or log the error further if needed
+            }
         },
+
         closeDialog() {
-            this.dialogVisible = false;
-            this.$emit('update:showPopup', false); // emit sự kiện để cập nhật showPopup trong component cha
+            try {
+                this.dialogVisible = false;
+                this.$emit('update:showPopup', false);
+            } catch (error) {
+                console.error("Error in closeDialog:", error);
+                // Optionally handle or log the error further if needed
+            }
         },
         formatDate(date) {
-            const year = date.getFullYear();
-            const month = (date.getMonth() + 1).toString().padStart(2, '0');
-            const day = date.getDate().toString().padStart(2, '0');
-            return `${year}-${month}-${day}`;
+            try {
+                const year = date.getFullYear();
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const day = date.getDate().toString().padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            } catch (error) {
+                console.error("Error in formatDate:", error);
+                // Optionally handle or log the error further if needed
+            }
         },
         openUpdateDialog() {
-            this.updateDialogVisible = true;
-            this.dialogVisible = false;
-            this.updatedFullName = this.user.fullName;
-            this.updatedGender = this.user.sex === 'Male' ? 'Nam' : 'Nữ';
-            const parts = this.displayedDate.split(" ");
-            const day = parseInt(parts[0], 10);
-            const month = parseInt(parts[2].replace("tháng", ""), 10);
-            const year = parseInt(parts[3], 10);
-            const date = new Date(year, month - 1, day);
-            this.updatedBirthday = this.formatDate(date);
+            try {
+                this.updateDialogVisible = true;
+                this.dialogVisible = false;
+                this.updatedFullName = this.user.fullName;
+                this.updatedGender = this.user.sex === 'Male' ? 'Nam' : 'Nữ';
+
+                const parts = this.displayedDate.split(" ");
+                const day = parseInt(parts[0], 10);
+                const month = parseInt(parts[2].replace("tháng", ""), 10);
+                const year = parseInt(parts[3], 10);
+                const date = new Date(year, month - 1, day);
+                this.updatedBirthday = this.formatDate(date);
+            } catch (error) {
+                console.error("Error in openUpdateDialog:", error);
+                // Optionally handle or log the error further if needed
+            }
         },
+
         closeUpdateDialog() {
-            this.updateDialogVisible = false;
-            this.dialogVisible = true;
+            try {
+                this.updateDialogVisible = false;
+                this.dialogVisible = true;
+            } catch (error) {
+                console.error("Error in closeUpdateDialog:", error);
+                // Optionally handle or log the error further if needed
+            }
         },
         submitUpdateForm() {
-            this.closeUpdateDialog(); // Đóng dialog sau khi hoàn tất cập nhật
+            try {
+                this.closeUpdateDialog();
+            } catch (error) {
+                console.error("Error in submitUpdateForm:", error);
+                // Optionally handle or log the error further if needed
+            }
         },
         toggleGenderMenu() {
-            this.genderMenu = !this.genderMenu;
+            try {
+                this.genderMenu = !this.genderMenu;
+            } catch (error) {
+                console.error("Error in toggleGenderMenu:", error);
+                // Optionally handle or log the error further if needed
+            }
         },
+
         selectGender(genderOption) {
-            this.updatedGender = genderOption;
-            this.genderMenu = false;
+            try {
+                this.updatedGender = genderOption;
+                this.genderMenu = false;
+            } catch (error) {
+                console.error("Error in selectGender:", error);
+                // Optionally handle or log the error further if needed
+            }
         },
         async updateUserInfo() {
             try {
@@ -344,7 +393,7 @@ export default {
     }
 }
 </script>
-  
+
 <style scoped lang="scss">
 .dialog-container {
     .dialog-component {
@@ -499,4 +548,3 @@ export default {
     }
 }
 </style>
-  

@@ -26,7 +26,8 @@
                     </div>
                     <div class="back-to-signin">
                         <span class="signin-link" :class="{ 'hovered': hoveredItem === 'signin' }"
-                            @mouseenter="(hoveredItem = 'signin')" @mouseleave="hoveredItem = ''" @click="showSignIn">Quay
+                            @mouseenter="(hoveredItem = 'signin')" @mouseleave="hoveredItem = ''"
+                            @click="showSignIn">Quay
                             lại đăng nhập</span>
                     </div>
                 </div>
@@ -66,64 +67,81 @@ export default {
     setup() {
         // Get toast interface
         const toast = useToast();
-        return { toast}
+        return { toast }
     },
     methods: {
         togglePasswordVisibility() {
-            this.showPassword = !this.showPassword;
-            const passwordInput = document.querySelector('input[name="password"]');
-            const confirmPasswordInput = document.querySelector('input[name="confirmPassword"]');
-            if (this.showPassword) {
-                passwordInput.setAttribute('type', 'text');
-                confirmPasswordInput.setAttribute('type', 'text');
-            } else {
-                passwordInput.setAttribute('type', 'password');
-                confirmPasswordInput.setAttribute('type', 'password');
-            }
-        },
-        validatePhoneNumber() {
-            this.phoneNumber = this.phoneNumber + '';
-            if (this.phoneNumber.length == 9 && this.phoneNumber.at(0) != '0') {
-                this.phoneNumber = '0' + this.phoneNumber;
-            }
-            const phoneNumber = this.phoneNumber;
-            const isValidPhoneNumber = /^0\d{9}$/.test(phoneNumber);
-
-            if (!isValidPhoneNumber) {
-                this.isError = true;
-                this.validationErrorPhoneNumber = 'Số điện thoại không hợp lệ!';
-                this.flag1 = true;
-            } else {
-                this.validationErrorPhoneNumber = '';
-                this.flag1 = false;
-            }
-            if (!this.flag1) this.isError = false;
-        },
-        showSignIn() {
-            this.$emit('update:showingPage', 'signIn');
-        },
-        updateShowOTP(value) {
-            this.showOTP = value;
-        },
-        async confirm() {
-
-            if (this.phoneNumber == '') {
-                this.isError = true;
-                this.validationError = "Vui lòng nhập số điện thoại!"
-            } else {
-
-                this.validatePhoneNumber();
-
-                if (!this.isError) {
-
-
-                    await this.sendOtp();
-
-                    if(!this.isError){
-                        this.showOTP = true;
-                    }  
-
+            try {
+                this.showPassword = !this.showPassword;
+                const passwordInput = document.querySelector('input[name="password"]');
+                const confirmPasswordInput = document.querySelector('input[name="confirmPassword"]');
+                if (this.showPassword) {
+                    passwordInput.setAttribute('type', 'text');
+                    confirmPasswordInput.setAttribute('type', 'text');
+                } else {
+                    passwordInput.setAttribute('type', 'password');
+                    confirmPasswordInput.setAttribute('type', 'password');
                 }
+            } catch (exception) {
+                console.log("Error in togglePasswordVisibility", exception);
+            }
+        },
+
+        validatePhoneNumber() {
+            try {
+                this.phoneNumber = this.phoneNumber + '';
+                if (this.phoneNumber.length == 9 && this.phoneNumber.at(0) != '0') {
+                    this.phoneNumber = '0' + this.phoneNumber;
+                }
+                const phoneNumber = this.phoneNumber;
+                const isValidPhoneNumber = /^0\d{9}$/.test(phoneNumber);
+
+                if (!isValidPhoneNumber) {
+                    this.isError = true;
+                    this.validationErrorPhoneNumber = 'Số điện thoại không hợp lệ!';
+                    this.flag1 = true;
+                } else {
+                    this.validationErrorPhoneNumber = '';
+                    this.flag1 = false;
+                }
+                if (!this.flag1) this.isError = false;
+            } catch (exception) {
+                console.log("Error in validatePhoneNumber", exception);
+            }
+        },
+
+        showSignIn() {
+            try {
+                this.$emit('update:showingPage', 'signIn');
+            } catch (exception) {
+                console.log("Error in showSignIn", exception);
+            }
+        },
+
+        updateShowOTP(value) {
+            try {
+                this.showOTP = value;
+            } catch (exception) {
+                console.log("Error in updateShowOTP", exception);
+            }
+        },
+
+        async confirm() {
+            try {
+                if (this.phoneNumber == '') {
+                    this.isError = true;
+                    this.validationError = "Vui lòng nhập số điện thoại!"
+                } else {
+                    this.validatePhoneNumber();
+                    if (!this.isError) {
+                        await this.sendOtp();
+                        if (!this.isError) {
+                            this.showOTP = true;
+                        }
+                    }
+                }
+            } catch (exception) {
+                console.log("Error in confirm", exception);
             }
         },
         async sendOtp() {
@@ -166,15 +184,19 @@ export default {
             }
         },
         handleEnterKey(event) {
-            if (event.key === 'Enter') {
-                this.confirm();
+            try {
+                if (event.key === 'Enter') {
+                    this.confirm();
+                }
+            } catch (exception) {
+                console.log("Error in handleEnterKey", exception);
             }
-        },
+        }
     }
 };
 </script>
 
-<style scoped lang = "scss">
+<style scoped lang="scss">
 .limiter {
     width: 100%;
     margin: 0 auto;

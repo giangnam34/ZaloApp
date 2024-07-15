@@ -12,10 +12,12 @@
                         <v-container>
                             <v-row>
                                 <v-col cols="12" md="6">
-                                    <v-text-field v-model="editedItem.fullName" label="Họ và tên" readonly></v-text-field>
+                                    <v-text-field v-model="editedItem.fullName" label="Họ và tên"
+                                        readonly></v-text-field>
                                 </v-col>
                                 <v-col cols="12" md="6">
-                                    <v-text-field v-model="editedItem.birthDay" label="Ngày sinh" readonly></v-text-field>
+                                    <v-text-field v-model="editedItem.birthDay" label="Ngày sinh"
+                                        readonly></v-text-field>
                                 </v-col>
                                 <v-col cols="12" md="6">
                                     <v-text-field v-model="editedItem.postsCount" label="Tổng bài viết" type="number"
@@ -26,8 +28,8 @@
                                         readonly></v-text-field>
                                 </v-col>
                                 <v-col cols="12" md="6">
-                                    <v-text-field v-model="editedItem.groupsCount" label="Tổng nhóm tham gia" type="number"
-                                        readonly></v-text-field>
+                                    <v-text-field v-model="editedItem.groupsCount" label="Tổng nhóm tham gia"
+                                        type="number" readonly></v-text-field>
                                 </v-col>
                                 <v-col cols="12" md="6">
                                     <v-switch v-model="editedItem.isLock" label="Đã bị khóa" readonly></v-switch>
@@ -172,21 +174,37 @@ export default {
         },
 
         editItem(item) {
-            this.editedIndex = this.users.indexOf(item)
-            this.editedItem = Object.assign({}, item)
-            this.dialog = true
+            try {
+                this.editedIndex = this.users.indexOf(item);
+                this.editedItem = Object.assign({}, item);
+                this.dialog = true;
+            } catch (error) {
+                console.error("Error in editItem:", error);
+                // Optionally handle or log the error further if needed
+            }
         },
 
+
         deleteItem(item) {
-            this.editedIndex = this.users.indexOf(item)
-            this.editedItem = Object.assign({}, item)
-            this.dialogDelete = true
+            try {
+                this.editedIndex = this.users.indexOf(item);
+                this.editedItem = Object.assign({}, item);
+                this.dialogDelete = true;
+            } catch (error) {
+                console.error("Error in deleteItem:", error);
+                // Optionally handle or log the error further if needed
+            }
         },
 
         async deleteItemConfirm() {
-            this.users.splice(this.editedIndex, 1)
-            await this.lockUser();
-            this.closeDelete()
+            try {
+                this.users.splice(this.editedIndex, 1);
+                await this.lockUser();
+                this.closeDelete();
+            } catch (error) {
+                console.error("Error in deleteItemConfirm:", error);
+                // Optionally handle or log the error further if needed
+            }
         },
 
         async lockUser() {
@@ -207,28 +225,43 @@ export default {
         },
 
         close() {
-            this.dialog = false
-            this.$nextTick(() => {
-                this.editedItem = Object.assign({}, this.defaultItem)
-                this.editedIndex = -1
-            })
+            try {
+                this.dialog = false;
+                this.$nextTick(() => {
+                    this.editedItem = Object.assign({}, this.defaultItem);
+                    this.editedIndex = -1;
+                });
+            } catch (error) {
+                console.error("Error in close:", error);
+                // Optionally handle or log the error further if needed
+            }
         },
 
         closeDelete() {
-            this.dialogDelete = false
-            this.$nextTick(() => {
-                this.editedItem = Object.assign({}, this.defaultItem)
-                this.editedIndex = -1
-            })
+            try {
+                this.dialogDelete = false;
+                this.$nextTick(() => {
+                    this.editedItem = Object.assign({}, this.defaultItem);
+                    this.editedIndex = -1;
+                });
+            } catch (error) {
+                console.error("Error in closeDelete:", error);
+                // Optionally handle or log the error further if needed
+            }
         },
 
         save() {
-            if (this.editedIndex > -1) {
-                Object.assign(this.users[this.editedIndex], this.editedItem)
-            } else {
-                this.users.push(this.editedItem)
+            try {
+                if (this.editedIndex > -1) {
+                    Object.assign(this.users[this.editedIndex], this.editedItem);
+                } else {
+                    this.users.push(this.editedItem);
+                }
+                this.close();
+            } catch (error) {
+                console.error("Error in save:", error);
+                // Optionally handle or log the error further if needed
             }
-            this.close()
         },
     },
 }

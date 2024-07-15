@@ -85,69 +85,116 @@ export default {
   },
   methods: {
     handleUserUpdate() {
-      // Xử lý khi thông tin user thay đổi từ UserInfo
-      this.fetchAvatar();
-    },
-    emitOpenDialogEvent() {
-      this.showPopup = true;
-      const userString = localStorage.getItem('user');
-
-      // Chuyển đổi chuỗi JSON thành đối tượng JavaScript
-      if (userString) {
-        this.user = JSON.parse(userString);
+      try {
+        // Xử lý khi thông tin user thay đổi từ UserInfo
+        this.fetchAvatar();
+      } catch (exception) {
+        console.log("Error in handleUserUpdate ", exception);
       }
     },
-    onHover(name) {
-      this.isHover = true;
-      this.name = name;
-    },
-    outHover() {
-      this.isHover = false;
-      this.name = "";
-    },
-    isOutDiv(coordinates, subCoordinates) {
-      // console.log(coordinates.top, coordinates.bottom, this.coordinatesY);
-      // console.log(coordinates.left, coordinates.right, this.coordinatesX);
-      if (coordinates.top <= this.coordinatesY && coordinates.bottom >= this.coordinatesY
-        && coordinates.left <= this.coordinatesX && subCoordinates.right >= this.coordinatesX) return false;
-      return true;
-    },
-    getMousePosition(event) {
-      this.coordinatesX = event.clientX;
-      this.coordinatesY = event.clientY;
-    },
-    isClickAvatar(popUpName) {
-      this.isShowWhenClickAvatar = !this.isShowWhenClickAvatar;
-      this.popUpName = popUpName;
-    },
-    onClick(index) {
-      this.index = index;
-      this.$emit('pageSelected', index);
-    },
-    async logout() {
-      await this.updateUserOfflineActivity();
-      localStorage.removeItem("token");
-      localStorage.setItem("isValid", false);
-      localStorage.removeItem("user");
-      this.$emit("userLoggedIn", '');
-      event.preventDefault();
-      event.stopPropagation();
-    },
-    async updateUserOfflineActivity() {
-      const fullToken = localStorage.getItem('token');
-      if (fullToken) {
-        const parts = fullToken.split(' ');
-        if (parts.length > 1) {
-          const token = parts[1];
-          let decoded = VueJwtDecode.decode(token);
-          const currentUserID = decoded.sub;
-          const responseUser = await axios.get(`users/update-user-offline-activity/${currentUserID}`, {
-            headers: {
-              'Authorization': localStorage.getItem("token")
-            }
-          });
-          console.log(responseUser.status);
+    emitOpenDialogEvent() {
+      try {
+        this.showPopup = true;
+        const userString = localStorage.getItem('user');
+
+        // Chuyển đổi chuỗi JSON thành đối tượng JavaScript
+        if (userString) {
+          this.user = JSON.parse(userString);
         }
+      } catch (exception) {
+        console.log("Error in emitOpenDialogEvent ", exception);
+      }
+    },
+
+    onHover(name) {
+      try {
+        this.isHover = true;
+        this.name = name;
+      } catch (exception) {
+        console.log("Error in onHover ", exception);
+      }
+    },
+
+    outHover() {
+      try {
+        this.isHover = false;
+        this.name = "";
+      } catch (exception) {
+        console.log("Error in outHover ", exception);
+      }
+    },
+
+    isOutDiv(coordinates, subCoordinates) {
+      try {
+        if (coordinates.top <= this.coordinatesY && coordinates.bottom >= this.coordinatesY
+          && coordinates.left <= this.coordinatesX && subCoordinates.right >= this.coordinatesX) return false;
+        return true;
+      } catch (exception) {
+        console.log("Error in isOutDiv ", exception);
+        return true; // Return true as default behavior upon error
+      }
+    },
+
+    getMousePosition(event) {
+      try {
+        this.coordinatesX = event.clientX;
+        this.coordinatesY = event.clientY;
+      } catch (exception) {
+        console.log("Error in getMousePosition ", exception);
+      }
+    },
+
+    isClickAvatar(popUpName) {
+      try {
+        this.isShowWhenClickAvatar = !this.isShowWhenClickAvatar;
+        this.popUpName = popUpName;
+      } catch (exception) {
+        console.log("Error in isClickAvatar ", exception);
+      }
+    },
+
+    onClick(index) {
+      try {
+        this.index = index;
+        this.$emit('pageSelected', index);
+      } catch (exception) {
+        console.log("Error in onClick ", exception);
+      }
+    },
+
+    async logout() {
+      try {
+        await this.updateUserOfflineActivity();
+        localStorage.removeItem("token");
+        localStorage.setItem("isValid", false);
+        localStorage.removeItem("user");
+        this.$emit("userLoggedIn", '');
+        event.preventDefault();
+        event.stopPropagation();
+      } catch (exception) {
+        console.log("Error in logout ", exception);
+      }
+    },
+
+    async updateUserOfflineActivity() {
+      try {
+        const fullToken = localStorage.getItem('token');
+        if (fullToken) {
+          const parts = fullToken.split(' ');
+          if (parts.length > 1) {
+            const token = parts[1];
+            let decoded = VueJwtDecode.decode(token);
+            const currentUserID = decoded.sub;
+            const responseUser = await axios.get(`users/update-user-offline-activity/${currentUserID}`, {
+              headers: {
+                'Authorization': localStorage.getItem("token")
+              }
+            });
+            console.log(responseUser.status);
+          }
+        }
+      } catch (exception) {
+        console.log("Error in updateUserOfflineActivity ", exception);
       }
     },
     fetchAvatar() {
@@ -168,7 +215,11 @@ export default {
     },
   },
   beforeUnmount() {
-    document.removeEventListener("click", this.handleClickOutside);
+    try {
+      document.removeEventListener("click", this.handleClickOutside);
+    } catch (exception) {
+      console.log(exception);
+    }
   },
 };
 </script>

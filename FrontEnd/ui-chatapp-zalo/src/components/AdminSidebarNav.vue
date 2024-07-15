@@ -49,25 +49,39 @@ export default {
     methods: {
         // hide show side bar
         toggleSideBar() {
-            this.showSide = !this.showSide
-
+            try {
+                this.showSide = !this.showSide;
+            } catch (exception) {
+                console.log("Error in toggleSideBar", exception);
+            }
         },
         // toggle user 
         toggleDrop() {
-            this.showDropDown = !this.showDropDown
-
+            try {
+                this.showDropDown = !this.showDropDown;
+            } catch (exception) {
+                console.log("Error in toggleDrop", exception);
+            }
         },
         logout() {
-            localStorage.removeItem("token");
-            localStorage.setItem("isValid", false);
-            localStorage.removeItem("user");
-            this.$emit("userLoggedIn", '');
-            event.preventDefault();
-            event.stopPropagation();
+            try {
+                localStorage.removeItem("token");
+                localStorage.setItem("isValid", false);
+                localStorage.removeItem("user");
+                this.$emit("userLoggedIn", '');
+                event.preventDefault();
+                event.stopPropagation();
+            } catch (exception) {
+                console.log("Error in logout", exception);
+            }
         },
         onClick(index) {
-            this.index = index;
-            this.$emit('pageSelected', index);
+            try {
+                this.index = index;
+                this.$emit('pageSelected', index);
+            } catch (exception) {
+                console.log("Error in onClick", exception);
+            }
         },
     }
 

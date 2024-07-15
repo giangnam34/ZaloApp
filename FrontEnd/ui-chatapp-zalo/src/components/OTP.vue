@@ -51,14 +51,28 @@ export default {
     props: ['phoneNumber'],
     methods: {
         showSignIn() {
-            this.$emit('update:showingPage', 'signIn');
+            try {
+                this.$emit('update:showingPage', 'signIn');
+            } catch (error) {
+                console.error("Error in showSignIn:", error);
+            }
         },
+
         showSignUp() {
-            this.$emit('update:showOTP', false);
+            try {
+                this.$emit('update:showOTP', false);
+            } catch (error) {
+                console.error("Error in showSignUp:", error);
+            }
         },
+
         handleEnterKey(event) {
-            if (event.key === 'Enter') {
-                this.confirm();
+            try {
+                if (event.key === 'Enter') {
+                    this.confirm();
+                }
+            } catch (error) {
+                console.error("Error in handleEnterKey:", error);
             }
         },
         async confirm() {
@@ -152,21 +166,25 @@ export default {
             }
         },
         validateOTP() {
-            const otpRegex = /^\d{6}$/;
+            try {
+                const otpRegex = /^\d{6}$/;
 
-            if (!this.otp.match(otpRegex)) {
-                this.isError = true;
-                this.validationError = "Mã OTP không hợp lệ!";
-            } else {
-                this.isError = false;
-                this.validationError = "";
+                if (!this.otp.match(otpRegex)) {
+                    this.isError = true;
+                    this.validationError = "Mã OTP không hợp lệ!";
+                } else {
+                    this.isError = false;
+                    this.validationError = "";
+                }
+            } catch (error) {
+                console.error("Error in validateOTP:", error);
             }
         }
     }
 };
 </script>
 
-<style scoped lang = "scss">
+<style scoped lang="scss">
 .hovered {
     cursor: pointer;
     color: #235dc7;

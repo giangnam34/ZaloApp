@@ -12,15 +12,16 @@
                         <v-container>
                             <v-row>
                                 <v-col cols="12" md="6">
-                                    <v-text-field v-model="editedItem.groupName" label="Tên nhóm" readonly></v-text-field>
-                                </v-col>
-                                <v-col cols="12" md="6">
-                                    <v-text-field v-model="editedItem.membersCount" label="Tổng số thành viên" type="number"
+                                    <v-text-field v-model="editedItem.groupName" label="Tên nhóm"
                                         readonly></v-text-field>
                                 </v-col>
                                 <v-col cols="12" md="6">
-                                    <v-text-field v-model="editedItem.messagesCount" label="Tổng số tin nhắn" type="number"
-                                        readonly></v-text-field>
+                                    <v-text-field v-model="editedItem.membersCount" label="Tổng số thành viên"
+                                        type="number" readonly></v-text-field>
+                                </v-col>
+                                <v-col cols="12" md="6">
+                                    <v-text-field v-model="editedItem.messagesCount" label="Tổng số tin nhắn"
+                                        type="number" readonly></v-text-field>
                                 </v-col>
                             </v-row>
                         </v-container>
@@ -92,12 +93,12 @@ export default {
         },
     }),
     setup() {
-		// Get toast interface
-		const toast = useToast(
+        // Get toast interface
+        const toast = useToast(
 
-		);
-		return { toast }
-	},
+        );
+        return { toast }
+    },
     computed: {
         formTitle() {
             return this.editedIndex === -1 ? 'Thêm nhóm' : 'Chỉnh sửa nhóm'
@@ -139,21 +140,33 @@ export default {
         },
 
         editItem(item) {
-            this.editedIndex = this.groups.indexOf(item)
-            this.editedItem = Object.assign({}, item)
-            this.dialog = true
+            try {
+                this.editedIndex = this.groups.indexOf(item);
+                this.editedItem = Object.assign({}, item);
+                this.dialog = true;
+            } catch (exception) {
+                console.log("Error in editItem", exception);
+            }
         },
 
         deleteItem(item) {
-            this.editedIndex = this.groups.indexOf(item)
-            this.editedItem = Object.assign({}, item)
-            this.dialogDelete = true
+            try {
+                this.editedIndex = this.groups.indexOf(item);
+                this.editedItem = Object.assign({}, item);
+                this.dialogDelete = true;
+            } catch (exception) {
+                console.log("Error in deleteItem", exception);
+            }
         },
 
         async deleteItemConfirm() {
-            this.groups.splice(this.editedIndex, 1);
-            await this.deleteRoom();
-            this.closeDelete()
+            try {
+                this.groups.splice(this.editedIndex, 1);
+                await this.deleteRoom();
+                this.closeDelete();
+            } catch (exception) {
+                console.log("Error in deleteItemConfirm", exception);
+            }
         },
         async deleteRoom() {
             try {
@@ -172,29 +185,42 @@ export default {
 
         },
         close() {
-            this.dialog = false
-            this.$nextTick(() => {
-                this.editedItem = Object.assign({}, this.defaultItem)
-                this.editedIndex = -1
-            })
+            try {
+                this.dialog = false;
+                this.$nextTick(() => {
+                    this.editedItem = Object.assign({}, this.defaultItem);
+                    this.editedIndex = -1;
+                });
+            } catch (exception) {
+                console.log("Error in close", exception);
+            }
         },
 
         closeDelete() {
-            this.dialogDelete = false
-            this.$nextTick(() => {
-                this.editedItem = Object.assign({}, this.defaultItem)
-                this.editedIndex = -1
-            })
+            try {
+                this.dialogDelete = false;
+                this.$nextTick(() => {
+                    this.editedItem = Object.assign({}, this.defaultItem);
+                    this.editedIndex = -1;
+                });
+            } catch (exception) {
+                console.log("Error in closeDelete", exception);
+            }
         },
 
         save() {
-            if (this.editedIndex > -1) {
-                Object.assign(this.groups[this.editedIndex], this.editedItem)
-            } else {
-                this.groups.push(this.editedItem)
+            try {
+                if (this.editedIndex > -1) {
+                    Object.assign(this.groups[this.editedIndex], this.editedItem);
+                } else {
+                    this.groups.push(this.editedItem);
+                }
+                this.close();
+            } catch (exception) {
+                console.log("Error in save", exception);
             }
-            this.close()
         },
+
     },
 }
 </script>

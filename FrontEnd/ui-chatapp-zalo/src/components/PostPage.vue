@@ -1,5 +1,5 @@
 <template>
-    <div class="post-container">
+       <div class="post-container">
         <div class="container px-8 py-6 bg-gray-100 overflow-y-auto" ref="scrollContainer" @scroll="handleScroll">
             <div class="max-w-none w-auto mx-auto grid grid-cols-4 gap-4">
                 <div class="main-left col-span-1">
@@ -26,7 +26,7 @@
                         </div>
                     </div>
 
-                    <div v-for="feed in sortedFeeds" v-bind:key="feed.id"
+                    <div v-for="feed in feeds" v-bind:key="feed.id"
                         class="p-4 bg-white border border-gray-200 rounded-lg">
                         <div v-if="feed.postFather === null">
                             <div class="mb-6 flex items-center justify-between">
@@ -1134,20 +1134,21 @@
         </v-card>
     </v-dialog>
 </template>
-
 <script>
 import axios from 'axios';
 import { format } from 'date-fns';
 import { useToast } from "vue-toastification";
-import { Swiper, SwiperSlide } from 'vue-awesome-swiper';
+// import { Swiper, SwiperSlide } from 'vue-awesome-swiper';
+// import ShowImage from './ShowImageComponent.vue';
 import 'swiper/css';
 import 'swiper/css/navigation'
 export default {
     name: 'FeedView',
 
     components: {
-        Swiper,
-        SwiperSlide
+        // Swiper,
+        // SwiperSlide,
+        // ShowImage
     },
     setup() {
         // Get toast interface
@@ -1241,7 +1242,7 @@ export default {
             //     { phoneNumber: '0965556658', userName: "Kẻ Áo Cam", imageAvatar: 'https://i.imgur.com/z9fdzMv.jpg', imageCoverAvatar: 'https://i.imgur.com/gEKsypv.jpg', birthDay: '2002-03-27T00:00:00.000+00:00', gender: 'Male' }
             // ],
             likedUsers: [],
-            isUserScrollToBottom:false
+            isUserScrollToBottom: false
         }
     },
     mounted() {
@@ -2260,7 +2261,7 @@ export default {
         async handleScroll() {
             const container = this.$refs.scrollContainer;
             if (container.clientHeight + container.scrollTop > container.scrollHeight - 1000) {
-                if (!this.isUserScrollToBottom){
+                if (!this.isUserScrollToBottom) {
                     this.isUserScrollToBottom = true;
                     if (this.chosenFilter == 'allPosts') {
                         await this.fetchFeed();

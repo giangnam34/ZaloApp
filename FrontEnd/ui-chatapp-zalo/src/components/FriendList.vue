@@ -36,7 +36,8 @@
                         <div class="popover" style="z-index: 20; opacity: 1; top: 47.6px; left: 291px;"
                             v-if="selectedItem === 'sort'">
                             <!-- Nội dung của popover -->
-                            <div class="popover-content" style="min-width: 240px; width: initial; box-sizing: border-box;">
+                            <div class="popover-content"
+                                style="min-width: 240px; width: initial; box-sizing: border-box;">
                                 <div class="popover-item" :class="{ 'hoveredFilter': hoveredItem === 'ascending' }"
                                     @mouseenter="(hoveredItem = 'ascending')" @mouseleave="hoveredItem = ''"
                                     @click="chooseTypeOfSort(hoveredItem)">
@@ -78,7 +79,8 @@
                         <div class="popover" style="z-index: 20; opacity: 1; top: 47.6px; left: 539px;"
                             v-if="selectedItem === 'filter'">
                             <!-- Nội dung của popover -->
-                            <div class="popover-content" style="min-width: 240px; width: initial; box-sizing: border-box;">
+                            <div class="popover-content"
+                                style="min-width: 240px; width: initial; box-sizing: border-box;">
                                 <div class="popover-item" :class="{ 'hoveredFilter': hoveredItem === 'all' }"
                                     @mouseenter="(hoveredItem = 'all')" @mouseleave="hoveredItem = ''"
                                     @click="chooseTypeOfFilter(hoveredItem)">
@@ -122,13 +124,15 @@
                             </div>
                             <div class="action">
                                 <div class="popover-action-container" @blur="hidePopover" tabindex="0">
-                                    <a id="ellipsis-icon" @click="(event) => handleClickAction(friend.phoneNumber, event)">
+                                    <a id="ellipsis-icon"
+                                        @click="(event) => handleClickAction(friend.phoneNumber, event)">
                                         <font-awesome-icon icon="fa-solid fa-ellipsis" />
                                     </a>
                                     <div class="popoverAction" v-show="friend.phoneNumber === selectedItem"
                                         :style="{ left: popoverLeft, top: popoverTop }">
                                         <div class="popover-body">
-                                            <div class="popover-item" :class="{ 'hoveredFilter': hoveredItem === 'info' }"
+                                            <div class="popover-item"
+                                                :class="{ 'hoveredFilter': hoveredItem === 'info' }"
                                                 @mouseenter="(hoveredItem = 'info')" @mouseleave="hoveredItem = ''"
                                                 @click="showFoundUserDialog(friend.phoneNumber)">
                                                 <div>
@@ -149,7 +153,8 @@
                                                 </div>
                                             </div>
                                             <div class="separator"></div> -->
-                                            <div class="popover-item" :class="{ 'hoveredFilter': hoveredItem === 'block' }"
+                                            <div class="popover-item"
+                                                :class="{ 'hoveredFilter': hoveredItem === 'block' }"
                                                 @mouseenter="(hoveredItem = 'block')" @mouseleave="hoveredItem = ''"
                                                 @click="blockUser(friend.phoneNumber)">
                                                 <div>
@@ -187,7 +192,8 @@
             <v-card-text class="dialog-content-user">
                 <div class="profile-photo-user">
                     <div class="cover-avatar-user">
-                        <img class="cover-image-user" :src="userFound.imageCoverAvatar" alt="None" crossorigin="anonymous">
+                        <img class="cover-image-user" :src="userFound.imageCoverAvatar" alt="None"
+                            crossorigin="anonymous">
                     </div>
                     <div class="ava-name-container-user">
                         <div class="avatar-profile-user">
@@ -227,7 +233,7 @@
         </v-card>
     </v-dialog>
 </template>
-  
+
 <script>
 import axios from 'axios';
 import { useToast } from "vue-toastification";
@@ -265,7 +271,7 @@ export default {
             this.user = JSON.parse(userString);
         }
     },
-    computed:{
+    computed: {
         filteredFriends() {
             const normalizedSearchText = this.searchText.toLowerCase();
             return this.friends.filter(friend =>
@@ -275,79 +281,123 @@ export default {
     },
     methods: {
         selectItem(item) {
-            this.selectedItem = item;
+            try {
+                this.selectedItem = item;
+            } catch (exception) {
+                console.log("Error in selectItem", exception);
+            }
         },
+
         formattedBirthday() {
-            if (this.userFound && this.userFound.birthDay) {
-                const parsedDate = parseISO(this.userFound.birthDay);
-                this.displayedDate = format(parsedDate, "dd 'tháng' MM, yyyy", { locale: viLocale });
+            try {
+                if (this.userFound && this.userFound.birthDay) {
+                    const parsedDate = parseISO(this.userFound.birthDay);
+                    this.displayedDate = format(parsedDate, "dd 'tháng' MM, yyyy", { locale: viLocale });
+                }
+            } catch (exception) {
+                console.log("Error in formattedBirthday", exception);
             }
         },
+
         clearSelectedItem() {
-            this.selectedItem = '';
-        },
-        isSelected(item) {
-            return this.selectedItem === item;
-        },
-        togglePopover(item) {
-            this.selectItem(item);
-        },
-        hidePopover() {
-            this.clearSelectedItem();
-        },
-        chooseTypeOfSort(item) {
-            this.chosenType = item;
-            if (item == 'ascending') {
-                this.typeOfSort = 'Tên (A-Z)';
-            } else {
-                this.typeOfSort = 'Tên (Z-A)';
+            try {
+                this.selectedItem = '';
+            } catch (exception) {
+                console.log("Error in clearSelectedItem", exception);
             }
         },
+
+        isSelected(item) {
+            try {
+                return this.selectedItem === item;
+            } catch (exception) {
+                console.log("Error in isSelected", exception);
+                return false;
+            }
+        },
+
+        togglePopover(item) {
+            try {
+                this.selectItem(item);
+            } catch (exception) {
+                console.log("Error in togglePopover", exception);
+            }
+        },
+
+        hidePopover() {
+            try {
+                this.clearSelectedItem();
+            } catch (exception) {
+                console.log("Error in hidePopover", exception);
+            }
+        },
+
+        chooseTypeOfSort(item) {
+            try {
+                this.chosenType = item;
+                if (item === 'ascending') {
+                    this.typeOfSort = 'Tên (A-Z)';
+                } else {
+                    this.typeOfSort = 'Tên (Z-A)';
+                }
+            } catch (exception) {
+                console.log("Error in chooseTypeOfSort", exception);
+            }
+        },
+
         chooseTypeOfFilter(item) {
-            this.chosenFilter = item;
-            if (item == 'all') {
-                this.typeOfFilter = 'Tất cả';
-            } else {
-                this.typeOfFilter = 'Phân loại';
+            try {
+                this.chosenFilter = item;
+                if (item === 'all') {
+                    this.typeOfFilter = 'Tất cả';
+                } else {
+                    this.typeOfFilter = 'Phân loại';
+                }
+            } catch (exception) {
+                console.log("Error in chooseTypeOfFilter", exception);
             }
         },
         handleClickAction(id, event) {
-            this.selectedItem = id;
-            const rect = event.target.getBoundingClientRect();
-            const mouseX = rect.left;
-            const mouseY = rect.top;
+            try {
+                this.selectedItem = id;
+                const rect = event.target.getBoundingClientRect();
+                const mouseX = rect.left;
+                const mouseY = rect.top;
 
-            const windowWidth = window.innerWidth + window.scrollX;
-            const windowHeight = window.innerHeight + window.scrollY;
+                const windowWidth = window.innerWidth + window.scrollX;
+                const windowHeight = window.innerHeight + window.scrollY;
 
-            const popupWidth = 180;
-            const popupHeight = 120;
+                const popupWidth = 180;
+                const popupHeight = 120;
 
-            let popupLeft, popupTop;
+                let popupLeft, popupTop;
 
-            if (mouseX + popupWidth > windowWidth) {
-                popupLeft = mouseX - popupWidth;
-            } else {
-                popupLeft = mouseX;
+                if (mouseX + popupWidth > windowWidth) {
+                    popupLeft = mouseX - popupWidth;
+                } else {
+                    popupLeft = mouseX;
+                }
+
+                if (mouseY + popupHeight > windowHeight) {
+                    popupTop = mouseY - popupHeight;
+                } else {
+                    popupTop = mouseY;
+                }
+
+                if (popupLeft < window.scrollX) {
+                    popupLeft = window.scrollX;
+                }
+
+                if (popupTop < window.scrollY) {
+                    popupTop = window.scrollY;
+                }
+
+                this.popoverLeft = popupLeft + 'px';
+                this.popoverTop = popupTop + 'px';
+                event.stopPropagation();
+            } catch (exception) {
+                console.log("Error in handleClickAction ", exception);
             }
-
-            if (mouseY + popupHeight > windowHeight) {
-                popupTop = mouseY - popupHeight;
-            } else {
-                popupTop = mouseY;
-            }
-
-            if (popupLeft < window.scrollX) {
-                popupLeft = window.scrollX;
-            }
-
-            if (popupTop < window.scrollY) {
-                popupTop = window.scrollY;
-            }
-
-            this.popoverLeft = popupLeft + 'px';
-            this.popoverTop = popupTop + 'px';
-            event.stopPropagation();
         },
         async getListOfFriends() {
             try {
@@ -448,16 +498,25 @@ export default {
             }
         },
         showUserInfoDialog(friend) {
-            this.userFound = friend;
+            try {
+                this.userFound = friend;
 
-            this.formattedBirthday();
+                this.formattedBirthday();
 
-            this.selectedItem = '';
+                this.selectedItem = '';
 
-            this.showVisibleUserInfo = true;
+                this.showVisibleUserInfo = true;
+            } catch (exception) {
+                console.log("Error in showUserInfoDialog", exception);
+            }
         },
+
         closeUserInfoDialog() {
-            this.showVisibleUserInfo = false;
+            try {
+                this.showVisibleUserInfo = false;
+            } catch (exception) {
+                console.log("Error in closeUserInfoDialog", exception);
+            }
         },
         async showFoundUserDialog(phoneNumber) {
             try {
@@ -492,8 +551,8 @@ export default {
     name: 'FriendList'
 }
 </script>
-  
-<style scoped lang = "scss">
+
+<style scoped lang="scss">
 .contact {
     display: flex;
     flex-direction: column;
