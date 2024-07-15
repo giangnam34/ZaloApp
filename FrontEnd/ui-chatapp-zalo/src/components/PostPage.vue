@@ -1476,10 +1476,10 @@ export default {
             // Hiển thị ảnh full màn hình và điều hướng qua các ảnh
 
         },
-        fetchFeed() {
+        async fetchFeed() {
             console.log("Gọi hàm: fetchFeed()");
             // console.log("User đang đăng nhập: " + this.user);
-            axios
+            await axios
                 .get(`/social-media/get-post/${this.currentPage++}`,/**{
                     headers: {
                         'Authorization': localStorage.getItem("token"),
@@ -1491,16 +1491,16 @@ export default {
                     //response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))
                     this.myFeeds.push(...response.data.getInfoPostResponse);
                     this.myFeeds.forEach(feed => this.updateIsUserLikePost(feed));
-                    console.log("Danh sách bài viết: ", this.feeds);
+                    console.log("Danh sách bài viết: ", this.myFeeds);
                 })
                 .catch(error => {
                     console.log('error', error)
                 })
         },
-        fetchMyFeed() {
+        async fetchMyFeed() {
             console.log("Gọi hàm: fetchMyFeed()");
             // console.log("User đang đăng nhập: " + this.user);
-            axios
+            await axios
                 .get(`/social-media/get-post-user/${this.currentPage++}`,/**{
                     headers: {
                         'Authorization': localStorage.getItem("token"),
@@ -2235,18 +2235,18 @@ export default {
         closeListLikedUserDialog() {
             this.showVisibleLikedUsers = false;
         },
-        handleScroll() {
+        async handleScroll() {
             const container = this.$refs.scrollContainer;
             console.log(container.scrollHeight);
             console.log(container.scrollTop);
             console.log(container.clientHeight);
-            if (container.clientHeight + container.scrollTop >= container.scrollHeight - 70) {
+            if (container.clientHeight + container.scrollTop >= container.scrollHeight) {
                 // Gọi fetch API khi người dùng đã cuộn đến cuối
                 if (this.chosenFilter == 'allPosts') {
-                    this.fetchFeed();
+                    await this.fetchFeed();
                 }
                 else {
-                    this.fetchMyFeed();
+                    await this.fetchMyFeed();
                 }
             }
         }
