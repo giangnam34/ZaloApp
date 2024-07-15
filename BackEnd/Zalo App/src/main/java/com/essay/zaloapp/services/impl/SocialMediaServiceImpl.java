@@ -240,7 +240,7 @@ public class SocialMediaServiceImpl implements SocialMediaService {
                         (friendService.isFriendUser(userId, post.getUser().getId()) &&
                                 (post.getAudienceValue() == Audience.AllFriend || (post.getAudienceValue() == Audience.SomeOneCanSee && !post.getPostUserList().stream().filter(postUser -> postUser.getPostUserType() == PostUserType.TagUser && postUser.getUser().getId() == userId).collect(Collectors.toList()).isEmpty())
                                         || (post.getAudienceValue() == Audience.AllExceptSomeOne && post.getPostUserList().stream().filter(postUser -> postUser.getPostUserType() == PostUserType.TagUser && postUser.getUser().getId() == userId).collect(Collectors.toList()).isEmpty()))));
-            }).sorted(Comparator.comparing(Post::getCreatedAt))  // Sort by posting date
+            }).sorted((post1, post2) -> -post1.getCreatedAt().compareTo(post2.getCreatedAt()))  // Sort by posting date
                 .toList();
             postList.addAll(socialPost);
             postList = postList.subList(page.intValue()*10, (page.intValue()+1)*10);

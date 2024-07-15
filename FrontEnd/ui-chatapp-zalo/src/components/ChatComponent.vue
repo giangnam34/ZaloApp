@@ -371,8 +371,8 @@ export default {
 			loadFirstRoom: true,
 			roomInfo: true,
 			roomActions: [
-				{ name: 'inviteUser', title: 'Invite User' },
-				{ name: 'quitRoom', title: 'Quit Room' },
+				// { name: 'inviteUser', title: 'Invite User' },
+				// { name: 'quitRoom', title: 'Quit Room' },
 				// { name: 'deleteRoom', title: 'Delete Room' },
 			],
 			menuActions: [
@@ -435,7 +435,7 @@ export default {
 		window.addEventListener("focus", () => {
 			// console.log("Tab is active");
 			this.messages = this.messages.map(message => {
-				if (message.senderId != this.currentUserId && message.seen === false) {
+				if (message.senderId !== this.currentUserId && message.seen === false) {
 					const updatedMessage = {
 						...message,
 						seen: true
@@ -542,7 +542,9 @@ export default {
 					page: this.messagePage++,
 					size: 20
 				}
-			});
+			}).catch(error => {
+					console.log(error);
+				});
 			// console.log("Log first");
 			console.log("Result: ");
 			console.log(result.data);
@@ -588,7 +590,9 @@ export default {
 			} catch (err) {
 				// console.log(err.toString())
 			}
-			const result = await axios.get(`http://localhost/FakeApiChatApp/message.json`);
+			const result = await axios.get(`http://localhost/FakeApiChatApp/message.json`).catch(error => {
+					console.log(error);
+				});
 			// // console.log("Log first");
 			// console.log("Result: ");
 			// console.log(result.data);
@@ -605,7 +609,9 @@ export default {
 			this.roomsLoaded = false;
 			this.loadingRooms = true;
 			try {
-				const result = await axios.get('http://localhost:8181/v1/chat/get-rooms');
+				const result = await axios.get('http://localhost:8181/v1/chat/get-rooms').catch(error => {
+					console.log(error);
+				});
 				// // console.log("Log first");
 				// console.log("Result: ");
 				// console.log(result.data);
@@ -654,7 +660,9 @@ export default {
 		},
 
 		playSound() {
-			audio.play();
+			audio.play().catch(error => {
+				console.log(error);
+			})
 		},
 
 		async addRoom() {
@@ -677,6 +685,8 @@ export default {
 					headers: {
 						'Content-Type': 'multipart/form-data'
 					}
+				}).catch(error => {
+					console.log(error);
 				});
 				if (result.status === 200) {
 					console.log("zo tiep");
@@ -770,7 +780,9 @@ export default {
 				headers: {
 					'Content-Type': 'multipart/form-data'
 				}
-			});
+			}).catch(error => {
+					console.log(error);
+				});
 			// console.log(result.data);
 			return result;
 		},
@@ -814,6 +826,8 @@ export default {
 					headers: {
 						'Content-Type': 'multipart/form-data'
 					}
+				}).catch(error => {
+					console.log(error);
 				});
 				if (result.status === 200) {
 					// console.log(result);
@@ -894,7 +908,9 @@ export default {
 			console.log("Call show room info");
 			console.log(room);
 			try {
-				const result = await axios.get(`http://localhost:8181/v1/chat/get-room-info/${room.roomId}`);
+				const result = await axios.get(`http://localhost:8181/v1/chat/get-room-info/${room.roomId}`).catch(error => {
+					console.log(error);
+				});
 				if (result.status === 200) {
 					console.log(result);
 					console.log(result.data.getRoomInfo.users);
@@ -921,6 +937,8 @@ export default {
 					headers: {
 						'Authorization': localStorage.getItem("token")
 					}
+				}).catch(error => {
+					console.log(error);
 				});
 
 				if (responseUser.status === 200) {
@@ -965,14 +983,14 @@ export default {
 			// console.log("Action", action);
 		},
 
-		menuActionHandler({ roomId, action }) {
+		async menuActionHandler({ roomId, action }) {
 			// console.log("Call menuActionHandler function");
 			// console.log("RoomId", roomId);
 			// console.log("Action", action);
 			const room = this.rooms.find(room => room.roomId === roomId);
 			if (action.name === 'callUser') {
 				this.videoCallDialog = true;
-				this.callToSpecificUser(room);
+				await this.callToSpecificUser(room);
 			} else if (action.name === 'sendMessageToUser') {
 				console.log("Call sendMessageToUser");
 				console.log(this.peerConnection);
@@ -1004,6 +1022,8 @@ export default {
 					headers: {
 						'Authorization': localStorage.getItem("token")
 					}
+				}).catch(error => {
+					console.log(error);
 				});
 
 				if (response.status === 200) {
@@ -1032,6 +1052,8 @@ export default {
 					headers: {
 						'Authorization': localStorage.getItem("token")
 					}
+				}).catch(error => {
+					console.log(error);
 				});
 
 				if (response.status === 200) {
@@ -1105,7 +1127,9 @@ export default {
 				console.log(this.currentRoomInfo);
 				const usersPhoneNumber = this.addedFriends.map(friend => friend.phoneNumber);
 				console.log(usersPhoneNumber);
-				const result = await axios.post(`http://localhost:8181/v1/chat/add-users-to-room/${this.currentRoomInfo.roomId}`, usersPhoneNumber);
+				const result = await axios.post(`http://localhost:8181/v1/chat/add-users-to-room/${this.currentRoomInfo.roomId}`, usersPhoneNumber).catch(error => {
+					console.log(error);
+				});
 				if (result.status === 200) {
 					console.log(result);
 					this.toast.success("Thêm người dùng vào nhóm thành công!", { timeout: 1500 });
@@ -1137,7 +1161,9 @@ export default {
 			if (confirm("Bạn có chắc muốn rời nhóm?")) {
 				console.log(room);
 				try {
-					const result = await axios.delete(`http://localhost:8181/v1/chat/delete-room/${room.roomId}`);
+					const result = await axios.delete(`http://localhost:8181/v1/chat/delete-room/${room.roomId}`).catch(error => {
+					console.log(error);
+				});
 					if (result.status === 200) {
 						console.log(result);
 						this.toast.success("Rời khỏi nhóm thành công!", { timeout: 1500 });
@@ -1190,6 +1216,7 @@ export default {
 			console.log("zo test")
 			const notification = JSON.parse(message.body);
 			const userSend = message.headers.userSend;
+			try {
 			if (notification.typeNotification === "RTC_CONNECTION") {
 				if (notification.message) {
 					if (notification.message.event === 'offer') {
@@ -1212,12 +1239,14 @@ export default {
 					if (notification.typeNotification === "CREATE") {
 						console.log("Notification")
 						console.log(notification)
-						this.playSound();
 						console.log("zo")
-						this.messages = [...this.messages, notification.message];
-						if (document.hidden) {
-							console.log("zo roi ne")
-							this.startTitleBlinking(notification.message.username + " đã gửi tin nhắn cho bạn");
+						if (this.currentUserId != notification.message.senderId){
+							this.playSound();
+							this.messages = [...this.messages, notification.message];
+							if (document.hidden) {
+								console.log("zo roi ne")
+								this.startTitleBlinking(notification.message.username + " đã gửi tin nhắn cho bạn");
+							}
 						}
 					} else if (notification.typeNotification === "UPDATE") {
 						// console.log("Message is update");
@@ -1234,6 +1263,20 @@ export default {
 							}
 						}
 					}
+				} else {
+					if (notification.typeNotification === "CREATE") {
+						console.log("Notification")
+						console.log(notification)
+						console.log("zo")
+						if (this.currentUserId != notification.message.senderId){
+							this.playSound();
+							this.messages = [...this.messages, notification.message];
+							if (document.hidden) {
+								console.log("zo roi ne")
+								this.startTitleBlinking(notification.message.username + " đã gửi tin nhắn cho bạn");
+							}
+						}
+					}
 				}
 				console.log(this.rooms);
 				const indexRoom = this.rooms.indexOf(this.rooms.find(room => room.roomId == notification.roomInfo.roomId));
@@ -1242,6 +1285,9 @@ export default {
 					this.rooms = [...this.rooms];
 				}
 			}
+		} catch (exception){
+			console.log(exception);
+		}
 		},
 
 		clearTimeouts() {
@@ -1272,7 +1318,9 @@ export default {
 						headers: {
 							'Content-Type': 'multipart/form-data'
 						}
-					});
+					}).catch(error => {
+					console.log(error);
+				});
 					if (result.status === 200) {
 						result.data.chatMessageResponses.forEach(chatMessageResponse => {
 							chatMessageResponse.saved = true;
@@ -1523,7 +1571,9 @@ export default {
 			form.append('roomId', this.currentRoom);
 			form.append('receiverId', receiverId);
 			form.append('message', "Người dùng từ chối nhận cuộc gọi!");
-			const result = await axios.post(`http://localhost:8181/v1/chat/send-notification-declined`, form);
+			const result = await axios.post(`http://localhost:8181/v1/chat/send-notification-declined`, form).catch(error => {
+					console.log(error);
+				});
 			// console.log(result.data);
 			return result;
 			// You may want to send a message back to the caller indicating the call was declined

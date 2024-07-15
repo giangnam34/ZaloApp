@@ -65,7 +65,7 @@ export default {
     window.addEventListener("beforeunload", this.updateUserOfflineActivity);
   },
   beforeUnmount() {
-    window.removeEventListener('beforeunload', this.updateUserOfflineActivity);
+    //window.removeEventListener('beforeunload', this.updateUserOfflineActivity);
   },
   methods: {
     updateJWT(userData) {
