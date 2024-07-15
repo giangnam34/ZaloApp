@@ -16,7 +16,7 @@ public interface PostUserRepository extends JpaRepository<PostUser, Long> {
     Boolean existsByPostAndUserAndPostUserType(Post post, User user, PostUserType postUserType);
     PostUser findFirstByPostAndUserAndPostUserTypeOrderByCreatedAtDesc(Post post, User user, PostUserType postUserType);
 
-    @Query("SELECT pu FROM PostUser pu WHERE pu.id = :postId AND pu.user.id = :userId")
+    @Query("SELECT pu FROM PostUser pu WHERE pu.post.id = :postId AND pu.user.id = :userId")
     List<PostUser> findAllByPostIdAndUserId(@Param("postId") Long postId, @Param("userId") Long userId);
 
     @Query("SELECT pu.user.id FROM PostUser pu WHERE pu.post.id = :postId")
