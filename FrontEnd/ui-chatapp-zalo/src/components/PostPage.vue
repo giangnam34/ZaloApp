@@ -1291,7 +1291,7 @@ export default {
 
             // this.popoverLeftFilter = popupLeft + 'px';
             // this.popoverTopFilter = popupTop + 'px';
-            this.popoverLeftFilter = "1180px";
+            this.popoverLeftFilter = "1516px";
             this.popoverTopFilter = "69px";
             this.togglePopover(item);
             event.stopPropagation();
