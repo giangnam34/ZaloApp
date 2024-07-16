@@ -189,4 +189,11 @@ public class SocialMediaController {
         SocialMediaServiceImpl.GetAllUsersLikedPost result = socialMediaService.getAllUsersLikedPost(postId);
         return result.getMesage().equals("Lấy danh sách người thích thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
+
+    @GetMapping("/countPostsUsers")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> countPostUsers(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+        Long result = socialMediaService.countPostsUser(userPrincipal.getId());
+        return ResponseEntity.ok(result);
+    }
 }
