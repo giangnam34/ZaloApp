@@ -142,7 +142,7 @@
                     <div class="mt-2"></div>
                     <div class="profile-action-user" v-if="user.phoneNumber !== userFound.phoneNumber">
                         <div v-if="isBlock"
-                            class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/3 text-sm"
+                            class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/3 text-sm flex-grow"
                             @click="unBlockUser(userFound.phoneNumber)">
                             Unblock
                         </div>
@@ -161,12 +161,12 @@
                             Waiting accept...
                         </div>
                         <div v-else-if="isBlock"
-                            class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow">
+                            class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow hidden">
                             Can't add friend
                         </div>
-                        <div v-else
-                            class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow">
-                            Is Friend
+                        <div v-else @click="deleteFriend(userFound.phoneNumber)"
+                            class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow cursor-pointer">
+                            Unfriend
                         </div>
                     </div>
                     <div class="mb-2"></div>
@@ -293,15 +293,17 @@ export default {
                     this.checkUser();
                     this.showUserInfoDialog(userTemp);
                 } else {
-                    console.error(responseUser.data.msg);
+                    console.error(responseUser.data);
                     this.toast.error(responseUser.data || 'Đã xảy ra lỗi!', { timeout: 1500 });
                 }
             } catch (error) {
                 if (error.response) {
                     if (error.response.status === 400) {
-                        this.toast.error(error.response.data, { timeout: 1500 });
+                        console.error(error.response.data);
+                        this.toast.error("Đã có lỗi xảy ra!", { timeout: 1500 });
                     } else {
-                        this.toast.error(error.response.data, { timeout: 1500 });
+                        console.error(error.response.data);
+                        this.toast.error("Đã có lỗi xảy ra!", { timeout: 1500 });
                     }
                 } else if (error.request) {
                     this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
@@ -344,9 +346,9 @@ export default {
             } catch (error) {
                 if (error.response) {
                     if (error.response.status === 400) {
-                        this.toast.error(error.response.data, { timeout: 1500 });
+                        this.toast.error("Đã có lỗi xảy ra!", { timeout: 1500 });
                     } else {
-                        this.toast.error(error.response.data, { timeout: 1500 });
+                        this.toast.error("Đã có lỗi xảy ra!", { timeout: 1500 });
                     }
                 } else if (error.request) {
                     this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
@@ -538,6 +540,44 @@ export default {
                 }
             } catch (error) {
                 if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
+            }
+        },
+        async deleteFriend(phoneNumber) {
+            try {
+                const friendRequest = {
+                    fromPhoneNumberUser: this.user.phoneNumber,
+                    toPhoneNumberUser: phoneNumber,
+                }
+
+                const response = await axios.post(`users/unFriendUser`, friendRequest, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token")
+                    }
+                });
+
+                if (response.status === 200) {
+                    this.listOfFriends = this.listOfFriends.filter(friend => friend.phoneNumber !== phoneNumber);
+                    this.showVisibleUserInfo = false;
+                    this.searchPhoneNumber = '';
+                    this.showVisibleFindFriendDialog = true;
+                    this.toast.success(response.data, { timeout: 1500 });
+                } else {
+                    console.error(response.data);
+                    this.toast.error(response.data, { timeout: 1500 });
+                }
+            } catch (error) {
+                if (error.response) {
+
                     if (error.response.status === 400) {
                         this.toast.error(error.response.data, { timeout: 1500 });
                     } else {

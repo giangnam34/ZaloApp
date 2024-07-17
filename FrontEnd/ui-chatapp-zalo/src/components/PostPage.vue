@@ -20,8 +20,9 @@
                 <div class="main-center col-span-2 space-y-4">
                     <div class="bg-white border border-gray-200 rounded-lg">
                         <div class="p-4">
-                            <span class="p-4 bg-gray-100 rounded-lg cursor-pointer d-block w-100" @click="showPostOption">What's is on your mind, {{
-                                user.fullName }}?</span>
+                            <span class="p-4 bg-gray-100 rounded-lg cursor-pointer d-block w-100"
+                                @click="showPostOption">What's is on your mind, {{
+                                    user.fullName }}?</span>
                         </div>
                     </div>
 
@@ -1144,7 +1145,7 @@
                 <div class="mt-2"></div>
                 <div class="profile-action-user" v-if="user.phoneNumber !== userFound.phoneNumber">
                     <div v-if="isBlock"
-                        class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/3 text-sm"
+                        class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 text-sm flex-grow"
                         @click="unBlockUser(userFound.phoneNumber)">
                         Unblock
                     </div>
@@ -1163,12 +1164,12 @@
                         Waiting accept...
                     </div>
                     <div v-else-if="isBlock"
-                        class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow">
+                        class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow hidden">
                         Can't send invite request
                     </div>
-                    <div v-else
-                        class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow">
-                        Is friend
+                    <div v-else @click="deleteFriend(userFound.phoneNumber)"
+                        class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow cursor-pointer">
+                        Unfriend
                     </div>
                 </div>
                 <div class="mb-2"></div>
@@ -2281,13 +2282,15 @@ export default {
         handleFileChange(event) {
             console.log("Gọi hàm: handleFileChange");
             const selectedFile = event.target.files[0];
-            //console.log(selectedFile);
+            if (!this.isValidFile(selectedFile)) {
+                alert(`File ${selectedFile.name} sẽ không được thêm vào do có kích thước lớn hơn 100MB hoặc có định dạng không được hỗ trợ (chỉ hỗ trợ định dạng hình ảnh và video)`);
+                return;
+            }
             if (this.chosenUpdateComment == null) {
                 this.newComment.file = selectedFile;
             } else {
                 this.chosenUpdateComment.contentMedia = selectedFile;
             }
-
         },
         openFilePicker() {
             console.log("Gọi hàm: openFilePicker");
@@ -2859,6 +2862,43 @@ export default {
             const isValidSize = file.size <= maxSize;
 
             return isValidType && isValidSize;
+        },
+        async deleteFriend(phoneNumber) {
+            try {
+                const friendRequest = {
+                    fromPhoneNumberUser: this.user.phoneNumber,
+                    toPhoneNumberUser: phoneNumber,
+                }
+
+                const response = await axios.post(`users/unFriendUser`, friendRequest, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token")
+                    }
+                });
+
+                if (response.status === 200) {
+                    this.listFriends = this.listFriends.filter(friend => friend.phoneNumber !== phoneNumber);
+                    this.showVisibleUserInfo = false;
+                    this.searchPhoneNumber = '';
+                    this.toast.success(response.data, { timeout: 1500 });
+                } else {
+                    console.error(response.data);
+                    this.toast.error(response.data, { timeout: 1500 });
+                }
+            } catch (error) {
+                if (error.response) {
+
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
+            }
         },
     },
 }
