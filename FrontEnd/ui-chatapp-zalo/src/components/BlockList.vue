@@ -5,20 +5,20 @@
                 <font-awesome-icon icon="fa-solid fa-ban" />
             </a>
             <p class="menu-name">
-                <span>Danh sách đã chặn</span>
+                <span>Block list user</span>
             </p>
         </div>
         <div class="wrapper">
             <div class="cart-list">
-                <div class="title" style="height: 64px; width: 100%;">Đã chặn ({{ friends.length }})</div>
+                <div class="title" style="height: 64px; width: 100%;">Blocked ({{ friends.length }})</div>
                 <div class="filter-wrapper">
                     <div class="search-container">
                         <a id="search-icon">
                             <font-awesome-icon icon="fa-solid fa-magnifying-glass" />
                         </a>
-                        <input type="text" v-model="searchText" id="contact-input-search" placeholder="Tìm kiếm">
+                        <input type="text" v-model="searchText" id="contact-input-search" placeholder="Search...">
                     </div>
-                    <div class="filter-contact" @blur="hidePopover" tabindex="0">
+                    <!-- <div class="filter-contact" @blur="hidePopover" tabindex="0">
                         <div class="filter-contact-child"
                             :class="{ 'hoveredFilter': hoveredItem === 'sort', 'selected': selectedItem === 'sort' }"
                             @mouseenter="(hoveredItem = 'sort')" @mouseleave="hoveredItem = ''"
@@ -33,9 +33,9 @@
                                 <font-awesome-icon icon="fa-solid fa-chevron-down" />
                             </a>
                         </div>
-                        <div class="popover" style="z-index: 20; opacity: 1; top: 47.6px; left: 291px;"
+                         <div class="popover" style="z-index: 20; opacity: 1; top: 47.6px; left: 291px;"
                             v-if="selectedItem === 'sort'">
-                            <!-- Nội dung của popover -->
+                            Nội dung của popover
                             <div class="popover-content"
                                 style="min-width: 240px; width: initial; box-sizing: border-box;">
                                 <div class="popover-item" :class="{ 'hoveredFilter': hoveredItem === 'ascending' }"
@@ -61,8 +61,8 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="filter-contact-child"
+                        </div> -->
+                        <!-- <div class="filter-contact-child"
                             :class="{ 'hoveredFilter': hoveredItem === 'filter', 'selected': selectedItem === 'filter' }"
                             @mouseenter="(hoveredItem = 'filter')" @mouseleave="hoveredItem = ''"
                             @click="togglePopover('filter')">
@@ -77,9 +77,9 @@
                             </a>
                         </div>
                         <div class="popover" style="z-index: 20; opacity: 1; top: 47.6px; left: 539px;"
-                            v-if="selectedItem === 'filter'">
+                            v-if="selectedItem === 'filter'"> -->
                             <!-- Nội dung của popover -->
-                            <div class="popover-content"
+                            <!-- <div class="popover-content"
                                 style="min-width: 240px; width: initial; box-sizing: border-box;">
                                 <div class="popover-item" :class="{ 'hoveredFilter': hoveredItem === 'all' }"
                                     @mouseenter="(hoveredItem = 'all')" @mouseleave="hoveredItem = ''"
@@ -105,7 +105,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div>-->
                 </div>
                 <div class="list">
                     <div class="loop" v-for="friend in filteredFriends" :key="friend.phoneNumber">
@@ -136,7 +136,7 @@
                                                 @mouseenter="(hoveredItem = 'info')" @mouseleave="hoveredItem = ''"
                                                 @click="showFoundUserDialog(friend.phoneNumber)">
                                                 <div>
-                                                    Xem thông tin
+                                                    Show info account
                                                 </div>
                                             </div>
                                             <div class="separator"></div>
@@ -145,7 +145,7 @@
                                                 @mouseenter="(hoveredItem = 'block')" @mouseleave="hoveredItem = ''"
                                                 @click="unBlockUser(friend.phoneNumber)">
                                                 <div>
-                                                    Bỏ chặn
+                                                    Unblock
                                                 </div>
                                             </div>
                                             <!-- <div class="separator"></div>
@@ -170,7 +170,7 @@
         @click:outside="closeUserInfoDialog">
         <v-card class="dialog-component-user">
             <v-card-title class="dialog-title-user">
-                <h2 class="title-user">Thông tin tài khoản
+                <h2 class="title-user">Info account
                     <div class="icon-close-user" @click="closeUserInfoDialog"><font-awesome-icon icon="fa-solid fa-x" />
                     </div>
                 </h2>
@@ -196,20 +196,20 @@
                 <hr style="border: none; border-bottom: 1px solid #ccc;">
                 <div class="profile-information-user">
                     <div class="profile-header-user">
-                        <strong>Thông tin cá nhân</strong>
+                        <strong>Info account</strong>
                     </div>
                     <div>
                         <div class="user-profile-details-user">
                             <div class="user-profile-item-user">
-                                <span class="title-user">Điện thoại</span>
+                                <span class="title-user">Phone number</span>
                                 <span class="content-user">{{ userFound.phoneNumber }}</span>
                             </div>
                             <div class="user-profile-item-user">
-                                <span class="title-user">Giới tính</span>
+                                <span class="title-user">Gender</span>
                                 <span class="content-user">{{ userFound.gender === 'Male' ? 'Nam' : 'Nữ' }}</span>
                             </div>
                             <div class="user-profile-item-user">
-                                <span class="title-user">Ngày sinh</span>
+                                <span class="title-user">Birthday</span>
                                 <span class="content-user">{{ displayedDate }}</span>
                             </div>
                         </div>

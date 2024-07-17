@@ -49,11 +49,11 @@
             </v-dialog>
             <v-dialog v-model="dialogDelete" max-width="500px">
                 <v-card>
-                    <v-card-title class="text-h5 item-center">Bạn có chắc muốn xóa bài viết này?</v-card-title>
+                    <v-card-title class="text-h5 item-center">Confirm delete post?</v-card-title>
                     <v-card-actions>
                         <v-spacer></v-spacer>
-                        <v-btn color="blue-darken-1" variant="text" @click="closeDelete">Hủy</v-btn>
-                        <v-btn color="blue-darken-1" variant="text" @click="deleteItemConfirm">Xóa</v-btn>
+                        <v-btn color="blue-darken-1" variant="text" @click="closeDelete">Cancel</v-btn>
+                        <v-btn color="blue-darken-1" variant="text" @click="deleteItemConfirm">Delete</v-btn>
                         <v-spacer></v-spacer>
                     </v-card-actions>
                 </v-card>
@@ -187,7 +187,7 @@ export default {
                 const result = await axios.delete(`http://localhost:8181/v1/admin/deletePost/${this.editedItem.id}`);
                 if (result.status === 200) {
                     console.log(result);
-                    this.toast.success("Xóa bài viết thành công!", { timeout: 1500 });
+                    this.toast.success("Delete post successfully", { timeout: 1500 });
                     this.initialize();
                 } else {
                     this.toast.error(result.data.message, { timeout: 1500 });

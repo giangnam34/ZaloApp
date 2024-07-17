@@ -10,13 +10,13 @@
         </div>
         <div class="wrapper" id="wrapper">
             <div class="cart-list">
-                <div class="title" style="height: 64px; width: 100%;">Nhóm ({{ groups.length }})</div>
+                <div class="title" style="height: 64px; width: 100%;">Group ({{ groups.length }})</div>
                 <div class="filter-wrapper">
                     <div class="search-container">
                         <a id="search-icon">
                             <font-awesome-icon icon="fa-solid fa-magnifying-glass" />
                         </a>
-                        <input type="text" id="contact-input-search" placeholder="Tìm kiếm">
+                        <input type="text" id="contact-input-search" placeholder="Search...">
                     </div>
                     <div class="filter-contact" @blur="hidePopover" tabindex="0">
                         <div class="filter-contact-child"

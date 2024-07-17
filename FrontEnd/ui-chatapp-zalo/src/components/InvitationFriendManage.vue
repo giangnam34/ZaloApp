@@ -5,12 +5,12 @@
                 <font-awesome-icon icon="fa-solid fa-envelope-open" />
             </a>
             <p class="menu-name">
-                <span>Lời mời kết bạn</span>
+                <span>Invite request</span>
             </p>
         </div>
         <div class="wrapper">
             <div class="cart-list">
-                <div class="title" style="height: 64px; width: 100%;">Lời mời kết bạn {{ receivedFriendList ?
+                <div class="title" style="height: 64px; width: 100%;">Invite request {{ receivedFriendList ?
                     `(${receivedFriendList.length})` : '0' }}</div>
                 <div class="list">
                     <div v-for="friend in receivedFriendList" :key="friend.phoneNumber" class="item-list"
@@ -31,11 +31,11 @@
                         <div class="action">
                             <button class="refuse" @click="acceptInvitation(friend, false)">
                                 <i class="fas fa-times"></i>
-                                <span>Từ chối</span>
+                                <span>Decline</span>
                             </button>
                             <button class="accept" @click="acceptInvitation(friend, true)">
                                 <i class="fas fa-check"></i>
-                                <span>Đồng ý</span>
+                                <span>Accept</span>
                             </button>
                         </div>
                     </div>
@@ -43,7 +43,7 @@
                 </div>
             </div>
             <div class="cart-list">
-                <div class="title" style="height: 64px; width: 100%;">Lời mời đã gửi {{ sendedFriendList ?
+                <div class="title" style="height: 64px; width: 100%;">Invite sent request {{ sendedFriendList ?
                     `(${sendedFriendList.length})` : '0' }}</div>
                 <div class="list">
                     <div class="item-list" v-for="friend in sendedFriendList" :key="friend.phoneNumber"
@@ -64,7 +64,7 @@
                         <div class="action">
                             <button class="accept" @click="cancelInvitation(friend)">
                                 <i class="fas fa-check"></i>
-                                <span>Thu hồi lời mời</span>
+                                <span>Cancel invite sent request</span>
                             </button>
                         </div>
                     </div>

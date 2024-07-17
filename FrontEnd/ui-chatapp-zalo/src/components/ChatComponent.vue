@@ -17,7 +17,7 @@
 			@click:outside="closePopupInfoRoom">
 			<v-card class="dialog-component-user">
 				<v-card-title class="dialog-title-user">
-					<h2 class="title-user">Thông tin tài khoản
+					<h2 class="title-user">Info account
 						<div class="icon-close-user" @click="closePopupInfoRoom"><font-awesome-icon
 								icon="fa-solid fa-x" />
 						</div>
@@ -138,7 +138,7 @@
 			@click:outside="closeChooseFriendDialog">
 			<v-card class="dialog-component">
 				<v-card-title class="dialog-title">
-					<h2 class="title">Mời bạn bè vào nhóm
+					<h2 class="title">Add friend to group
 						<div class="icon-close" @click="closeChooseFriendDialog"><font-awesome-icon
 								icon="fa-solid fa-x" />
 						</div>
@@ -147,10 +147,10 @@
 				<hr style="border: none; border-bottom: 1px solid #ccc;">
 				<v-card-text class="dialog-content">
 					<div class="pt-4 pl-4 pr-4">
-						<input type="text" v-model="searchText" placeholder="Tìm kiếm theo tên" class="search-input" />
-						<div v-if="addedFriends.length !== 0"><span>Đã chọn để thêm vào nhóm ({{ addedFriends.length }}
-								bạn
-								bè)</span></div>
+						<input type="text" v-model="searchText" placeholder="Find by user name" class="search-input" />
+						<div v-if="addedFriends.length !== 0"><span>Add to group ({{ addedFriends.length }}
+								friend
+								)</span></div>
 						<div class="update-file-container" style="height:100px" v-if="addedFriends.length !== 0">
 							<div v-for="friend in addedFriends" v-bind:key="friend.phoneNumber"
 								class="position-relative">
@@ -167,7 +167,7 @@
 								</div>
 							</div>
 						</div>
-						<div><span>Danh sách bạn bè ({{ listFriends.length }} bạn bè)</span></div>
+						<div><span>List of friend ({{ listFriends.length }} friend)</span></div>
 						<div class="friend-list-container">
 							<div v-for="friend in filteredFriendsForInvite" v-bind:key="friend.phoneNumber"
 								class="position-relative">
@@ -187,7 +187,7 @@
 					<div class="mt-4"></div>
 					<div class="profile-action" @click="addUsersToGroup">
 						<div class="items-center text-center cursor-pointer bg-blue-400 rounded-lg h-10 mx-4 px-4 py-2">
-							Thêm vào nhóm
+							Add to group
 						</div>
 					</div>
 				</v-card-text>
@@ -197,7 +197,7 @@
 			@click:outside="closeCreateRoomDialog">
 			<v-card class="dialog-component">
 				<v-card-title class="dialog-title">
-					<h2 class="title">Tạo nhóm mới
+					<h2 class="title">Create new group
 						<div class="icon-close" @click="closeCreateRoomDialog"><font-awesome-icon
 								icon="fa-solid fa-x" />
 						</div>
@@ -222,16 +222,16 @@
 						</div>
 						<div class="create_group_input">
 							<span class="span_input">
-								<input type="text" placeholder="Nhập tên nhóm..." maxlength="50" class="input_name"
+								<input type="text" placeholder="Enter group name..." maxlength="50" class="input_name"
 									v-model="groupName">
 							</span>
 						</div>
 					</div>
 					<div class="pt-4 pl-4 pr-4">
-						<input type="text" v-model="searchText" placeholder="Tìm kiếm theo tên" class="search-input" />
-						<div v-if="addedFriends.length !== 0"><span>Đã chọn để thêm vào nhóm ({{ addedFriends.length }}
-								bạn
-								bè)</span></div>
+						<input type="text" v-model="searchText" placeholder="Find by user name" class="search-input" />
+						<div v-if="addedFriends.length !== 0"><span>Add to group ({{ addedFriends.length }}
+								friend
+								)</span></div>
 						<div class="update-file-container" style="height:100px" v-if="addedFriends.length !== 0">
 							<div v-for="friend in addedFriends" v-bind:key="friend.phoneNumber"
 								class="position-relative">
@@ -248,7 +248,7 @@
 								</div>
 							</div>
 						</div>
-						<div><span>Danh sách bạn bè ({{ listFriendsForCreateRoom.length }} bạn bè)</span></div>
+						<div><span>List of friend ({{ listFriendsForCreateRoom.length }} friend)</span></div>
 						<div class="friend-list-container">
 							<div v-for="friend in filteredFriendsForCreateRoom" v-bind:key="friend.phoneNumber"
 								class="position-relative">
@@ -269,7 +269,7 @@
 					<div class="profile-action" @click="confirmCreateRoom"
 						:class="{ 'disabled': !checkValidForCreateRoom }">
 						<div class="items-center text-center cursor-pointer bg-blue-400 rounded-lg h-10 mx-4 px-4 py-2">
-							Tạo nhóm
+							Create group
 						</div>
 					</div>
 				</v-card-text>
@@ -532,7 +532,7 @@ export default {
 					menuActionList = [
 						{ name: 'callUser', title: 'Call' },
 						{ name: 'blockUser', title: 'Block' },
-						{ name: 'unFriendUser', title: 'Unfriend' }
+						// { name: 'unFriendUser', title: 'Unfriend' }
 					];
 				}
 				else {
@@ -607,7 +607,7 @@ export default {
 					}
 					else {
 						menuActionList = [
-							{ name: 'sendInviteFriend', title: 'Send Invite Friend' },
+							// { name: 'sendInviteFriend', title: 'Send Invite Friend' },
 							// { name: 'deleteRoom', title: 'Delete Room' },
 						]
 					}
@@ -1268,7 +1268,7 @@ export default {
 					console.log(result);
 					this.toast.success("Thêm người dùng vào nhóm thành công!", { timeout: 1500 });
 					this.closeChooseFriendDialog();
-					this.fetchMoreRooms();
+					// this.fetchMoreRooms();
 				} else {
 					this.toast.error(result.data, { timeout: 1500 });
 				}
@@ -1371,6 +1371,7 @@ export default {
 				console.log("zo test")
 				const notification = JSON.parse(message.body);
 				const userSend = message.headers.userSend;
+				console.log(notification);
 				try {
 					if (notification.typeNotification === "RTC_CONNECTION") {
 						if (notification.message) {
@@ -1386,7 +1387,8 @@ export default {
 						}
 					} else {
 						if (parseInt(this.currentRoomId) === parseInt(notification.roomId)) {
-							if (notification.message.files) {
+							console.log("Inside");
+							if (notification?.message?.files) {
 								notification.message.files.forEach(file => {
 									delete file.progress;
 								});
@@ -1397,13 +1399,15 @@ export default {
 								console.log(notification.roomInfo.roomId);
 								console.log("Current User Id");
 								console.log(this.currentUserId);
-								if (parseInt(this.currentUserId) !== parseInt(notification.message.senderId)) {
+								if (parseInt(this.currentUserId) !== parseInt(notification.message.senderId) && !notification.message.system) {
 									this.playSound();
 									if (parseInt(this.currentRoomId) === parseInt(notification.roomInfo.roomId)) {
 										this.messages = [...this.messages, notification.message];
 										this.startTitleBlinking(notification.message.username + " đã gửi tin nhắn cho bạn");
 
 									}
+								} else if (notification.message.system){
+									this.messages = [...this.messages, notification.message];
 								}
 							} else if (notification.typeNotification === "UPDATE") {
 								// console.log("Message is update");
@@ -1432,18 +1436,18 @@ export default {
 									this.menuActions = menuActionList;
 								}
 							} else if (notification.typeNotification === "UNBLOCK") {
-								//
 								const menuActionList = [
-									{ name: 'sendInviteFriend', title: 'Send Invite Friend' },
+									// { name: 'sendInviteFriend', title: 'Send Invite Friend' },
 									// { name: 'deleteRoom', title: 'Delete Room' },
 								]
 								this.menuActions = menuActionList;
+								this.messages[this.messages.length-1].content = 'Không thể tiếp tục gửi tin nhắn do hai người chưa là bạn bè';
 							} else if (notification.typeNotification === "FRIEND") {
 								//
 								const menuActionList = [
 									{ name: 'callUser', title: 'Call' },
 									{ name: 'blockUser', title: 'Block' },
-									{ name: 'unFriendUser', title: 'Unfriend' }
+									// { name: 'unFriendUser', title: 'Unfriend' }
 								];
 								this.menuActions = menuActionList;
 							} else if (notification.typeNotification === "UNFRIEND") {
@@ -1453,6 +1457,7 @@ export default {
 									// { name: 'deleteRoom', title: 'Delete Room' },
 								]
 								this.menuActions = menuActionList;
+								this.messages[this.messages.length-1].content = 'Không thể tiếp tục gửi tin nhắn do hai người chưa là bạn bè';
 							}
 						} else {
 							if (notification.typeNotification === "CREATE") {
@@ -1475,6 +1480,10 @@ export default {
 					if (indexRoom !== -1) {
 						this.rooms[indexRoom] = notification.roomInfo;
 						this.rooms = [...this.rooms];
+					} else {
+						const newInfoRooms = this.rooms;
+						newInfoRooms.push(notification.roomInfo);
+						this.rooms = newInfoRooms;
 					}
 				} catch (exception) {
 					console.log(exception);

@@ -271,7 +271,7 @@ public class SocialMediaServiceImpl implements SocialMediaService {
         List<RecommendedItem> recommendIDList = recommendSystemService.recommendSystem(userId,age);
         List<Post> recommendedPostList = recommendIDList.stream().map(recommendElement -> postRepository.findById(recommendElement.getItemID()).get()).toList();
         List <Post> postList =  recommendedPostList.stream().filter(post -> {
-            return (post.getAudienceValue() == Audience.Public ||
+            return ( (post.getAudienceValue() == Audience.Public && !friendService.isBlockUser(userId,post.getUser().getId())) ||
                     Objects.equals(post.getUser().getId(), userId) ||
                     (friendService.isFriendUser(userId,post.getUser().getId()) &&
                             (post.getAudienceValue() == Audience.AllFriend || (post.getAudienceValue() == Audience.SomeOneCanSee && !post.getPostUserList().stream().filter(postUser -> postUser.getPostUserType() == PostUserType.TagUser && postUser.getUser().getId() == userId).collect(Collectors.toList()).isEmpty())

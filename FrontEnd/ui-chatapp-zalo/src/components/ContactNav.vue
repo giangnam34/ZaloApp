@@ -4,7 +4,7 @@
             <div id="chat-message">
                 <div id="search-content">
                     <font-awesome-icon icon="fa-solid fa-magnifying-glass" />
-                    <input type="text" id="contact-input-search" placeholder="Tìm kiếm">
+                    <input type="text" id="contact-input-search" placeholder="Search...">
                     <div title="Thêm bạn" class="cursor-pointer" @click="showFindFriendDialog">
                         <font-awesome-icon icon="fa-solid fa-user-plus" />
                     </div>
@@ -19,7 +19,7 @@
                                 <font-awesome-icon icon="fa-solid fa-user-group" />
                             </a>
                             <p class="menu-name">
-                                <span>Danh sách bạn bè</span>
+                                <span>List of friend</span>
                             </p>
                         </div>
                         <div class="menu-item"
@@ -30,7 +30,7 @@
                                 <font-awesome-icon icon="fa-solid fa-envelope-open" />
                             </a>
                             <p class="menu-name">
-                                <span>Lời mời kết bạn</span>
+                                <span>Friend request</span>
                             </p>
                         </div>
                         <div class="menu-item"
@@ -41,7 +41,7 @@
                                 <font-awesome-icon icon="fa-solid fa-ban" />
                             </a>
                             <p class="menu-name">
-                                <span>Danh sách đã chặn</span>
+                                <span>Block list user</span>
                             </p>
                         </div>
                     </div>
@@ -63,7 +63,7 @@
             @click:outside="closeFindFriendDialog">
             <v-card class="dialog-component">
                 <v-card-title class="dialog-title">
-                    <h2 class="title">Thêm bạn
+                    <h2 class="title">Add new friend
                         <div class="icon-close" @click="closeFindFriendDialog"><font-awesome-icon icon="fa-solid fa-x" />
                         </div>
                     </h2>
@@ -71,17 +71,17 @@
                 <hr style="border: none; border-bottom: 1px solid #ccc;">
                 <v-card-text class="dialog-content">
                     <div class="pt-1 pl-4 pr-4 pb-2">
-                        <input type="text" v-model="searchPhoneNumber" placeholder="Số điện thoại"
-                            title="Vui lòng nhập số điện thoại" class="search-input" />
+                        <input type="text" v-model="searchPhoneNumber" placeholder="Phone number"
+                            title="Please enter phone number" class="search-input" />
                     </div>
                     <div class="profile-action">
                         <div class="cancel-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mx-4 w-1/2"
                             @click="closeFindFriendDialog">
-                            Hủy
+                            Cancel
                         </div>
                         <div class="search-button text-center cursor-pointer bg-blue-500 text-white rounded-lg h-10 mx-4 w-1/2"
                             @click="showFoundUserDialog">
-                            Tìm kiếm
+                            Search
                         </div>
                     </div>
                     <div class="mb-2"></div>
@@ -92,7 +92,7 @@
             @click:outside="closeUserInfoDialog">
             <v-card class="dialog-component-user">
                 <v-card-title class="dialog-title-user">
-                    <h2 class="title-user">Thông tin tài khoản
+                    <h2 class="title-user">Info account
                         <div class="icon-close-user" @click="closeUserInfoDialog"><font-awesome-icon icon="fa-solid fa-x" />
                         </div>
                     </h2>
@@ -118,20 +118,20 @@
                     <hr style="border: none; border-bottom: 1px solid #ccc;">
                     <div class="profile-information-user">
                         <div class="profile-header-user">
-                            <strong>Thông tin cá nhân</strong>
+                            <strong>Account info</strong>
                         </div>
                         <div>
                             <div class="user-profile-details-user">
                                 <div class="user-profile-item-user">
-                                    <span class="title-user">Điện thoại</span>
+                                    <span class="title-user">Phone number</span>
                                     <span class="content-user">{{ userFound.phoneNumber }}</span>
                                 </div>
                                 <div class="user-profile-item-user">
-                                    <span class="title-user">Giới tính</span>
+                                    <span class="title-user">Gender</span>
                                     <span class="content-user">{{ userFound.gender === 'Male' ? 'Nam' : 'Nữ' }}</span>
                                 </div>
                                 <div class="user-profile-item-user">
-                                    <span class="title-user">Ngày sinh</span>
+                                    <span class="title-user">Birthday</span>
                                     <span class="content-user">{{ displayedDate }}</span>
                                 </div>
                             </div>
@@ -144,29 +144,29 @@
                         <div v-if="isBlock"
                             class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/3 text-sm"
                             @click="unBlockUser(userFound.phoneNumber)">
-                            Bỏ chặn
+                            Unblock
                         </div>
                         <div v-else-if="!sended"
                             class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/3 text-sm"
                             @click="blockUser(userFound.phoneNumber)">
-                            Chặn
+                            Block
                         </div>
                         <div v-if="!sended && !isFriend && !isBlock"
                             class="add-friend-button text-center cursor-pointer bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow"
                             @click="addFriend">
-                            Kết bạn
+                            Add friend
                         </div>
                         <div v-else-if="sended"
                             class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow">
-                            Chờ xác nhận...
+                            Waiting accept...
                         </div>
                         <div v-else-if="isBlock"
                             class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow">
-                            Không thể kết bạn
+                            Can't add friend
                         </div>
                         <div v-else
                             class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow">
-                            Đã là bạn bè
+                            Is Friend
                         </div>
                     </div>
                     <div class="mb-2"></div>
