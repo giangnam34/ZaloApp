@@ -29,7 +29,8 @@
                         <div v-if="feed.postFather === null">
                             <div class="mb-6 flex items-center justify-between">
                                 <div class="flex items-center space-x-6">
-                                    <img :src="feed.userPost.imageAvatar" @click="handleOpenUserDialog(feed.userPost.phoneNumber)"
+                                    <img :src="feed.userPost.imageAvatar"
+                                        @click="handleOpenUserDialog(feed.userPost.phoneNumber)"
                                         class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4 object-cover object-bottom cursor-pointer">
                                     <div class="wrap-title flex">
                                         <div>
@@ -130,8 +131,7 @@
                                 </div>
 
                                 <!-- Test -->
-                                <div v-else class="flex-1 flex items-center mr-2"
-                                    @click="openListLikedUserDialog(feed.id)">
+                                <div v-else class="flex-1 flex items-center mr-2" @click="openListLikedUserDialog(feed.id)">
                                     <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
                                         icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
                                     <span class="text-gray-500 text-lg hover:underline cursor-pointer">
@@ -294,8 +294,7 @@
                                 </div>
 
                                 <!-- Test -->
-                                <div v-else class="flex-1 flex items-center mr-2"
-                                    @click="openListLikedUserDialog(feed.id)">
+                                <div v-else class="flex-1 flex items-center mr-2" @click="openListLikedUserDialog(feed.id)">
                                     <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
                                         icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
                                     <span class="text-gray-500 text-lg hover:underline cursor-pointer">
@@ -1090,89 +1089,88 @@
         </v-card>
     </v-dialog>
     <v-dialog class="dialog-container-user" v-model="showVisibleUserInfo" max-width="352px"
-            @click:outside="closeUserInfoDialog">
-            <v-card class="dialog-component-user">
-                <v-card-title class="dialog-title-user">
-                    <h2 class="title-user">Thông tin tài khoản
-                        <div class="icon-close-user" @click="closeUserInfoDialog"><font-awesome-icon
-                                icon="fa-solid fa-x" />
+        @click:outside="closeUserInfoDialog">
+        <v-card class="dialog-component-user">
+            <v-card-title class="dialog-title-user">
+                <h2 class="title-user">Thông tin tài khoản
+                    <div class="icon-close-user" @click="closeUserInfoDialog"><font-awesome-icon icon="fa-solid fa-x" />
+                    </div>
+                </h2>
+            </v-card-title>
+            <hr style="border: none; border-bottom: 1px solid #ccc;">
+            <v-card-text class="dialog-content-user">
+                <div class="profile-photo-user">
+                    <div class="cover-avatar-user">
+                        <img class="cover-image-user" :src="userFound.imageCoverAvatar" alt="None" crossorigin="anonymous">
+                    </div>
+                    <div class="ava-name-container-user">
+                        <div class="avatar-profile-user">
+                            <div class="avatar-user">
+                                <img class="avatar-image-user" :src="userFound.imageAvatar">
+                            </div>
                         </div>
-                    </h2>
-                </v-card-title>
+                        <div class="fullname-profile-user">
+                            <div class="fullname-user">{{ userFound.userName }}</div>
+                        </div>
+                    </div>
+                </div>
                 <hr style="border: none; border-bottom: 1px solid #ccc;">
-                <v-card-text class="dialog-content-user">
-                    <div class="profile-photo-user">
-                        <div class="cover-avatar-user">
-                            <img class="cover-image-user" :src="userFound.imageCoverAvatar" alt="None"
-                                crossorigin="anonymous">
-                        </div>
-                        <div class="ava-name-container-user">
-                            <div class="avatar-profile-user">
-                                <div class="avatar-user">
-                                    <img class="avatar-image-user" :src="userFound.imageAvatar">
-                                </div>
-                            </div>
-                            <div class="fullname-profile-user">
-                                <div class="fullname-user">{{ userFound.userName }}</div>
-                            </div>
-                        </div>
+                <div class="profile-information-user">
+                    <div class="profile-header-user">
+                        <strong>Thông tin cá nhân</strong>
                     </div>
-                    <hr style="border: none; border-bottom: 1px solid #ccc;">
-                    <div class="profile-information-user">
-                        <div class="profile-header-user">
-                            <strong>Thông tin cá nhân</strong>
-                        </div>
-                        <div>
-                            <div class="user-profile-details-user">
-                                <div class="user-profile-item-user">
-                                    <span class="title-user">Điện thoại</span>
-                                    <span class="content-user">{{ userFound.phoneNumber }}</span>
-                                </div>
-                                <div class="user-profile-item-user">
-                                    <span class="title-user">Giới tính</span>
-                                    <span class="content-user">{{ userFound.gender === 'Male' ? 'Nam' : 'Nữ' }}</span>
-                                </div>
-                                <div class="user-profile-item-user">
-                                    <span class="title-user">Ngày sinh</span>
-                                    <span class="content-user">{{ displayedDate }}</span>
-                                </div>
+                    <div>
+                        <div class="user-profile-details-user">
+                            <div class="user-profile-item-user">
+                                <span class="title-user">Điện thoại</span>
+                                <span class="content-user">{{ userFound.phoneNumber }}</span>
+                            </div>
+                            <div class="user-profile-item-user">
+                                <span class="title-user">Giới tính</span>
+                                <span class="content-user">{{ userFound.gender === 'Male' ? 'Nam' : 'Nữ' }}</span>
+                            </div>
+                            <div class="user-profile-item-user">
+                                <span class="title-user">Ngày sinh</span>
+                                <span class="content-user">{{ displayedDate }}</span>
                             </div>
                         </div>
                     </div>
-                    <hr v-if="user.phoneNumber !== userFound.phoneNumber"
-                        style="border: none; border-bottom: 1px solid #ccc;">
-                    <div class="mt-2"></div>
-                    <div class="profile-action-user" v-if="user.phoneNumber !== userFound.phoneNumber">
-                        <div v-if="isBlock" class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/3 text-sm"
-                            @click="unBlockUser(userFound.phoneNumber)">
-                            Bỏ chặn
-                        </div>
-                        <div v-else-if="!sended" class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/3 text-sm"
-                            @click="blockUser(userFound.phoneNumber)">
-                            Chặn
-                        </div>
-                        <div v-if="!sended && !isFriend && !isBlock"
-                            class="add-friend-button text-center cursor-pointer bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow"
-                            @click="addFriend">
-                            Kết bạn
-                        </div>
-                        <div v-else-if="sended"
-                            class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow">
-                            Chờ xác nhận...
-                        </div>
-                        <div v-else-if="isBlock"
-                            class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow">
-                            Không thể kết bạn
-                        </div>
-                        <div v-else
-                            class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow">
-                            Đã là bạn bè
-                        </div>
+                </div>
+                <hr v-if="user.phoneNumber !== userFound.phoneNumber" style="border: none; border-bottom: 1px solid #ccc;">
+                <div class="mt-2"></div>
+                <div class="profile-action-user" v-if="user.phoneNumber !== userFound.phoneNumber">
+                    <div v-if="isBlock"
+                        class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/3 text-sm"
+                        @click="unBlockUser(userFound.phoneNumber)">
+                        Bỏ chặn
                     </div>
-                    <div class="mb-2"></div>
-                </v-card-text>
-            </v-card>
-        </v-dialog>
+                    <div v-else-if="!sended"
+                        class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/3 text-sm"
+                        @click="blockUser(userFound.phoneNumber)">
+                        Chặn
+                    </div>
+                    <div v-if="!sended && !isFriend && !isBlock"
+                        class="add-friend-button text-center cursor-pointer bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow"
+                        @click="addFriend">
+                        Kết bạn
+                    </div>
+                    <div v-else-if="sended"
+                        class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow">
+                        Chờ xác nhận...
+                    </div>
+                    <div v-else-if="isBlock"
+                        class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow">
+                        Không thể kết bạn
+                    </div>
+                    <div v-else
+                        class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow">
+                        Đã là bạn bè
+                    </div>
+                </div>
+                <div class="mb-2"></div>
+            </v-card-text>
+        </v-card>
+    </v-dialog>
 </template>
 <script>
 import axios from 'axios';
@@ -1506,7 +1504,7 @@ export default {
                             this.chosenUpdateComment = null;
                             this.clearContentComment();
                             this.fetchComment(feedId);
-                            this.fetchFeed();
+                            this.getFeedUpdate(feedId);
                         }
                     } else
                         this.toast.error(response.data, { timeout: 1500 });
@@ -1531,6 +1529,7 @@ export default {
                         }
                         this.fetchComment(feedId);
                         this.isTableOptionVisible = false;
+                        this.getFeedUpdate(feedId);
                     }
                 })
                 .catch(error => {
@@ -1690,12 +1689,6 @@ export default {
                         this.feeds = this.feeds.filter(element => {
                             return element.id !== postId && (!element.postFather || element.postFather.id !== postId);
                         });
-                        if (this.chosenFilter === 'allPosts') {
-                            this.fetchFeed();
-                        }
-                        else {
-                            this.fetchMyFeed();
-                        }
                     }
                     else
                         this.toast.error("Có lỗi xảy ra, vui lòng thử lại!", 1500);
@@ -1983,32 +1976,28 @@ export default {
                     this.showPostVisible = false;
                     this.clearContentPost();
                     this.countPostsUser();
-                    if (this.chosenFilter === 'allPosts') {
-                        await this.fetchFeed();
-                    }
-                    else {
-                        if (this.currentPage === 0) {
-                            this.myFeeds = [];
-                            await this.fetchMyFeed();
-                        } else {
-                            await this.fetchMyFeed();
-                        }
-
-                    }
-                    this.toast.success(response.data, { timeout: 3000 });
+                    const createdFeed = await this.getPostInfo(response.data.getInfoPostResponse.id)
+                    this.feeds.unshift(createdFeed);
+                    console.log(createdFeed)
+                    this.updateIsUserLikePost(createdFeed);
+                    this.toast.success(response.data.mesage, { timeout: 3000 });
                 } else {
-                    this.toast.error(response.data, { timeout: 3000 });
+                    this.toast.error(response.data.mesage, { timeout: 3000 });
                 }
             } catch (error) {
                 if (error.response) {
                     if (error.response.status === 400) {
-                        this.toast.error(error.response.data, { timeout: 3000 });
+                        console.log(error)
+                        this.toast.error(error.response.data.mesage, { timeout: 3000 });
                     } else {
-                        this.toast.error(error.response.data, { timeout: 3000 });
+                        console.log(error)
+                        this.toast.error(error.response.data.mesage, { timeout: 3000 });
                     }
                 } else if (error.request) {
+                    console.log('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!')
                     this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 3000 });
                 } else {
+                    console.log('Error setting up the request:' + error.message)
                     this.toast.error('Error setting up the request:' + error.message, { timeout: 3000 });
                 }
             }
@@ -2076,12 +2065,7 @@ export default {
                     this.showPostVisible = false;
                     this.updateFeed = null;
 
-                    // Cập nhật feeds tùy thuộc vào chosenFilter
-                    if (this.chosenFilter === 'allPosts') {
-                        await this.fetchFeed();
-                    } else {
-                        await this.fetchMyFeed();
-                    }
+                    this.getFeedUpdate(post.id);
 
                     this.closeUpdatePostOption();
                     if (this.showVisibleInfoFeed) {
@@ -2273,7 +2257,7 @@ export default {
                         this.toast.success(response.data, { timeout: 1500 });
                         this.clearContentComment();
                         this.fetchComment(postId);
-                        this.fetchFeed();
+                        this.getFeedUpdate(postId);
                         const commentContainer = document.querySelector('#dialog-content');
                         console.log('scroll element', commentContainer)
                         console.log('scroll element', commentContainer.scrollHeight)
@@ -2335,8 +2319,8 @@ export default {
         openUpdatePost(clickedFeed) {
             //console.log(clickedFeed)
             this.showPopupVisible = false;
-            this.showUpdatePostVisible = true;
             this.updateFeed = Object.assign({}, clickedFeed);
+            this.showUpdatePostVisible = true;
             if (clickedFeed.audience === 'Public') {
                 this.privateSetting = "Công khai"
             } else if (clickedFeed.audience === 'AllFriend') {
@@ -2369,22 +2353,30 @@ export default {
                     if (response.status === 200) {
                         // this.showPostVisible = false;
                         // this.newFeed.content = '';
-                        this.fetchFeed();
-                        this.toast.success(response.data, { timeout: 3000 });
+                        const createdFeed = await this.getPostInfo(response.data.getInfoPostResponse.id)
+                        this.feeds.unshift(createdFeed);
+                        console.log(createdFeed)
+                        this.updateIsUserLikePost(createdFeed);
+                        this.closeFeedInfo();
+                        this.toast.success(response.data.mesage, { timeout: 3000 });
                     } else {
-                        this.toast.error(response.data, { timeout: 3000 });
+                        this.toast.error(response.data.mesage, { timeout: 3000 });
                     }
                 } catch (error) {
                     if (error.response) {
                         if (error.response.status === 400) {
-                            this.toast.error(error.response.data, { timeout: 3000 });
+                            console.log(error.response.data)
+                            this.toast.error(error.response.data.mesage, { timeout: 3000 });
                         } else {
-                            this.toast.error(error.response.data, { timeout: 3000 });
+                            console.log(error.response.data)
+                            this.toast.error(error.response.data.mesage, { timeout: 3000 });
                         }
                     } else if (error.request) {
-                        this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 3000 });
+                        console.log('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!')
+                        // this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 3000 });
                     } else {
-                        this.toast.error('Error setting up the request:' + error.message, { timeout: 3000 });
+                        console.log('Error setting up the request:' + error.message)
+                        // this.toast.error('Error setting up the request:' + error.message, { timeout: 3000 });
                     }
                 }
 
@@ -2682,7 +2674,7 @@ export default {
                 console.log("Error in checkUser", exception);
             }
         },
-        handleOpenUserDialog(phoneNumber){
+        handleOpenUserDialog(phoneNumber) {
             this.searchPhoneNumber = phoneNumber;
             this.showFoundUserDialog();
         },
@@ -2751,6 +2743,50 @@ export default {
                 }
             }
         },
+        async getPostInfo(postId) {
+            try {
+                const response = await axios.get(`social-media/getAPostInfo/${postId}`);
+                if (response.status === 200 && response.data && response.data.id) {
+                    return response.data;
+                } else {
+                    this.toast.error(response.data || 'Post not found!', { timeout: 1500 });
+                    return null;
+                }
+            } catch (error) {
+                if (error.response) {
+                    // this.toast.error(error.response.data, { timeout: 1500 });
+                    console.log(error.response.data)
+                } else if (error.request) {
+                    // this.toast.error('No response from the server. Please try again!', { timeout: 1500 });
+                    console.log('No response from the server. Please try again!')
+                } else {
+                    // this.toast.error('Error setting up the request: ' + error.message, { timeout: 1500 });
+                    console.log('Error setting up the request: ' + error.message)
+                }
+                return null;
+            }
+        },
+        async getFeedUpdate(postId) {
+            try {
+                const updatedPostInfo = await this.getPostInfo(postId);
+                if (updatedPostInfo) {
+                    const feedIndex = this.feeds.findIndex(feed => feed.id === postId);
+                    if (feedIndex !== -1) {
+                        this.feeds[feedIndex] = updatedPostInfo;
+                        this.updateIsUserLikePost(this.feeds[feedIndex]);
+                        if (this.feeds[feedIndex].postFather) {
+                            this.updateIsUserLikePost(this.feeds[feedIndex].postFather);
+                        }
+                        console.log('Feed updated successfully!')
+                    } else {
+                        console.log('Feed not found!')
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+                // this.toast.error('An error occurred while updating the feed.', { timeout: 1500 });
+            }
+        }
     },
 }
 </script>

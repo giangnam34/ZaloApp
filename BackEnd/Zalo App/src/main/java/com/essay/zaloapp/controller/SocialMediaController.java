@@ -36,8 +36,8 @@ public class SocialMediaController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> createNewPost(@AuthenticationPrincipal UserPrincipal userPrincipal, @ModelAttribute CreateNewPostRequest createNewPostRequest) {
         System.out.println(createNewPostRequest.toString());
-        String result = socialMediaService.createNewPost(userPrincipal.getId(), createNewPostRequest);
-        return result.equals("Đăng bài viết thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
+        SocialMediaServiceImpl.GetInfoPost result = socialMediaService.createNewPost(userPrincipal.getId(), createNewPostRequest);
+        return result.getMesage().equals("Đăng bài viết thành công!") ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
     // Cập nhật quyền riêng tư bài viết -- Checked
@@ -195,5 +195,11 @@ public class SocialMediaController {
     public ResponseEntity<?> countPostUsers(@AuthenticationPrincipal UserPrincipal userPrincipal) {
         Long result = socialMediaService.countPostsUser(userPrincipal.getId());
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/getAPostInfo/{postId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> getPostInfo(@AuthenticationPrincipal UserPrincipal userPrincipal,@PathVariable Long postId){
+        return ResponseEntity.ok(socialMediaService.getPostById(postId));
     }
 }
