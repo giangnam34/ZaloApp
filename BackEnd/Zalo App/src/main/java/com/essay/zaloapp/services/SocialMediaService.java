@@ -14,9 +14,10 @@ import java.io.IOException;
 import java.util.List;
 
 public interface SocialMediaService {
-    String createNewPost(Long userId, CreateNewPostRequest createNewPostRequest);
 
     String validateCreateNewPostRequest(User user, CreateNewPostRequest createNewPostRequest);
+
+    SocialMediaServiceImpl.GetInfoPost createNewPost(Long userId, CreateNewPostRequest createNewPostRequest);
 
     String updateAudiencePost(Long userId, Long postId, Audience audience);
 
@@ -49,4 +50,8 @@ public interface SocialMediaService {
     InfoComment getInfoComment(Long commentId) throws Exception;
 
     SocialMediaServiceImpl.GetAllUsersLikedPost getAllUsersLikedPost(Long postId);
+
+    GetInfoPostResponse getPostById(Long postId);
+
+    Long countPostsUser(Long userId);
 }

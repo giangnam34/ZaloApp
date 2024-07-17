@@ -13,8 +13,8 @@
                     <div class="menu-contact">
                         <div class="menu-item"
                             :class="{ 'selected': selectedMenuItem === 'friends', 'hovered': hoveredItem === 'friends', 'hovering': selectedMenuItem === 'friends' }"
-                            @mouseenter="!isSelected('friends') && (hoveredItem = 'friends')"
-                            @mouseleave="hoveredItem = ''" @click="selectMenuItem('friends')">
+                            @mouseenter="!isSelected('friends') && (hoveredItem = 'friends')" @mouseleave="hoveredItem = ''"
+                            @click="selectMenuItem('friends')">
                             <a id="user-group-icon">
                                 <font-awesome-icon icon="fa-solid fa-user-group" />
                             </a>
@@ -64,8 +64,7 @@
             <v-card class="dialog-component">
                 <v-card-title class="dialog-title">
                     <h2 class="title">Thêm bạn
-                        <div class="icon-close" @click="closeFindFriendDialog"><font-awesome-icon
-                                icon="fa-solid fa-x" />
+                        <div class="icon-close" @click="closeFindFriendDialog"><font-awesome-icon icon="fa-solid fa-x" />
                         </div>
                     </h2>
                 </v-card-title>
@@ -94,8 +93,7 @@
             <v-card class="dialog-component-user">
                 <v-card-title class="dialog-title-user">
                     <h2 class="title-user">Thông tin tài khoản
-                        <div class="icon-close-user" @click="closeUserInfoDialog"><font-awesome-icon
-                                icon="fa-solid fa-x" />
+                        <div class="icon-close-user" @click="closeUserInfoDialog"><font-awesome-icon icon="fa-solid fa-x" />
                         </div>
                     </h2>
                 </v-card-title>
@@ -143,21 +141,31 @@
                         style="border: none; border-bottom: 1px solid #ccc;">
                     <div class="mt-2"></div>
                     <div class="profile-action-user" v-if="user.phoneNumber !== userFound.phoneNumber">
-                        <div class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/2 text-sm"
+                        <div v-if="isBlock"
+                            class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/3 text-sm"
+                            @click="unBlockUser(userFound.phoneNumber)">
+                            Bỏ chặn
+                        </div>
+                        <div v-else-if="!sended"
+                            class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/3 text-sm"
                             @click="blockUser(userFound.phoneNumber)">
                             Chặn
                         </div>
-                        <div v-if="!sended && !isFriend"
-                            class="add-friend-button text-center cursor-pointer bg-blue-500 text-white rounded-lg h-10 ml-2 w-1/2 text-sm"
+                        <div v-if="!sended && !isFriend && !isBlock"
+                            class="add-friend-button text-center cursor-pointer bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow"
                             @click="addFriend">
                             Kết bạn
                         </div>
                         <div v-else-if="sended"
-                            class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm">
+                            class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow">
                             Chờ xác nhận...
                         </div>
+                        <div v-else-if="isBlock"
+                            class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow">
+                            Không thể kết bạn
+                        </div>
                         <div v-else
-                            class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm w-1/2">
+                            class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow">
                             Đã là bạn bè
                         </div>
                     </div>
@@ -208,6 +216,8 @@ export default {
             sended: false,
             isFriend: false,
             inviteList: null,
+            isBlock: false,
+            blockList: [],
         };
     },
     methods: {
@@ -264,7 +274,6 @@ export default {
         closeUserInfoDialog() {
             try {
                 this.showVisibleUserInfo = false;
-                this.sended = false;
                 this.showVisibleFindFriendDialog = true;
             } catch (exception) {
                 console.log("Error in closeUserInfoDialog", exception);
@@ -361,6 +370,9 @@ export default {
 
                 if (response.status === 200) {
                     await this.getListOfFriends();
+                    this.showVisibleUserInfo = false;
+                    this.searchPhoneNumber = '';
+                    this.showVisibleFindFriendDialog = true;
                     this.toast.success(response.data, { timeout: 1500 });
                 } else {
                     console.error(response.body);
@@ -412,9 +424,12 @@ export default {
             try {
                 await this.getInviteFriend();
                 await this.getListOfFriends();
+                await this.getListOfBlockedFriends();
 
                 const isFriend = this.listOfFriends.some(friend => friend.phoneNumber === this.searchPhoneNumber);
+                console.log("Is Friend: " + isFriend);
                 const isInvited = this.inviteList.some(friend => friend.phoneNumber === this.searchPhoneNumber);
+                const isBlock = this.blockList.some(friend => friend.phoneNumber === this.searchPhoneNumber);
 
                 if (isFriend) {
                     this.isFriend = true;
@@ -428,6 +443,8 @@ export default {
                         this.sended = false;
                     }
                 }
+
+                this.isBlock = isBlock;
 
                 // Additional checks
                 if (this.listOfFriends.length === 0 && this.inviteList.length === 0) {
@@ -452,6 +469,72 @@ export default {
                 } else {
                     console.error(response.data);
                     this.toast.error(response.data, { timeout: 1500 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
+            }
+        },
+        async getListOfBlockedFriends() {
+            try {
+                const response = await axios.get(`users/getAllBlockedUser`, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token")
+                    }
+                });
+
+                if (response.status === 200) {
+
+                    this.blockList = response.data;
+                } else {
+                    console.error(response.data);
+                    this.toast.error(response.data, { timeout: 1500 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
+            }
+        },
+        async unBlockUser(phoneNumber) {
+            try {
+                const friendRequest = {
+                    fromPhoneNumberUser: this.user.phoneNumber,
+                    toPhoneNumberUser: phoneNumber,
+                }
+
+                const response = await axios.post(`users/unBlockFriendUser`, friendRequest, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token")
+                    }
+                });
+
+                if (response.status === 200) {
+                    this.blockList = this.blockList.filter(friend => friend.phoneNumber !== phoneNumber);
+                    this.showVisibleUserInfo = false;
+                    this.searchPhoneNumber = '';
+                    this.showVisibleFindFriendDialog = true;
+                    this.toast.success(response.data, { timeout: 1500 });
+                } else {
+                    console.error(response.body);
+                    this.toast.error(response.data || 'Đã xảy ra lỗi!', { timeout: 1500 });
                 }
             } catch (error) {
                 if (error.response) {

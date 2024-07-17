@@ -1,5 +1,5 @@
 <template>
-       <div class="post-container">
+    <div class="post-container">
         <div class="container px-8 py-6 bg-gray-100 overflow-y-auto" ref="scrollContainer" @scroll="handleScroll">
             <div class="max-w-none w-auto mx-auto grid grid-cols-4 gap-4">
                 <div class="main-left col-span-1">
@@ -10,7 +10,7 @@
 
                         <div id="display-number" class="mt-6 flex space-x-8 justify-around">
                             <p class="text-xs text-gray-500">{{ listFriends.length }} friends</p>
-                            <p id="display-number-element-2" class="text-xs text-gray-500">{{ myFeeds.length }} posts
+                            <p id="display-number-element-2" class="text-xs text-gray-500">{{ numberOfUserPost }} posts
                             </p>
                         </div>
 
@@ -25,13 +25,13 @@
                         </div>
                     </div>
 
-                    <div v-for="feed in feeds" v-bind:key="feed.id"
-                        class="p-4 bg-white border border-gray-200 rounded-lg">
+                    <div v-for="feed in feeds" :key="feed.id" class="p-4 bg-white border border-gray-200 rounded-lg">
                         <div v-if="feed.postFather === null">
                             <div class="mb-6 flex items-center justify-between">
                                 <div class="flex items-center space-x-6">
                                     <img :src="feed.userPost.imageAvatar"
-                                        class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4 object-cover object-bottom">
+                                        @click="handleOpenUserDialog(feed.userPost.phoneNumber)"
+                                        class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4 object-cover object-bottom cursor-pointer">
                                     <div class="wrap-title flex">
                                         <div>
                                             <div class="flex">
@@ -41,26 +41,21 @@
                                             <div class="wrap-icon flex">
                                                 <div v-if="feed.audience === 'Public'">
                                                     <font-awesome-icon icon="fa-solid fa-earth-americas" />
-                                                    <!-- Công khai -->
                                                 </div>
                                                 <div v-if="feed.audience === 'AllFriend'">
                                                     <font-awesome-icon icon="fa-solid fa-user-group" />
-                                                    <!-- Bạn bè -->
                                                 </div>
-                                                <div v-if="feed.audience === 'OnlyMe'">
+                                                <!-- <div v-if="feed.audience === 'OnlyMe'">
                                                     <font-awesome-icon icon="fa-solid fa-lock" />
-                                                    <!-- Chỉ mình tôi -->
                                                 </div>
                                                 <div v-if="feed.audience === 'SomeOneCanSee'">
                                                     <font-awesome-icon icon="fa-solid fa-user" />
-                                                    <!-- Một số bạn bè -->
                                                 </div>
                                                 <div v-if="feed.audience === 'AllExceptSomeOne'">
                                                     <font-awesome-icon icon="fa-solid fa-user-minus" />
-                                                    <!-- Bạn bè ngoại trừ -->
-                                                </div>
+                                                </div> -->
                                                 <p class="text-gray-600 ml-2 date"> • {{ formatTimeDifference(new
-                                                    Date(feed.updatedAt)) }}
+                                                    Date(feed.createdAt)) }}
                                                 </p>
                                             </div>
                                         </div>
@@ -100,7 +95,7 @@
                                 </div>
                             </div>
 
-                            <p class="mb-3">{{ feed.content }}</p>
+                            <p class="mb-3">{{ feed.content || '' }}</p>
 
                             <div v-if="feed.files.length > 0">
                                 <img :src="feed.files[0]" class="w-full h-[500px] rounded-lg cursor-pointer"
@@ -129,17 +124,13 @@
                             <div class="my-3 flex">
                                 <div v-if="!feed.isLike" class="flex-1 flex items-center mr-2"
                                     @click="openListLikedUserDialog(feed.id)">
-                                    <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
-                                        icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
-                                    <span class="text-gray-500 text-lg hover:underline cursor-pointer">
-                                        <template v-if="feed.userLikeList == null || feed.userLikeList.length === 0">
-
-                                        </template>
-                                        <template v-else>
-                                            {{ feed.userLikeList.length }}
-                                        </template>
-                                    </span>
+                                    <font-awesome-icon icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
+                                    <span class="text-gray-500 text-lg hover:underline cursor-pointer">{{
+                                        feed.userLikeList.length
+                                    }}</span>
                                 </div>
+
+                                <!-- Test -->
                                 <div v-else class="flex-1 flex items-center mr-2" @click="openListLikedUserDialog(feed.id)">
                                     <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
                                         icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
@@ -188,45 +179,42 @@
                             <hr style="border: none; border-bottom: 1px solid #ccc;">
                         </div>
                         <div v-else>
-                            <div v-if="feed.userLikeList.length === 0">
-                                <div class="mb-6 flex items-center justify-between">
-                                    <div class="flex items-center space-x-6 w-full">
-                                        <img :src="feed.userPost.imageAvatar"
-                                            class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4 object-cover object-bottom">
-                                        <div class="wrap-title flex justify-between w-full">
-                                            <div>
-                                                <div class="flex">
-                                                    <p class="name"><strong>{{ feed.userPost.userName }}</strong></p>
-                                                </div>
-                                                <div class="wrap-icon">
-                                                    <div>
-                                                        <font-awesome-icon icon="fa-solid fa-earth-americas" />
-                                                        Công khai
-                                                    </div>
+                            <div class="mb-6 flex items-center justify-between">
+                                <div class="flex items-center space-x-6 w-full">
+                                    <img :src="feed.userPost.imageAvatar"
+                                        class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4 object-cover object-bottom">
+                                    <div class="wrap-title flex justify-between w-full">
+                                        <div>
+                                            <div class="flex">
+                                                <p class="name"><strong>{{ feed.userPost.userName }}</strong></p>
+                                            </div>
+                                            <div class="wrap-icon">
+                                                <div>
+                                                    <font-awesome-icon icon="fa-solid fa-earth-americas" />
+                                                    Công khai
                                                 </div>
                                             </div>
-                                            <div v-if="user.phoneNumber === feed.userPost.phoneNumber" id="more-icon">
-                                                <div class="action cursor-pointer">
-                                                    <div class="popover-action-container" @click:outside="hidePopover">
-                                                        <a id="ellipsis-icon"
-                                                            @click="(event) => handleClickAction(event, feed)">
-                                                            <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
-                                                        </a>
-                                                        <div class="popoverAction"
-                                                            v-show="showPopupVisible && !showVisibleInfoFeed && clickedFeed.userPost.phoneNumber === user.phoneNumber"
-                                                            :style="{ left: popoverLeft, top: popoverTop }">
-                                                            <div class="popover-body">
-                                                                <div class="popover-item"
-                                                                    @click="deletePost(clickedFeed.id)">
-                                                                    <div>
-                                                                        Xóa bài viết
-                                                                    </div>
+                                        </div>
+                                        <div v-if="user.phoneNumber === feed.userPost.phoneNumber" id="more-icon">
+                                            <div class="action cursor-pointer">
+                                                <div class="popover-action-container" @click:outside="hidePopover">
+                                                    <a id="ellipsis-icon"
+                                                        @click="(event) => handleClickAction(event, feed)">
+                                                        <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
+                                                    </a>
+                                                    <div class="popoverAction"
+                                                        v-show="showPopupVisible && !showVisibleInfoFeed && clickedFeed.userPost.phoneNumber === user.phoneNumber"
+                                                        :style="{ left: popoverLeft, top: popoverTop }">
+                                                        <div class="popover-body">
+                                                            <div class="popover-item" @click="deletePost(clickedFeed.id)">
+                                                                <div>
+                                                                    Xóa bài viết
                                                                 </div>
-                                                                <div class="separator"></div>
-                                                                <div class="popover-item" @click="hidePopover">
-                                                                    <div>
-                                                                        Hủy
-                                                                    </div>
+                                                            </div>
+                                                            <div class="separator"></div>
+                                                            <div class="popover-item" @click="hidePopover">
+                                                                <div>
+                                                                    Hủy
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -236,130 +224,116 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="p-4 border rounded-lg">
-                                    <div v-if="feed.postFather.files.length > 0"
-                                        class="image-container-feed cursor-pointer mb-2"
-                                        @click="openFeedInfo(feed.postFather)">
-                                        <img :src="feed.postFather.files[0]"
-                                            class="w-full h-[500px] rounded-lg cursor-pointer"
-                                            v-if="isImage(feed.postFather.files[0])"
+                            </div>
+                            <div class="p-4 border rounded-lg">
+                                <div v-if="feed.postFather.files.length > 0"
+                                    class="image-container-feed cursor-pointer mb-2" @click="openFeedInfo(feed.postFather)">
+                                    <img :src="feed.postFather.files[0]" class="w-full h-[500px] rounded-lg cursor-pointer"
+                                        v-if="isImage(feed.postFather.files[0])" @click="openFeedInfo(feed.postFather)" />
+                                    <video v-else controls width="300" class="w-full h-[500px] rounded-lg cursor-pointer">
+                                        <source :src="feed.postFather.files[0]" type="video/mp4"
                                             @click="openFeedInfo(feed.postFather)" />
-                                        <video v-else controls width="300"
-                                            class="w-full h-[500px] rounded-lg cursor-pointer">
-                                            <source :src="feed.postFather.files[0]" type="video/mp4"
-                                                @click="openFeedInfo(feed.postFather)" />
-                                            Your browser does not support the video tag.
-                                        </video>
-                                        <div class="overlay-feed"
-                                            v-if="feed.postFather.files.length > 1 && feed.postFather.files.length !== 2">
-                                            <div class="overlay-content-feed">
-                                                +{{ feed.postFather.files.length - 1 }}
-                                            </div>
+                                        Your browser does not support the video tag.
+                                    </video>
+                                    <div class="overlay-feed"
+                                        v-if="feed.postFather.files.length > 1 && feed.postFather.files.length !== 2">
+                                        <div class="overlay-content-feed">
+                                            +{{ feed.postFather.files.length - 1 }}
                                         </div>
                                     </div>
-                                    <div class="mb-6 flex items-center justify-between">
-                                        <div class="flex items-center space-x-6">
-                                            <img :src="feed.postFather.userPost.imageAvatar"
-                                                class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4 object-cover object-bottom">
-                                            <div class="wrap-title flex">
-                                                <div>
-                                                    <div class="flex">
-                                                        <p class="name"><strong>{{ feed.postFather.userPost.userName
-                                                        }}</strong>
-                                                        </p>
+                                </div>
+                                <div class="mb-6 flex items-center justify-between">
+                                    <div class="flex items-center space-x-6">
+                                        <img :src="feed.postFather.userPost.imageAvatar"
+                                            class="w-[50px] h-[50px] rounded-full flex justify-center align-center mr-4 object-cover object-bottom">
+                                        <div class="wrap-title flex">
+                                            <div>
+                                                <div class="flex">
+                                                    <p class="name"><strong>{{ feed.postFather.userPost.userName
+                                                    }}</strong>
+                                                    </p>
+                                                </div>
+                                                <div class="wrap-icon flex">
+                                                    <div v-if="feed.postFather.audience === 'Public'">
+                                                        <font-awesome-icon icon="fa-solid fa-earth-americas" />
                                                     </div>
-                                                    <div class="wrap-icon flex">
-                                                        <div v-if="feed.postFather.audience === 'Public'">
-                                                            <font-awesome-icon icon="fa-solid fa-earth-americas" />
-                                                            <!-- Công khai -->
-                                                        </div>
-                                                        <div v-if="feed.postFather.audience === 'AllFriend'">
-                                                            <font-awesome-icon icon="fa-solid fa-user-group" />
-                                                            <!-- Bạn bè -->
-                                                        </div>
-                                                        <div v-if="feed.postFather.audience === 'OnlyMe'">
+                                                    <div v-if="feed.postFather.audience === 'AllFriend'">
+                                                        <font-awesome-icon icon="fa-solid fa-user-group" />
+                                                    </div>
+                                                    <!-- <div v-if="feed.postFather.audience === 'OnlyMe'">
                                                             <font-awesome-icon icon="fa-solid fa-lock" />
-                                                            <!-- Chỉ mình tôi -->
                                                         </div>
                                                         <div v-if="feed.postFather.audience === 'SomeOneCanSee'">
                                                             <font-awesome-icon icon="fa-solid fa-user" />
-                                                            <!-- Một số bạn bè -->
                                                         </div>
                                                         <div v-if="feed.postFather.audience === 'AllExceptSomeOne'">
                                                             <font-awesome-icon icon="fa-solid fa-user-minus" />
-                                                            <!-- Bạn bè ngoại trừ -->
-                                                        </div>
-                                                        <p class="text-gray-600 ml-2 date"> • {{
-                                                            formatTimeDifference(new
-                                                                Date(feed.postFather.updatedAt))
-                                                        }}
-                                                        </p>
-                                                    </div>
+                                                        </div> -->
+                                                    <p class="text-gray-600 ml-2 date"> • {{
+                                                        formatTimeDifference(new
+                                                            Date(feed.postFather.createdAt))
+                                                    }}
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-
-                                    <p class="mb-3">{{ feed.postFather.content }}</p>
                                 </div>
 
-
-                                <div class="my-3 flex">
-                                    <div v-if="!feed.isLike" class="flex-1 flex items-center mr-2"
-                                        @click="openListLikedUserDialog(feed.id)">
-                                        <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
-                                            icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
-                                        <span class="text-gray-500 text-lg hover:underline cursor-pointer">
-                                            <template v-if="feed.userLikeList == null || feed.userLikeList.length === 0">
-
-                                            </template>
-                                            <template v-else>
-                                                {{ feed.userLikeList.length }}
-                                            </template>
-                                        </span>
-                                    </div>
-                                    <div v-else class="flex-1 flex items-center mr-2"
-                                        @click="openListLikedUserDialog(feed.id)">
-                                        <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
-                                            icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
-                                        <span class="text-gray-500 text-lg hover:underline cursor-pointer">
-                                            <template v-if="feed.userLikeList.length === 1">
-                                                {{ user.fullName }}
-                                            </template>
-                                            <template v-else>
-                                                Bạn và {{ feed.userLikeList.length - 1 }} người khác
-                                            </template>
-                                        </span>
-                                    </div>
-
-                                    <div class="flex-1 flex items-center justify-end">
-                                        <div class="flex items-center space-x-2 ml-auto hover:underline cursor-pointer"
-                                            @click="openFeedInfo(feed.postFather)">
-                                            <font-awesome-icon icon="fa-regular fa-comment" />
-                                            <span class="text-gray-500 text-lg">{{ feed.commentCount }} bình luận</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <hr style="border: none; border-bottom: 1px solid #ccc;">
-                                <div class="flex justify-between items-center">
-                                    <button v-if="!feed.isLike"
-                                        class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
-                                        @mouseover="handleMouseOver" @mouseout="handleMouseOut"
-                                        @click="likePost(feed)"><font-awesome-icon icon="fa-regular fa-thumbs-up"
-                                            class="mr-2" />Thích</button>
-                                    <button v-else
-                                        class="button p-2 text-black cursor-pointer flex-1 justify-between items-center text-blue"
-                                        @mouseover="handleMouseOver" @mouseout="handleMouseOut"
-                                        @click="likePost(feed)"><font-awesome-icon icon="fa-regular fa-thumbs-up"
-                                            class="mr-2" />Thích</button>
-                                    <button class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
-                                        @click="openFeedInfo(feed)" @mouseover="handleMouseOver"
-                                        @mouseout="handleMouseOut"><font-awesome-icon icon="fa-regular fa-comment"
-                                            class="mr-2" />Bình
-                                        luận</button>
-                                </div>
-                                <hr style="border: none; border-bottom: 1px solid #ccc;">
+                                <p class="mb-3">{{ feed.postFather.content || '' }}</p>
                             </div>
+
+
+                            <div class="my-3 flex">
+                                <div v-if="!feed.isLike" class="flex-1 flex items-center mr-2"
+                                    @click="openListLikedUserDialog(feed.id)">
+                                    <font-awesome-icon icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
+                                    <span class="text-gray-500 text-lg hover:underline cursor-pointer">{{
+                                        feed.userLikeList.length
+                                    }}</span>
+                                </div>
+
+                                <!-- Test -->
+                                <div v-else class="flex-1 flex items-center mr-2" @click="openListLikedUserDialog(feed.id)">
+                                    <font-awesome-icon v-if="feed.userLikeList !== null && feed.userLikeList.length > 0"
+                                        icon="fa-regular fa-thumbs-up" class="text-lg text-blue mr-2" />
+                                    <span class="text-gray-500 text-lg hover:underline cursor-pointer">
+                                        <template v-if="feed.userLikeList.length === 1">
+                                            {{ user.fullName }}
+                                        </template>
+                                        <template v-else>
+                                            Bạn và {{ feed.userLikeList.length - 1 }} người khác
+                                        </template>
+                                    </span>
+                                </div>
+
+                                <div class="flex-1 flex items-center justify-end">
+                                    <div class="flex items-center space-x-2 ml-auto hover:underline cursor-pointer"
+                                        @click="openFeedInfo(feed)">
+                                        <font-awesome-icon icon="fa-regular fa-comment" />
+                                        <span class="text-gray-500 text-lg">{{ feed.commentCount }} bình luận</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr style="border: none; border-bottom: 1px solid #ccc;">
+                            <div class="flex justify-between items-center">
+                                <button v-if="!feed.isLike"
+                                    class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
+                                    @mouseover="handleMouseOver" @mouseout="handleMouseOut"
+                                    @click="likePost(feed)"><font-awesome-icon icon="fa-regular fa-thumbs-up"
+                                        class="mr-2" />Thích</button>
+                                <button v-else
+                                    class="button p-2 text-black cursor-pointer flex-1 justify-between items-center text-blue"
+                                    @mouseover="handleMouseOver" @mouseout="handleMouseOut"
+                                    @click="likePost(feed)"><font-awesome-icon icon="fa-regular fa-thumbs-up"
+                                        class="mr-2" />Thích</button>
+                                <button class="button p-2 text-black cursor-pointer flex-1 justify-between items-center"
+                                    @click="openFeedInfo(feed)" @mouseover="handleMouseOver"
+                                    @mouseout="handleMouseOut"><font-awesome-icon icon="fa-regular fa-comment"
+                                        class="mr-2" />Bình
+                                    luận</button>
+                            </div>
+                            <hr style="border: none; border-bottom: 1px solid #ccc;">
                         </div>
                     </div>
                 </div>
@@ -697,7 +671,7 @@
                                             <font-awesome-icon icon="fa-solid fa-user-group" />
                                             Bạn bè
                                         </div>
-                                        <div v-if="showingFeed.audience === 'OnlyMe'">
+                                        <!-- <div v-if="showingFeed.audience === 'OnlyMe'">
                                             <font-awesome-icon icon="fa-solid fa-lock" />
                                             Chỉ mình tôi
                                         </div>
@@ -708,9 +682,9 @@
                                         <div v-if="showingFeed.audience === 'AllExceptSomeOne'">
                                             <font-awesome-icon icon="fa-solid fa-user-minus" />
                                             Bạn bè ngoại trừ
-                                        </div>
+                                        </div> -->
                                         <p class="text-gray-600 ml-2 date"> • {{ formatTimeDifference(new
-                                            Date(showingFeed.updatedAt))
+                                            Date(showingFeed.createdAt))
                                         }}
                                         </p>
                                     </div>
@@ -735,7 +709,6 @@
                                                             Chỉnh sửa bài viết
                                                         </div>
                                                     </div>
-                                                    <div class="separator"></div>
                                                     <div class="popover-item" @click="hidePopover">
                                                         <div>
                                                             Hủy
@@ -750,13 +723,13 @@
                         </div>
                     </div>
 
-                    <p class="mb-3">{{ showingFeed.content }}</p>
+                    <p class="mb-3">{{ showingFeed.content || '' }}</p>
 
                     <!-- Hiển thị ảnh -->
 
                     <div>
                         <swiper :slides-per-view="1" @swiper="onSwiper" @slideChange="onSlideChange" :modules="modules"
-                        navigation>
+                            navigation>
                             <swiper-slide v-for="(image, index) in showingFeed.files" :key="index">
                                 <div class="image-container-feed cursor-pointer"
                                     @click="openFullImage(showingFeed.files, index)">
@@ -850,20 +823,21 @@
                                         <p><strong>{{ comment.userComment.userName }}</strong></p>
                                     </div>
                                     <div>
-                                        <p>{{ comment.content }}</p>
+                                        <p>{{ comment.content || '' }}</p>
                                     </div>
                                 </div>
                                 <div style="position: relative; display: inline-block;">
 
                                     <!-- div show-more-option -->
                                     <div @click="showTableOption(index)" class="show-more-option"
-                                        style="cursor: pointer; margin-left: 10px;">
+                                        style="cursor: pointer; margin-left: 10px;"
+                                        v-if="this.user.phoneNumber === comment.userComment.phoneNumber">
                                         <p>...</p>
                                     </div>
 
                                     <!-- div table-option-comment -->
                                     <div class="table-option-comment rounded-lg bg-gray-200 p-2"
-                                        style="position: absolute; top: 100%; left: 0px; margin-left: 10px; min-width: 100px; display: none">
+                                        :style="{ position: 'absolute', top: '100%', left: '0px', marginLeft: '10px', minWidth: '100px', display: isTableOptionVisible && currentCommentIndex === index ? 'block' : 'none' }">
                                         <p @click="chooseComment(comment)">Chỉnh sửa</p>
                                         <p @click="deleteComment(comment.idComment, showingFeed.id)">Xóa</p>
                                     </div>
@@ -895,9 +869,9 @@
                                     </div>
                                     <!-- <img class="file-comment rounded-lg" :src="comment.contentMedia" /> -->
                                 </div>
-                                <p class="text-gray-600">{{ formatDate(comment.updatedAt) }}</p>
+                                <p class="text-gray-600">{{ formatDate(comment.createdAt) }}</p>
                             </div>
-                            <div class="ml-15 info-comment">
+                            <!-- <div class="ml-15 info-comment">
                                 <p class="like-button-comment" @click="likeComment(comment.idComment)"
                                     @mouseover="changeColorButtonComment('like-button-comment', true)"
                                     @mouseout="changeColorButtonComment('like-button-comment', false)"
@@ -905,7 +879,7 @@
                                 <p class="reply-button-comment"
                                     @mouseover="changeColorButtonComment('reply-button-comment', true)"
                                     @mouseout="changeColorButtonComment('reply-button-comment', false)">Phản hồi</p>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                 </div>
@@ -967,6 +941,7 @@
             </v-card-title>
         </v-card>
     </v-dialog>
+    <!-- Pop up chỉnh sửa bài viết người dùng -->
     <v-dialog class="dialog-container" v-model="showUpdatePostVisible" max-width="500px"
         @click:outside="closeUpdatePostOption">
         <v-card class="dialog-component">
@@ -1113,10 +1088,94 @@
             </v-card-text>
         </v-card>
     </v-dialog>
+    <v-dialog class="dialog-container-user" v-model="showVisibleUserInfo" max-width="352px"
+        @click:outside="closeUserInfoDialog">
+        <v-card class="dialog-component-user">
+            <v-card-title class="dialog-title-user">
+                <h2 class="title-user">Thông tin tài khoản
+                    <div class="icon-close-user" @click="closeUserInfoDialog"><font-awesome-icon icon="fa-solid fa-x" />
+                    </div>
+                </h2>
+            </v-card-title>
+            <hr style="border: none; border-bottom: 1px solid #ccc;">
+            <v-card-text class="dialog-content-user">
+                <div class="profile-photo-user">
+                    <div class="cover-avatar-user">
+                        <img class="cover-image-user" :src="userFound.imageCoverAvatar" alt="None" crossorigin="anonymous">
+                    </div>
+                    <div class="ava-name-container-user">
+                        <div class="avatar-profile-user">
+                            <div class="avatar-user">
+                                <img class="avatar-image-user" :src="userFound.imageAvatar">
+                            </div>
+                        </div>
+                        <div class="fullname-profile-user">
+                            <div class="fullname-user">{{ userFound.userName }}</div>
+                        </div>
+                    </div>
+                </div>
+                <hr style="border: none; border-bottom: 1px solid #ccc;">
+                <div class="profile-information-user">
+                    <div class="profile-header-user">
+                        <strong>Thông tin cá nhân</strong>
+                    </div>
+                    <div>
+                        <div class="user-profile-details-user">
+                            <div class="user-profile-item-user">
+                                <span class="title-user">Điện thoại</span>
+                                <span class="content-user">{{ userFound.phoneNumber }}</span>
+                            </div>
+                            <div class="user-profile-item-user">
+                                <span class="title-user">Giới tính</span>
+                                <span class="content-user">{{ userFound.gender === 'Male' ? 'Nam' : 'Nữ' }}</span>
+                            </div>
+                            <div class="user-profile-item-user">
+                                <span class="title-user">Ngày sinh</span>
+                                <span class="content-user">{{ displayedDate }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr v-if="user.phoneNumber !== userFound.phoneNumber" style="border: none; border-bottom: 1px solid #ccc;">
+                <div class="mt-2"></div>
+                <div class="profile-action-user" v-if="user.phoneNumber !== userFound.phoneNumber">
+                    <div v-if="isBlock"
+                        class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/3 text-sm"
+                        @click="unBlockUser(userFound.phoneNumber)">
+                        Bỏ chặn
+                    </div>
+                    <div v-else-if="!sended"
+                        class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/3 text-sm"
+                        @click="blockUser(userFound.phoneNumber)">
+                        Chặn
+                    </div>
+                    <div v-if="!sended && !isFriend && !isBlock"
+                        class="add-friend-button text-center cursor-pointer bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow"
+                        @click="addFriend">
+                        Kết bạn
+                    </div>
+                    <div v-else-if="sended"
+                        class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow">
+                        Chờ xác nhận...
+                    </div>
+                    <div v-else-if="isBlock"
+                        class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow">
+                        Không thể kết bạn
+                    </div>
+                    <div v-else
+                        class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow">
+                        Đã là bạn bè
+                    </div>
+                </div>
+                <div class="mb-2"></div>
+            </v-card-text>
+        </v-card>
+    </v-dialog>
 </template>
 <script>
 import axios from 'axios';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
+import viLocale from 'date-fns/locale/vi';
 import { useToast } from "vue-toastification";
 import { Swiper, SwiperSlide } from 'vue-awesome-swiper';
 import { Navigation } from 'swiper/modules';
@@ -1125,12 +1184,14 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 
 
+
+
 export default {
     name: 'FeedView',
 
     components: {
-        // Swiper,
-        // SwiperSlide,
+        Swiper,
+        SwiperSlide,
         // ShowImage
     },
     setup() {
@@ -1150,6 +1211,15 @@ export default {
         }
         this.getListOfFriends();
     },
+    watch: {
+        myFeeds: {
+            handler(newFeeds) {
+                this.feeds = [...newFeeds];
+            },
+            deep: true, // If myFeeds is an array or object, use deep to watch for changes in its content
+            immediate: true // Run the handler immediately after the component is created
+        }
+    },
     computed: {
         filteredFriends() {
             const normalizedSearchText = this.searchText.toLowerCase();
@@ -1165,6 +1235,14 @@ export default {
                 return dateB - dateA;
             });
         },
+    },
+    errorCaptured(err) {
+        this.error = err;
+        this.hasError = true;
+        // Xử lý lỗi ở đây nếu cần thiết
+        console.error('Lỗi đã được bắt:', err);
+        // Trả về false để ngăn lỗi lan ra bên ngoài
+        return false;
     },
     data() {
         return {
@@ -1185,12 +1263,12 @@ export default {
                 file: null
             },
             user: null,
-            fileListHeight: "100px",
+            fileListHeight: "400px",
             body: '',
-            newFeed: { content: '', files: [], audience: 'AllFriend', friendTag: [] },
+            newFeed: { content: '', files: [], audience: 'Public', friendTag: [] },
             hasTagFriend: false,
             showPostVisible: false,
-            privateSetting: 'Bạn bè',
+            privateSetting: 'Công khai',
             showUpdateFile: false,
             showVisibleInfoFeed: false,
             showPopupVisible: false,
@@ -1202,9 +1280,9 @@ export default {
             allChosen: [
                 'Công khai',
                 'Bạn bè',
-                'Bạn bè ngoại trừ',
-                'Một số bạn bè',
-                'Chỉ mình tôi'
+                // 'Bạn bè ngoại trừ',
+                // 'Một số bạn bè',
+                // 'Chỉ mình tôi'
             ],
             feeds: [],
             myFeeds: [],
@@ -1215,7 +1293,21 @@ export default {
             showVisibleLikedUsers: false,
             currentPage: 0,
             likedUsers: [],
-            isUserScrollToBottom: false
+            isUserScrollToBottom: false,
+            error: null,
+            hasError: false,
+            numberOfUserPost: 0,
+            isTableOptionVisible: false,
+            currentCommentIndex: null,
+            showVisibleUserInfo: false,
+            userFound: null,
+            displayedDate: '',
+            sended: false,
+            isFriend: false,
+            inviteList: null,
+            searchPhoneNumber: '',
+            blockList: [],
+            isBlock: false,
         }
     },
     mounted() {
@@ -1223,6 +1315,7 @@ export default {
         this.myFeeds = [];
         this.chooseTypeOfFilter('allPosts');
         this.fetchAvatar();
+        this.countPostsUser();
         window.addEventListener('scroll', this.handleScroll);
 
     },
@@ -1281,14 +1374,12 @@ export default {
                 this.myFeeds = [];
                 this.typeOfFilter = 'Tất cả bài viết';
                 this.fetchFeed();
-                this.feeds = this.myFeeds;
                 this.clearSelectedItem();
             } else {
                 this.typeOfFilter = 'Bài viết của tôi';
                 this.currentPage = 0;
                 this.myFeeds = [];
                 this.fetchMyFeed();
-                this.feeds = this.myFeeds;
                 this.clearSelectedItem();
             }
         },
@@ -1389,9 +1480,10 @@ export default {
             }
         },
         chooseComment(comment) {
-            this.chosenUpdateComment = comment;
-            console.log(this.chosenUpdateComment)
-            this.focusComment;
+            this.chosenUpdateComment = Object.assign({}, comment);
+            console.log(this.chosenUpdateComment);
+            this.isTableOptionVisible = false;
+            // other actions, e.g., focusing on the comment input
         },
         updateComment(feedId) {
 
@@ -1412,7 +1504,7 @@ export default {
                             this.chosenUpdateComment = null;
                             this.clearContentComment();
                             this.fetchComment(feedId);
-                            this.fetchFeed();
+                            this.getFeedUpdate(feedId);
                         }
                     } else
                         this.toast.error(response.data, { timeout: 1500 });
@@ -1423,25 +1515,26 @@ export default {
         },
         deleteComment(commentId, feedId) {
             axios
-                .delete(`/social-media/delete-comment/${commentId}`,/**{
+                .delete(`/social-media/delete-comment/${commentId}`, {
                     headers: {
                         'Authorization': localStorage.getItem("token"),
                         'Content-Type': 'multipart/form-data',
                     }
-                }**/)
+                })
                 .then(response => {
-                    //console.log("Response status: " + response.status)
-                    //response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))
                     if (response.status === 200) {
                         console.log(response.data);
-                        if (response.data === 'Xóa bình luận thành công!')
+                        if (response.data === 'Xóa bình luận thành công!') {
                             this.toast.success("Xóa bình luận thành công!", 500);
-                        this.fetchComment(feedId)
+                        }
+                        this.fetchComment(feedId);
+                        this.isTableOptionVisible = false;
+                        this.getFeedUpdate(feedId);
                     }
                 })
                 .catch(error => {
-                    console.log('error', error)
-                })
+                    console.log('error', error);
+                });
         },
         handleMouseOver(event) {
             //console.log("Gọi hàm: handleMouseOver");
@@ -1459,7 +1552,7 @@ export default {
             console.log("Gọi hàm: fetchFeed()");
             // console.log("User đang đăng nhập: " + this.user);
             axios
-                .get(`/social-media/get-post/${this.currentPage++}`,/**{
+                .get(`/social-media/get-post/${this.currentPage}`,/**{
                     headers: {
                         'Authorization': localStorage.getItem("token"),
                         'Content-Type': 'multipart/form-data',
@@ -1469,7 +1562,12 @@ export default {
                     //console.log("Response status: " + response.status)
                     //response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))
                     this.myFeeds.push(...response.data.getInfoPostResponse);
-                    this.myFeeds.forEach(feed => this.updateIsUserLikePost(feed));
+                    this.myFeeds.forEach(feed => {
+                        this.updateIsUserLikePost(feed);
+                        if (feed.postFather) {
+                            this.updateIsUserLikePost(feed.postFather);
+                        }
+                    });
                     console.log("Danh sách bài viết: ", this.feeds);
                 })
                 .catch(error => {
@@ -1480,7 +1578,7 @@ export default {
             console.log("Gọi hàm: fetchMyFeed()");
             // console.log("User đang đăng nhập: " + this.user);
             axios
-                .get(`/social-media/get-post-user/${this.currentPage++}`,/**{
+                .get(`/social-media/get-post-user/${this.currentPage}`,/**{
                     headers: {
                         'Authorization': localStorage.getItem("token"),
                         'Content-Type': 'multipart/form-data',
@@ -1489,21 +1587,38 @@ export default {
                 .then(response => {
                     //console.log("Response status: " + response.status)
                     //response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))
-                    this.myFeeds.push(...response.data.getInfoPostResponse);
-                    this.myFeeds.forEach(feed => this.updateIsUserLikePost(feed));
-                    console.log("Danh sách bài viết: ", this.myFeeds);
+                    if (this.currentPage === 0) {
+                        this.myFeeds = response.data.getInfoPostResponse;
+                        this.myFeeds.forEach(feed => {
+                            this.updateIsUserLikePost(feed);
+                            if (feed.postFather) {
+                                this.updateIsUserLikePost(feed.postFather);
+                            }
+                        });
+                        console.log("Danh sách bài viết: ", this.myFeeds);
+                    }
+                    else {
+                        this.myFeeds.push(...response.data.getInfoPostResponse);
+                        this.myFeeds.forEach(feed => {
+                            this.updateIsUserLikePost(feed);
+                            if (feed.postFather) {
+                                this.updateIsUserLikePost(feed.postFather);
+                            }
+                        });
+                        console.log("Danh sách bài viết: ", this.myFeeds);
+                    }
                 })
                 .catch(error => {
                     console.log('error', error)
                 })
         },
         showTableOption(index) {
-            console.log("Gọi hàm showTableOption");
-            const button = document.getElementsByClassName('table-option-comment')[index];
-            if (button.style.display === 'none')
-                button.style.display = 'block';
-            else
-                button.style.display = 'none';
+            if (this.currentCommentIndex === index) {
+                this.isTableOptionVisible = !this.isTableOptionVisible;
+            } else {
+                this.isTableOptionVisible = true;
+            }
+            this.currentCommentIndex = index;
         },
         showOptionComment() {
             console.log("Gọi hàm showOptionComment");
@@ -1570,12 +1685,10 @@ export default {
                         if (this.showVisibleInfoFeed) {
                             this.showVisibleInfoFeed = false;
                         }
-                        if (this.chosenFilter === 'allPosts') {
-                            this.fetchFeed();
-                        }
-                        else {
-                            this.fetchMyFeed();
-                        }
+                        this.countPostsUser();
+                        this.feeds = this.feeds.filter(element => {
+                            return element.id !== postId && (!element.postFather || element.postFather.id !== postId);
+                        });
                     }
                     else
                         this.toast.error("Có lỗi xảy ra, vui lòng thử lại!", 1500);
@@ -1591,6 +1704,7 @@ export default {
         },
         closePostOption() {
             console.log("Gọi hàm: closePostOption");
+            this.clearContentPost();
             this.showPostVisible = false;
         },
         changeColorButtonComment(nameButton, isHovered) {
@@ -1613,8 +1727,13 @@ export default {
                     return null;
                 }
 
-                // Gọi hàm format trong một khối try
-                return format(date, 'HH:mm dd/MM/yyyy');
+                let originalDate = new Date(date);
+
+                // Trừ 7 giờ
+                originalDate.setHours(originalDate.getHours() - 7);
+
+                // Gọi hàm format để định dạng ngày giờ
+                return format(originalDate, 'HH:mm dd/MM/yyyy');
             } catch (error) {
                 //console.error("Lỗi trong quá trình định dạng ngày:", error);
                 // Trả về giá trị mặc định hoặc xử lý theo ý muốn của bạn khi có lỗi
@@ -1638,7 +1757,7 @@ export default {
                         this.updateFeed.files.push(file);
                     }
                 }
-                this.fileListHeight = "400px";
+                // this.fileListHeight = "400px";
             }
 
         },
@@ -1715,24 +1834,24 @@ export default {
         },
         removeFiles() {
             if (this.showUpdatePostVisible) {
-                this.updateFeed = [];
+                this.updateFeed.files = [];
                 // this.updateFeed.files=[];
             } else {
                 this.newFeed.files = [];
             }
-            this.fileListHeight = "100px";
+            // this.fileListHeight = "100px";
         },
         removeFile(index) {
             if (!this.showUpdatePostVisible) {
                 this.newFeed.files.splice(index, 1);
-                if (this.newFeed.files.length === 0) {
-                    this.fileListHeight = "100px";
-                }
+                // if (this.newFeed.files.length === 0) {
+                //     this.fileListHeight = "100px";
+                // }
             } else {
                 this.updateFeed.files.splice(index, 1);
-                if (this.newFeed.files.length === 0) {
-                    this.fileListHeight = "100px";
-                }
+                // if (this.newFeed.files.length === 0) {
+                //     this.fileListHeight = "100px";
+                // }
             }
         },
         showChooseTag() {
@@ -1799,13 +1918,14 @@ export default {
                 }
                 else if (this.privateSetting === 'Bạn bè') {
                     this.newFeed.audience = 'AllFriend'
-                } else if (this.privateSetting === 'Chỉ mình tôi') {
-                    this.newFeed.audience = 'OnlyMe'
-                } else if (this.privateSetting === 'Một số bạn bè') {
-                    this.newFeed.audience = 'SomeOneCanSee'
-                } else {
-                    this.newFeed.audience = 'AllExceptSomeOne'
                 }
+                // } else if (this.privateSetting === 'Chỉ mình tôi') {
+                //     this.newFeed.audience = 'OnlyMe'
+                // } else if (this.privateSetting === 'Một số bạn bè') {
+                //     this.newFeed.audience = 'SomeOneCanSee'
+                // } else {
+                //     this.newFeed.audience = 'AllExceptSomeOne'
+                // }
 
                 const listFriendTag = [];
 
@@ -1828,10 +1948,19 @@ export default {
 
                 console.log(this.newFeed.files)
 
-                for (let i = 0; i < this.newFeed.files.length; i++) {
-                    formData.append('files', this.newFeed.files[i]);
+                if (this.newFeed.files && this.newFeed.files.length > 0) {
+                    for (let i = 0; i < this.newFeed.files.length; i++) {
+                        const file = this.newFeed.files[i];
+                        if (typeof file === 'string') {
+                            const response = await fetch(file);
+                            const blob = await response.blob();
+                            const filename = file.substring(file.lastIndexOf('/') + 1);
+                            formData.append('files', blob, filename);
+                        } else {
+                            formData.append('files', file);
+                        }
+                    }
                 }
-
                 // console.log(formData);
 
                 // console.log(localStorage.getItem("token"))
@@ -1845,27 +1974,30 @@ export default {
 
                 if (response.status === 200) {
                     this.showPostVisible = false;
-                    this.newFeed.content = '';
-                    if (this.chosenFilter === 'allPosts') {
-                        this.fetchFeed();
-                    }
-                    else {
-                        this.fetchMyFeed();
-                    }
-                    this.toast.success(response.data, { timeout: 3000 });
+                    this.clearContentPost();
+                    this.countPostsUser();
+                    const createdFeed = await this.getPostInfo(response.data.getInfoPostResponse.id)
+                    this.feeds.unshift(createdFeed);
+                    console.log(createdFeed)
+                    this.updateIsUserLikePost(createdFeed);
+                    this.toast.success(response.data.mesage, { timeout: 3000 });
                 } else {
-                    this.toast.error(response.data, { timeout: 3000 });
+                    this.toast.error(response.data.mesage, { timeout: 3000 });
                 }
             } catch (error) {
                 if (error.response) {
                     if (error.response.status === 400) {
-                        this.toast.error(error.response.data, { timeout: 3000 });
+                        console.log(error)
+                        this.toast.error(error.response.data.mesage, { timeout: 3000 });
                     } else {
-                        this.toast.error(error.response.data, { timeout: 3000 });
+                        console.log(error)
+                        this.toast.error(error.response.data.mesage, { timeout: 3000 });
                     }
                 } else if (error.request) {
+                    console.log('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!')
                     this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 3000 });
                 } else {
+                    console.log('Error setting up the request:' + error.message)
                     this.toast.error('Error setting up the request:' + error.message, { timeout: 3000 });
                 }
             }
@@ -1873,72 +2005,80 @@ export default {
         async updatePost(post) {
             console.log("Gọi hàm: updatePost");
             try {
-                //console.log("PrivateSetting: ", this.privateSetting);
                 console.log("UpdatePost: ", post);
-                if (this.privateSetting === 'Công khai') {
-                    this.newFeed.audience = 'Public'
-                }
-                else if (this.privateSetting === 'Bạn bè') {
-                    this.newFeed.audience = 'AllFriend'
-                } else if (this.privateSetting === 'Chỉ mình tôi') {
-                    this.newFeed.audience = 'OnlyMe'
-                } else if (this.privateSetting === 'Một số bạn bè') {
-                    this.newFeed.audience = 'SomeOneCanSee'
-                } else {
-                    this.newFeed.audience = 'AllExceptSomeOne'
+
+                // Thiết lập audience dựa trên privateSetting
+                switch (this.privateSetting) {
+                    case 'Công khai':
+                        this.newFeed.audience = 'Public';
+                        break;
+                    default:
+                        this.newFeed.audience = 'AllFriend';
+                    // case 'OnlyMe':
+                    //     this.newFeed.audience = 'OnlyMe';
+                    //     break;
+                    // case 'SomeOneCanSee':
+                    //     this.newFeed.audience = 'SomeOneCanSee';
+                    //     break;
+                    // default:
+                    //     this.newFeed.audience = 'AllExceptSomeOne';
                 }
 
                 const listFriendTag = [];
-
-                for (let friendTagKey in this.newFeed.friendTag) {
-                    if (Object.prototype.hasOwnProperty.call(this.newFeed.friendTag, friendTagKey)) {
-                        const friendTagValue = this.newFeed.friendTag[friendTagKey];
-                        listFriendTag.push(friendTagValue.phoneNumber);
+                // Xử lý userTagIDList từ friendTag
+                if (this.newFeed.friendTag) {
+                    for (let friendTagKey in this.newFeed.friendTag) {
+                        if (Object.prototype.hasOwnProperty.call(this.newFeed.friendTag, friendTagKey)) {
+                            const friendTagValue = this.newFeed.friendTag[friendTagKey];
+                            listFriendTag.push(friendTagValue.phoneNumber);
+                        }
                     }
                 }
 
-                // console.log(listFriendTag)
-
-                // console.log(typeof (listFriendTag))
-
                 const formData = new FormData();
-
                 formData.append('content', post.content);
                 formData.append('audience', this.newFeed.audience);
                 formData.append('userTagIDList', listFriendTag);
-                // console.log(this.newFeed.files)
 
-                for (let i = 0; i < post.files.length; i++) {
-                    formData.append('files', post.files[i]);
+                // Xử lý tệp tin
+                if (post.files && post.files.length > 0) {
+                    for (let i = 0; i < post.files.length; i++) {
+                        const file = post.files[i];
+                        if (typeof file === 'string') {
+                            const response = await fetch(file);
+                            const blob = await response.blob();
+                            const filename = file.substring(file.lastIndexOf('/') + 1);
+                            formData.append('files', blob, filename);
+                        } else {
+                            formData.append('files', file);
+                        }
+                    }
                 }
-                if (post.files.length === 0) formData.append('files', new Blob([''], { type: 'multipart/form-data' }));
 
+                // Gửi yêu cầu POST đến API
                 const response = await axios.post(`social-media/update-post/${post.id}`, formData);
 
-                console.log(response)
+                console.log(response);
 
+                // Xử lý phản hồi từ máy chủ
                 if (response.status === 200) {
                     this.showPostVisible = false;
-                    this.newFeed.content = '';
-                    if (this.chosenFilter === 'allPosts') {
-                        this.fetchFeed();
-                    }
-                    else {
-                        this.fetchMyFeed();
-                    }
+                    this.updateFeed = null;
+
+                    this.getFeedUpdate(post.id);
+
                     this.closeUpdatePostOption();
-                    this.closeFeedInfo();
+                    if (this.showVisibleInfoFeed) {
+                        this.closeFeedInfo();
+                    }
                     this.toast.success(response.data, { timeout: 1000 });
                 } else {
                     this.toast.error(response.data, { timeout: 1000 });
                 }
             } catch (error) {
+                // Xử lý các loại lỗi
                 if (error.response) {
-                    if (error.response.status === 400) {
-                        this.toast.error(error.response.data, { timeout: 1000 });
-                    } else {
-                        this.toast.error(error.response.data, { timeout: 1000 });
-                    }
+                    this.toast.error(error.response.data, { timeout: 1000 });
                 } else if (error.request) {
                     this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
                 } else {
@@ -1946,6 +2086,7 @@ export default {
                 }
             }
         },
+
         fetchAvatar() {
             console.log("Gọi hàm: fetchAvatar()");
             axios.get(`users/imageAvatar`, {
@@ -1991,6 +2132,7 @@ export default {
                         this.feeds.find(f => f.id === postId).userLikeList.splice(post.userLikeList.indexOf(userLike), 1);
                         this.feeds.userLike = false;
                     }
+
                     // console.log(post);
                     // console.log("Danh sách người thích bài viết sau chỉnh sửa: ", this.feeds.find(f => f.id === postId).userLikeList.length);
                 }
@@ -2005,22 +2147,20 @@ export default {
 
             if (foundFeed) {
                 //console.log("Tìm thấy bài viết")
-                const updatedFeed = Object.assign({}, foundFeed, { isLike: !foundFeed.isLike });
-                //console.log(updatedFeed);
-                const index = this.feeds.findIndex(f => f.id === feed.id);
-                if (this.showVisibleInfoFeed) {
-                    // if (updatedFeed.isLike)
-                    //     //console.log("Đã like bài viết")
-                    // else
-                    //     //console.log("Đã hủy like bài viết")
-                    this.showingFeed.isLike = updatedFeed.isLike;
-                }
-                this.fetchUpdateLike(feed.id);
-                //if (this.showVisibleInfoFeed) this.showingFeed = this.feeds.findIndex(f => f.id === feed.id);
+                foundFeed.isLike = !foundFeed.isLike;
 
+                // Gọi hàm fetchUpdateLike để cập nhật trạng thái này lên server
+                this.fetchUpdateLike(feed.id);
+
+                // Nếu có đang hiển thị chi tiết feed (this.showVisibleInfoFeed), hãy cập nhật cho feed này
+                if (this.showVisibleInfoFeed && this.showingFeed && this.showingFeed.id === feed.id) {
+                    this.showingFeed.isLike = foundFeed.isLike;
+                }
+
+                // Cập nhật lại trong danh sách feeds
+                const index = this.feeds.findIndex(f => f.id === feed.id);
                 if (index !== -1) {
-                    //console.log("Vô index !== -1")
-                    this.feeds.splice(index, 1, updatedFeed);
+                    this.feeds[index] = foundFeed; // Directly update the array element
                 }
             }
         },
@@ -2076,6 +2216,7 @@ export default {
             console.log("Gọi hàm: closeFeedInfo");
             this.showVisibleInfoFeed = false;
             this.showPopupVisible = false;
+            this.chosenUpdateComment = null;
         },
         handleFileChange(event) {
             console.log("Gọi hàm: handleFileChange");
@@ -2116,7 +2257,7 @@ export default {
                         this.toast.success(response.data, { timeout: 1500 });
                         this.clearContentComment();
                         this.fetchComment(postId);
-                        this.fetchFeed();
+                        this.getFeedUpdate(postId);
                         const commentContainer = document.querySelector('#dialog-content');
                         console.log('scroll element', commentContainer)
                         console.log('scroll element', commentContainer.scrollHeight)
@@ -2137,8 +2278,15 @@ export default {
             this.newComment.content = '';
             this.newComment.file = null;
 
-        }
-        , async getListOfFriends() {
+        },
+        clearContentPost() {
+            this.newFeed.content = '';
+            this.newFeed.files = [];
+            this.newFeed.audience = 'Public';
+            this.newFeed.friendTag = [];
+            // this.fileListHeight = "100px";
+        },
+        async getListOfFriends() {
             console.log("Gọi hàm: getListOfFriends");
             try {
                 const response = await axios.get(`users/getAllFriendUser`, {
@@ -2171,17 +2319,18 @@ export default {
         openUpdatePost(clickedFeed) {
             //console.log(clickedFeed)
             this.showPopupVisible = false;
+            this.updateFeed = Object.assign({}, clickedFeed);
             this.showUpdatePostVisible = true;
-            this.updateFeed = clickedFeed;
             if (clickedFeed.audience === 'Public') {
                 this.privateSetting = "Công khai"
             } else if (clickedFeed.audience === 'AllFriend') {
                 this.privateSetting = "Bạn bè"
-            } else if (clickedFeed.audience === 'SomeOneCanSee') {
-                this.privateSetting = "Một số bạn bè"
-            } else if (clickedFeed.audience === 'AllExceptSomeOne') {
-                this.privateSetting = "Bạn bè ngoại trừ"
             }
+            // } else if (clickedFeed.audience === 'SomeOneCanSee') {
+            //     this.privateSetting = "Một số bạn bè"
+            // } else if (clickedFeed.audience === 'AllExceptSomeOne') {
+            //     this.privateSetting = "Bạn bè ngoại trừ"
+            // }
         },
         closeUpdatePostOption() {
             this.showUpdatePostVisible = false;
@@ -2204,29 +2353,42 @@ export default {
                     if (response.status === 200) {
                         // this.showPostVisible = false;
                         // this.newFeed.content = '';
-                        this.fetchFeed();
-                        this.toast.success(response.data, { timeout: 3000 });
+                        const createdFeed = await this.getPostInfo(response.data.getInfoPostResponse.id)
+                        this.feeds.unshift(createdFeed);
+                        console.log(createdFeed)
+                        this.updateIsUserLikePost(createdFeed);
+                        this.closeFeedInfo();
+                        this.toast.success(response.data.mesage, { timeout: 3000 });
                     } else {
-                        this.toast.error(response.data, { timeout: 3000 });
+                        this.toast.error(response.data.mesage, { timeout: 3000 });
                     }
                 } catch (error) {
                     if (error.response) {
                         if (error.response.status === 400) {
-                            this.toast.error(error.response.data, { timeout: 3000 });
+                            console.log(error.response.data)
+                            this.toast.error(error.response.data.mesage, { timeout: 3000 });
                         } else {
-                            this.toast.error(error.response.data, { timeout: 3000 });
+                            console.log(error.response.data)
+                            this.toast.error(error.response.data.mesage, { timeout: 3000 });
                         }
                     } else if (error.request) {
-                        this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 3000 });
+                        console.log('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!')
+                        // this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 3000 });
                     } else {
-                        this.toast.error('Error setting up the request:' + error.message, { timeout: 3000 });
+                        console.log('Error setting up the request:' + error.message)
+                        // this.toast.error('Error setting up the request:' + error.message, { timeout: 3000 });
                     }
                 }
 
             }
         },
         openListLikedUserDialog(id) {
-            this.getAllUserLiked(id);
+            if (id) {
+                this.getAllUserLiked(id);
+            } else {
+                console.error('ID is null or undefined:', id);
+                // Optionally handle this case, such as showing an error message or logging it
+            }
         },
         closeListLikedUserDialog() {
             this.showVisibleLikedUsers = false;
@@ -2237,9 +2399,11 @@ export default {
                 if (!this.isUserScrollToBottom) {
                     this.isUserScrollToBottom = true;
                     if (this.chosenFilter == 'allPosts') {
+                        this.currentPage++;
                         await this.fetchFeed();
                     }
                     else {
+                        this.currentPage++;
                         await this.fetchMyFeed();
                     }
                 }
@@ -2285,6 +2449,344 @@ export default {
                 console.log('Slide changed:', this.swiperInstance.activeIndex);
             }
         },
+        countPostsUser() {
+            console.log("Gọi hàm: countPostsUser()");
+            // console.log("User đang đăng nhập: " + this.user);
+            axios
+                .get(`/social-media/countPostsUsers`,/**{
+                    headers: {
+                        'Authorization': localStorage.getItem("token"),
+                        'Content-Type': 'multipart/form-data',
+                    }
+                }**/)
+                .then(response => {
+                    //console.log("Response status: " + response.status)
+                    //response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))
+                    this.numberOfUserPost = response.data;
+                })
+                .catch(error => {
+                    console.log('error', error)
+                })
+        },
+        formattedBirthday() {
+            try {
+                if (this.userFound && this.userFound.birthDay) {
+                    const parsedDate = parseISO(this.userFound.birthDay);
+                    this.displayedDate = format(parsedDate, "dd 'tháng' MM, yyyy", { locale: viLocale });
+                }
+            } catch (exception) {
+                console.log("Error in formattedBirthday", exception);
+            }
+        },
+        showFindFriendDialog() {
+            try {
+                this.searchPhoneNumber = '';
+            } catch (exception) {
+                console.log("Error in showFindFriendDialog", exception);
+            }
+        },
+        showUserInfoDialog(friend) {
+            try {
+                this.userFound = friend;
+                this.formattedBirthday();
+                this.showVisibleUserInfo = true;
+            } catch (exception) {
+                console.log("Error in showUserInfoDialog", exception);
+            }
+        },
+        closeUserInfoDialog() {
+            try {
+                this.showVisibleUserInfo = false;
+            } catch (exception) {
+                console.log("Error in closeUserInfoDialog", exception);
+            }
+        },
+        async showFoundUserDialog() {
+            try {
+                const responseUser = await axios.get(`users/findUserByPhoneNumber/${this.searchPhoneNumber}`, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token")
+                    }
+                });
+
+                if (responseUser.status === 200) {
+                    const userTemp = responseUser.data;
+                    await this.getInviteFriend();
+                    this.checkUser();
+                    this.showUserInfoDialog(userTemp);
+                } else {
+                    console.error(responseUser.data.msg);
+                    this.toast.error(responseUser.data || 'Đã xảy ra lỗi!', { timeout: 1500 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
+            }
+        },
+        async addFriend() {
+            try {
+
+                const userString = localStorage.getItem('user');
+                if (userString) {
+                    const sender = JSON.parse(userString);
+
+                    const addFriendRequest = {
+                        fromPhoneNumberUser: sender.phoneNumber,
+                        toPhoneNumberUser: this.userFound.phoneNumber,
+                        isAcceptingInvite: false
+                    }
+
+                    console.log(addFriendRequest)
+
+                    const responseUser = await axios.post(`users/sendInviteFriend`, addFriendRequest, {
+                        headers: {
+                            'Authorization': localStorage.getItem("token")
+                        }
+                    });
+
+                    if (responseUser.status === 200) {
+                        this.toast.success(responseUser.data)
+                        this.showVisibleUserInfo = false;
+                        this.searchPhoneNumber = '';
+                    } else {
+                        console.error(responseUser.data);
+                        this.toast.error(responseUser.data || 'Đã xảy ra lỗi!', { timeout: 1500 });
+                    }
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
+            }
+        },
+        async blockUser(phoneNumber) {
+            try {
+                const friendRequest = {
+                    fromPhoneNumberUser: this.user.phoneNumber,
+                    toPhoneNumberUser: phoneNumber,
+                }
+
+                const response = await axios.post(`users/blockFriendUser`, friendRequest, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token")
+                    }
+                });
+
+                if (response.status === 200) {
+                    await this.getListOfFriends();
+                    this.showVisibleUserInfo = false;
+                    this.searchPhoneNumber = '';
+                    this.toast.success(response.data, { timeout: 1500 });
+                } else {
+                    console.error(response.body);
+                    this.toast.error(response.data || 'Đã xảy ra lỗi!', { timeout: 1500 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
+            }
+        },
+        async getInviteFriend() {
+            try {
+
+                const response = await axios.get(`users/getAllInviteFriend`, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token")
+                    }
+                });
+
+                if (response.status === 200) {
+                    this.inviteList = response.data;
+                } else {
+                    this.toast.error(response.data, { timeout: 1500 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
+            }
+        },
+        async checkUser() {
+            try {
+                await this.getInviteFriend();
+                await this.getListOfFriends();
+                await this.getListOfBlockedFriends();
+
+                const isFriend = this.listFriends.some(friend => friend.phoneNumber === this.searchPhoneNumber);
+                const isInvited = this.inviteList.some(friend => friend.phoneNumber === this.searchPhoneNumber);
+                const isBlock = this.blockList.some(friend => friend.phoneNumber === this.searchPhoneNumber);
+
+                if (isFriend) {
+                    this.isFriend = true;
+                    this.sended = false;
+                } else {
+                    this.isFriend = false;
+
+                    if (isInvited) {
+                        this.sended = true;
+                    } else {
+                        this.sended = false;
+                    }
+                }
+
+                this.isBlock = isBlock;
+
+                // Additional checks
+                if (this.listFriends.length === 0 && this.inviteList.length === 0) {
+                    this.isFriend = false;
+                    this.sended = false;
+                }
+            } catch (exception) {
+                console.log("Error in checkUser", exception);
+            }
+        },
+        handleOpenUserDialog(phoneNumber) {
+            this.searchPhoneNumber = phoneNumber;
+            this.showFoundUserDialog();
+        },
+        async getListOfBlockedFriends() {
+            try {
+                const response = await axios.get(`users/getAllBlockedUser`, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token")
+                    }
+                });
+
+                if (response.status === 200) {
+
+                    this.blockList = response.data;
+                } else {
+                    console.error(response.data);
+                    this.toast.error(response.data, { timeout: 1500 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
+            }
+        },
+        async unBlockUser(phoneNumber) {
+            try {
+                const friendRequest = {
+                    fromPhoneNumberUser: this.user.phoneNumber,
+                    toPhoneNumberUser: phoneNumber,
+                }
+
+                const response = await axios.post(`users/unBlockFriendUser`, friendRequest, {
+                    headers: {
+                        'Authorization': localStorage.getItem("token")
+                    }
+                });
+
+                if (response.status === 200) {
+                    this.blockList = this.blockList.filter(friend => friend.phoneNumber !== phoneNumber);
+                    this.showVisibleUserInfo = false;
+                    this.searchPhoneNumber = '';
+                    this.toast.success(response.data, { timeout: 1500 });
+                } else {
+                    console.error(response.body);
+                    this.toast.error(response.data || 'Đã xảy ra lỗi!', { timeout: 1500 });
+                }
+            } catch (error) {
+                if (error.response) {
+                    if (error.response.status === 400) {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    } else {
+                        this.toast.error(error.response.data, { timeout: 1500 });
+                    }
+                } else if (error.request) {
+                    this.toast.error('Không nhận được phản hồi từ máy chủ. Vui lòng thử lại!', { timeout: 1500 });
+                } else {
+                    this.toast.error('Error setting up the request:' + error.message, { timeout: 1500 });
+                }
+            }
+        },
+        async getPostInfo(postId) {
+            try {
+                const response = await axios.get(`social-media/getAPostInfo/${postId}`);
+                if (response.status === 200 && response.data && response.data.id) {
+                    return response.data;
+                } else {
+                    this.toast.error(response.data || 'Post not found!', { timeout: 1500 });
+                    return null;
+                }
+            } catch (error) {
+                if (error.response) {
+                    // this.toast.error(error.response.data, { timeout: 1500 });
+                    console.log(error.response.data)
+                } else if (error.request) {
+                    // this.toast.error('No response from the server. Please try again!', { timeout: 1500 });
+                    console.log('No response from the server. Please try again!')
+                } else {
+                    // this.toast.error('Error setting up the request: ' + error.message, { timeout: 1500 });
+                    console.log('Error setting up the request: ' + error.message)
+                }
+                return null;
+            }
+        },
+        async getFeedUpdate(postId) {
+            try {
+                const updatedPostInfo = await this.getPostInfo(postId);
+                if (updatedPostInfo) {
+                    const feedIndex = this.feeds.findIndex(feed => feed.id === postId);
+                    if (feedIndex !== -1) {
+                        this.feeds[feedIndex] = updatedPostInfo;
+                        this.updateIsUserLikePost(this.feeds[feedIndex]);
+                        if (this.feeds[feedIndex].postFather) {
+                            this.updateIsUserLikePost(this.feeds[feedIndex].postFather);
+                        }
+                        console.log('Feed updated successfully!')
+                    } else {
+                        console.log('Feed not found!')
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+                // this.toast.error('An error occurred while updating the feed.', { timeout: 1500 });
+            }
+        }
     },
 }
 </script>
@@ -3145,6 +3647,159 @@ export default {
     /* Remove default focus outline */
     box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.7);
     /* Custom focus outline */
+}
+
+.dialog-container-user {
+    .dialog-component-user {
+        .dialog-title-user {
+            .title-user {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+
+                .icon-close-user {
+                    cursor: pointer;
+                }
+            }
+        }
+
+        .dialog-content-user {
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            height: auto;
+
+            .profile-photo-user {
+                position: relative;
+                display: block;
+
+                .cover-avatar-user {
+                    position: relative;
+                    display: table;
+                    margin: auto;
+
+                    .cover-image-user {
+                        cursor: pointer;
+                        width: 352px;
+                        height: 152px;
+                        object-fit: cover;
+                    }
+                }
+
+                .ava-name-container-user {
+                    text-align: center;
+                    left: 0;
+                    width: 100%;
+                    color: #fff;
+                    position: relative;
+                    display: flex;
+                    background: transparent;
+                    margin-top: -48px;
+                    flex-direction: column;
+
+                    .avatar-profile-user {
+                        cursor: pointer;
+                        align-self: center;
+                        display: block;
+
+                        .avatar-user {
+                            width: 80px;
+                            height: 80px;
+                            min-width: 80px;
+                            min-height: 80px;
+                            position: relative;
+                            color: #fff;
+                            overflow: hidden;
+                            box-sizing: border-box;
+
+                            .avatar-image-user {
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                background: #e6e8ea;
+                                color: #7589a3;
+                                overflow: hidden;
+                                object-fit: cover;
+                                font-size: 1.25rem;
+                                font-weight: 500;
+                                line-height: 1.5;
+                                border-width: 2px;
+                                box-sizing: border-box;
+                                border-radius: 50%;
+                                border: 2px solid #fff;
+                                width: 80px;
+                                height: 80px;
+                                min-width: 80px;
+                                min-height: 80px;
+                                overflow-clip-margin: content-box;
+                            }
+                        }
+                    }
+
+                    .fullname-profile-user {
+                        width: 100%;
+                        color: #081c36;
+                        font-size: 1.125rem; // Thay đổi font-size thành 1.125rem
+                        font-weight: 500; // Thay đổi font-weight thành 500
+                        line-height: 1.5;
+                        display: flex;
+                        flex-direction: column;
+                        z-index: 1;
+                        margin-top: 10px;
+
+                        .fullname-user {
+                            position: relative;
+                            width: fit-content;
+                            margin: auto;
+                            max-width: 271px;
+                            text-overflow: ellipsis;
+                        }
+                    }
+                }
+            }
+
+            .profile-information-user {
+
+                .profile-header-user {
+                    margin-top: 5px;
+                    margin-bottom: 10px;
+                    margin-left: 3px;
+                }
+
+                .user-profile-details-user {
+                    display: flex;
+                    flex-direction: column;
+
+                    .user-profile-item-user {
+                        display: flex;
+                        justify-content: space-between;
+                        margin-bottom: 10px;
+
+                        .title-user {
+                            flex-basis: 40%;
+                            margin-left: 3px;
+                        }
+
+                        .content-user {
+                            flex-basis: 60%;
+                        }
+                    }
+                }
+            }
+
+            .profile-action-user {
+                height: 40px;
+                display: flex;
+            }
+        }
+
+    }
+
+    .block-button,
+    .add-friend-button {
+        padding: 8px 16px;
+    }
 }
 
 @media only screen and (min-width:768px) and (max-width:787px) {

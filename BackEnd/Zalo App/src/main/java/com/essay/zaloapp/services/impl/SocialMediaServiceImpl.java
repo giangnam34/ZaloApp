@@ -17,11 +17,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
-import org.apache.poi.ss.formula.functions.T;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -68,10 +68,15 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     @Autowired
     private PreferenceCalculator preferenceCalculator;
 
+    @Autowired
+    private PreferenceRepository preferenceRepository;
+
     @Override
     public String validateCreateNewPostRequest(User user, CreateNewPostRequest createNewPostRequest) {
-        if (createNewPostRequest.getPostTopId() == null && (createNewPostRequest.getFiles() == null || (createNewPostRequest.getFiles() != null && createNewPostRequest.getFiles()[0].isEmpty())) && (createNewPostRequest.getContent() == null || createNewPostRequest.getContent().isEmpty()) && (createNewPostRequest.getUserTagIDList() == null || createNewPostRequest.getUserTagIDList().isEmpty())) {
-            return "Bài đăng phải có nội dung hoặc hình ảnh hoặc gắn thẻ người dùng!";
+        if (createNewPostRequest.getPostTopId() == null
+                && (createNewPostRequest.getContent() == null || createNewPostRequest.getContent().isEmpty())
+                && (createNewPostRequest.getFiles() == null || (createNewPostRequest.getFiles() != null && createNewPostRequest.getFiles()[0].isEmpty()))) {
+            return "Bài đăng phải có nội dung hoặc hình ảnh!";
         }
         if (createNewPostRequest.getUserTagIDList() != null && createNewPostRequest.getUserTagIDList().contains(user.getPhoneNumber()))
             return "Không thể gắn thẻ chính bản thân vào bài viết!";
@@ -81,43 +86,60 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     }
 
     @Override
-    public String createNewPost(Long userId, CreateNewPostRequest createNewPostRequest) {
+    public GetInfoPost createNewPost(Long userId, CreateNewPostRequest createNewPostRequest) {
         try {
             User user = userRepository.findById(userId);
             String validate = validateCreateNewPostRequest(user,createNewPostRequest);
             Long sharePostID = null;
             if (!validate.equals("Hợp lệ!"))
-                return validate;
+                return new GetInfoPost(validate, new GetInfoPostResponse());
+
             List<Resource> resourceList = new ArrayList<>();
             if (createNewPostRequest.getFiles() != null && !createNewPostRequest.getFiles()[0].isEmpty()) {
                 resourceList = Arrays.stream(createNewPostRequest.getFiles()).map(p -> new Resource(fileStorageService.storeFile(p), p.getContentType().contains("video") ? ResourceType.Video : ResourceType.Image)).collect(Collectors.toList());
             }
-            Post post = new Post(new Date(new Date().getTime()), new Date(new Date().getTime()), createNewPostRequest.getContent(), createNewPostRequest.getAudience() != null ? Audience.findByName(createNewPostRequest.getAudience()) : Audience.Public, user, resourceList);
+
+            Post post = new Post(new Date(), new Date(), createNewPostRequest.getContent(),
+                    createNewPostRequest.getAudience() != null ? Audience.findByName(createNewPostRequest.getAudience()) : Audience.Public,
+                    user, resourceList);
+
             if (createNewPostRequest.getPostTopId() != null) {
-                Post postTop = postRepository.findById(createNewPostRequest.getPostTopId()).get();
-                if (postTop == null) return "Bài viết chia sẻ đã không còn tồn tại!";
-                if (!isUserAuthorizeInteractPost(post, user)) return "Người dùng không có quyền chia sẻ bài viết này!";
+                Post postTop = postRepository.findById(createNewPostRequest.getPostTopId()).orElse(null);
+                if (postTop == null) return new GetInfoPost("Bài viết chia sẻ đã không còn tồn tại!", new GetInfoPostResponse());
+                if (!isUserAuthorizeInteractPost(post, user)) return new GetInfoPost("Người dùng không có quyền chia sẻ bài viết này!", new GetInfoPostResponse());
                 post.setPostTop(postTop);
                 sharePostID = postTop.getId();
-                postTop.setPostScore( (postTop.getPostScore() != null ? postTop.getPostScore() : 0.000000000000000000) + 0.600000000000000000);
+                postTop.setPostScore((postTop.getPostScore() != null ? postTop.getPostScore() : 0.0) + 0.6);
             }
+
+            List<Post> postTopList = new ArrayList<>();
+            List<Comment> commentList = new ArrayList<>();
+
+            List<PostUser> postUserList = new ArrayList<>();
             if (createNewPostRequest.getUserTagIDList() != null && !createNewPostRequest.getUserTagIDList().isEmpty()) {
                 for (String userPhoneNumber : createNewPostRequest.getUserTagIDList()) {
                     if (!userRepository.existsUserByPhoneNumber(userPhoneNumber))
-                        return "Gắn thẻ người dùng không hợp lệ";
+                        return new GetInfoPost("Gắn thẻ người dùng không hợp lệ!", new GetInfoPostResponse());
                 }
-                List<PostUser> postUserList = createNewPostRequest.getUserTagIDList().stream().map(p -> new PostUser(post, userRepository.findByPhoneNumber(p), PostUserType.TagUser)).collect(Collectors.toList());
-                post.setPostUserList(postUserList);
+                postUserList = createNewPostRequest.getUserTagIDList().stream()
+                        .map(p -> new PostUser(post, userRepository.findByPhoneNumber(p), PostUserType.TagUser))
+                        .collect(Collectors.toList());
             }
-            postRepository.save(post);
-            if (sharePostID != null){
+            post.setPostUserList(postUserList);
 
-                preferenceCalculator.updatePreferenceUser(user,sharePostID, 0L, 0L, 1L);
+            post.setPostTopList(postTopList);
+
+            post.setCommentList(commentList);
+
+            Post savedPost = postRepository.save(post);
+            if (sharePostID != null){
+                preferenceCalculator.updatePreferenceUser(user, sharePostID, 0L, 0L, 1L);
             }
-            return "Đăng bài viết thành công!";
+
+            return new GetInfoPost("Đăng bài viết thành công!", mapPostEntityToResponse(savedPost));
         } catch (Exception e) {
             System.out.println(e.toString());
-            return "Có lỗi trong quá trình thực thi. Vui lòng thử lại!";
+            return new GetInfoPost("Có lỗi trong quá trình thực thi. Vui lòng thử lại!", new GetInfoPostResponse());
         }
     }
 
@@ -142,32 +164,56 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     @Override
     public String updatePost(Long userId, Long postId, CreateNewPostRequest createNewPostRequest) {
         try {
+            // Validate request
             String validate = validateCreateNewPostRequest(userRepository.findById(userId), createNewPostRequest);
             if (!validate.equals("Hợp lệ!"))
                 return validate;
+
+            // Find post by postId and userId
             Post post = postRepository.findByIdAndUser_Id(postId, userId);
             if (post == null || post.getUser().getId() != userId)
                 throw new Exception("Bạn không có quyền chỉnh sửa bài viết này hoặc bài viết không còn tồn tại nữa!");
-            if (createNewPostRequest.getContent() != null) post.setContentPost(createNewPostRequest.getContent());
+
+            // Update post fields
+            if (createNewPostRequest.getContent() == null || createNewPostRequest.getContent().isEmpty()){
+                post.setContentPost("");
+            }else{
+                post.setContentPost(createNewPostRequest.getContent());
+            }
+
             if (createNewPostRequest.getAudience() != null)
                 post.setAudienceValue(Audience.findByName(createNewPostRequest.getAudience()));
-            if (createNewPostRequest.getUserTagIDList() != null) {
-                for (PostUser postUser : post.getPostUserList().stream().filter(postUser -> postUser.getPostUserType().equals(PostUserType.TagUser)).collect(Collectors.toList())) {
-                    post.getPostUserList().remove(postUser);
-                }
-                List<PostUser> postUserList = post.getPostUserList();
-                postUserList.addAll(createNewPostRequest.getUserTagIDList().stream().map(p -> new PostUser(post, userRepository.findByPhoneNumber(p), PostUserType.TagUser)).collect(Collectors.toList()));
-                post.setPostUserList(postUserList);
-            }
+
+            // Remove existing tagged users and add new ones
+            post.getPostUserList().removeIf(postUser -> postUser.getPostUserType().equals(PostUserType.TagUser));
+            List<PostUser> postUserList = createNewPostRequest.getUserTagIDList().stream()
+                    .map(p -> new PostUser(post, userRepository.findByPhoneNumber(p), PostUserType.TagUser))
+                    .collect(Collectors.toList());
+            post.getPostUserList().addAll(postUserList);
+
+            // Set updated time
             post.setUpdatedAt(new Date(new Date().getTime() + 7 * 60 * 60 * 1000));
-            if (createNewPostRequest.getFiles() != null) {
-                if (createNewPostRequest.getFiles()[0].isEmpty()) post.setResourceList(new ArrayList<>());
-                else {
-                    List<Resource> resourceList = Arrays.stream(createNewPostRequest.getFiles()).map(p -> new Resource(fileStorageService.storeFile(p), p.getContentType().contains("video") ? ResourceType.Video : ResourceType.Image)).collect(Collectors.toList());
-                    post.setResourceList(resourceList);
-                }
+
+            // Handle files
+            if (createNewPostRequest == null) {
+                System.out.println("createNewPostRequest is null");
+            } else if (createNewPostRequest.getFiles() == null) {
+                System.out.println("Files are null");
+                post.setResourceList(new ArrayList<>());
+            } else if (createNewPostRequest.getFiles().length == 0) {
+                System.out.println("Files are empty");
+                post.setResourceList(new ArrayList<>());
+            } else {
+                List<Resource> resourceList = Arrays.stream(createNewPostRequest.getFiles())
+                        .map(p -> new Resource(fileStorageService.storeFile(p),
+                                p.getContentType().contains("video") ? ResourceType.Video : ResourceType.Image))
+                        .collect(Collectors.toList());
+                post.setResourceList(resourceList);
             }
+
+            // Save updated post
             postRepository.save(post);
+
             return "Chỉnh sửa bài viết thành công!";
         } catch (Exception e) {
             System.out.println(e.toString());
@@ -181,13 +227,22 @@ public class SocialMediaServiceImpl implements SocialMediaService {
             Post post = postRepository.findById(postId).orElseThrow(Exception::new);
             if (post.getUser().getId() != userId)
                 return "Người dùng không có quyền thực hiện hành động này!";
+
+            List<Post> childPosts = postRepository.findByPostTopId(postId);
+            for (Post childPost : childPosts) {
+                preferenceRepository.deleteByPostID(childPost.getId());
+                postRepository.delete(childPost);
+            }
+
             if (post.getPostTop() != null){
                 Post postTop = post.getPostTop();
                 if (postTop.getPostScore() != null && postTop.getPostScore() - 0.600000000000000000 >= 0.000000000000000000) {
                     postTop.setPostScore(postTop.getPostScore() - 0.600000000000000000);
                     postRepository.save(postTop);
                 }
+                post.setPostTop(null);
             }
+            preferenceRepository.deleteByPostID(postId);
             postRepository.delete(post);
             return "Xóa bài viết thành công!";
         } catch (Exception e) {
@@ -200,7 +255,7 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     @Override
     public GetAllInfoPostUser getAllPostUser(Long userId, Long page){
         try{
-            Pageable pageable = PageRequest.of(page.intValue(),10);
+            Pageable pageable = PageRequest.of(page.intValue(),10, Sort.by(Sort.Direction.DESC, "createdAt"));
             return new GetAllInfoPostUser("Thành công!", mapListPostEntityToResponse(postRepository.findByUser_Id(userId, pageable)));
         } catch(Exception e){
             System.out.println(e.toString());
@@ -567,12 +622,36 @@ public class SocialMediaServiceImpl implements SocialMediaService {
         }
     }
 
+    @Override
+    public GetInfoPostResponse getPostById(Long postId) {
+        Optional<Post> postOptional = postRepository.findById(postId);
+        if(postOptional.isEmpty()){
+            return new GetInfoPostResponse();
+        }
+        Post post = postOptional.get();
+        return mapPostEntityToResponse(post);
+    }
+
+    @Override
+    public Long countPostsUser(Long userId){
+        List<Post> post = postRepository.findByUser_Id(userId);
+        return Long.valueOf(post.size());
+    }
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
     public class GetAllInfoPostUser {
         private String mesage;
         private List<GetInfoPostResponse> getInfoPostResponse;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public class GetInfoPost {
+        private String mesage;
+        private GetInfoPostResponse getInfoPostResponse;
     }
 
     @Data
