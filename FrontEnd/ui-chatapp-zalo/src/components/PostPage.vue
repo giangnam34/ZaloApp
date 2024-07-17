@@ -69,7 +69,7 @@
                                                 <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
                                             </a>
                                             <div class="popoverAction"
-                                                v-show="showPopupVisible && !showVisibleInfoFeed && clickedFeed.userPost.phoneNumber === user.phoneNumber"
+                                                v-show="showPopupVisible && !showVisibleInfoFeed && clickedFeed.userPost.phoneNumber === user.phoneNumber && feed.postFather === null"
                                                 :style="{ left: popoverLeft, top: popoverTop }">
                                                 <div class="popover-body">
                                                     <div class="popover-item" @click="deletePost(clickedFeed.id)">
@@ -203,20 +203,23 @@
                                                         <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
                                                     </a>
                                                     <div class="popoverAction"
-                                                        v-show="showPopupVisible && !showVisibleInfoFeed && clickedFeed.userPost.phoneNumber === user.phoneNumber"
+                                                        v-show="showPopupVisible && !showVisibleInfoFeed && clickedFeed.userPost.phoneNumber === user.phoneNumber && feed.postFather !== null"
                                                         :style="{ left: popoverLeft, top: popoverTop }">
                                                         <div class="popover-body">
+                                                            <div style="height:10px"></div>
                                                             <div class="popover-item" @click="deletePost(clickedFeed.id)">
                                                                 <div>
                                                                     Xóa bài viết
                                                                 </div>
                                                             </div>
+                                                            <div style="height:20px"></div>
                                                             <div class="separator"></div>
                                                             <div class="popover-item" @click="hidePopover">
                                                                 <div>
                                                                     Hủy
                                                                 </div>
                                                             </div>
+                                                            <div style="height:10px"></div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -280,7 +283,8 @@
                                     </div>
                                 </div>
 
-                                <p class="mb-3">{{ feed.postFather.content || '' }}</p>
+                                <p class="mb-3 cursor-pointer" @click="openFeedInfo(feed.postFather)">{{
+                                    feed.postFather.content || '' }}</p>
                             </div>
 
 
@@ -696,7 +700,7 @@
                                                 <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
                                             </a>
                                             <div class="popoverAction"
-                                                v-show="showPopupVisible && clickedFeed.userPost.phoneNumber === user.phoneNumber"
+                                                v-show="showPopupVisible && clickedFeed.userPost.phoneNumber === user.phoneNumber && feed.postFather === null"
                                                 style=" right: 252px; top: 40px; ">
                                                 <div class="popover-body">
                                                     <div class="popover-item" @click="deletePost(clickedFeed.id)">
@@ -1689,6 +1693,10 @@ export default {
                         this.feeds = this.feeds.filter(element => {
                             return element.id !== postId && (!element.postFather || element.postFather.id !== postId);
                         });
+
+                        if (this.chosenFilter != 'allPosts') {
+                            this.fetchMyFeed();
+                        }
                     }
                     else
                         this.toast.error("Có lỗi xảy ra, vui lòng thử lại!", 1500);
@@ -1743,23 +1751,23 @@ export default {
         onFileSelected(event) {
             console.log("Gọi hàm: onFileSelected");
             const files = event.target.files;
+            const validFiles = [];
+
             if (files.length != 0) {
-                if (!this.showUpdatePostVisible) {
-                    this.newFeed.files = [];
-                    for (let i = 0; i < files.length; i++) {
-                        const file = files[i];
-                        this.newFeed.files.push(file);
-                    }
-                } else {
-                    this.updateFeed.files = [];
-                    for (let i = 0; i < files.length; i++) {
-                        const file = files[i];
-                        this.updateFeed.files.push(file);
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    if (this.isValidFile(file)) {
+                        validFiles.push(file);
+                    } else {
+                        alert(`File ${file.name} sẽ không được thêm vào do có kích thước lớn hơn 100MB hoặc có định dạng không được hỗ trợ (chỉ hỗ trợ định dạng hình ảnh và video)`);
                     }
                 }
-                // this.fileListHeight = "400px";
+                if (!this.showUpdatePostVisible) {
+                    this.newFeed.files = validFiles;
+                } else {
+                    this.updateFeed.files = validFiles;
+                }
             }
-
         },
         // isImage(file) {
         //     try {
@@ -1816,19 +1824,21 @@ export default {
         addFile(event) {
             console.log("Gọi hàm: addFile");
             const files = event.target.files;
-            if (!this.showUpdatePostVisible) {
-                if (files.length != 0) {
-                    for (let i = 0; i < files.length; i++) {
-                        const file = files[i];
-                        this.newFeed.files.push(file);
+            const validFiles = [];
+
+            if (files.length != 0) {
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    if (this.isValidFile(file)) {
+                        validFiles.push(file);
+                    } else {
+                        alert(`File ${file.name} sẽ không được thêm vào do có kích thước lớn hơn 100MB hoặc có định dạng không được hỗ trợ (chỉ hỗ trợ định dạng hình ảnh và video)`);
                     }
                 }
-            } else {
-                if (files.length != 0) {
-                    for (let i = 0; i < files.length; i++) {
-                        const file = files[i];
-                        this.updateFeed.files.push(file);
-                    }
+                if (!this.showUpdatePostVisible) {
+                    this.newFeed.files.push(...validFiles);
+                } else {
+                    this.updateFeed.files.push(...validFiles);
                 }
             }
         },
@@ -2071,6 +2081,12 @@ export default {
                     if (this.showVisibleInfoFeed) {
                         this.closeFeedInfo();
                     }
+                    if (this.chosenFilter == 'allPosts') {
+                        this.fetchFeed();
+                    }
+                    else {
+                        this.fetchMyFeed();
+                    }
                     this.toast.success(response.data, { timeout: 1000 });
                 } else {
                     this.toast.error(response.data, { timeout: 1000 });
@@ -2108,59 +2124,102 @@ export default {
         },
         fetchUpdateLike(postId) {
             console.log("Gọi hàm: fetchUpdateLike(postId)");
-            axios.put(`/social-media/like-post/${postId}`).then(response => {
-                // Xử lý kết quả nếu cần
-                if (response.status === 200) {
-                    const userLike = {
-                        "userName": this.user.fullName,
-                        "imageAvatar": this.user.imageAvatarUrl.substring(5),
-                        "phoneNumber": this.user.phoneNumber
-                    }
-                    // console.log("User like: " , userLike);
-                    //console.log("User like key: " , Object.keys(this.user));
-                    const post = this.feeds.find(f => f.id === postId);
-                    // console.log("Danh sách người thích bài viết trước chỉnh sửa: ", this.feeds.find(f => f.id === postId).userLikeList.length);
-                    // console.log(post);
-                    // console.log("Response body: " + response.data);
-                    if (response.data === "Thích bài viết thành công!") {
-                        // console.log("Vào thích");
-                        this.feeds.find(f => f.id === postId).userLikeList.push(userLike)
-                        this.feeds.userLike = true;
-                    }
-                    else {
-                        // console.log("Vào hủy thích");
-                        this.feeds.find(f => f.id === postId).userLikeList.splice(post.userLikeList.indexOf(userLike), 1);
-                        this.feeds.userLike = false;
-                    }
+            axios.put(`/social-media/like-post/${postId}`)
+                .then(response => {
+                    if (response.status === 200) {
+                        const userLike = {
+                            "userName": this.user.fullName,
+                            "imageAvatar": this.user.imageAvatarUrl.substring(5),
+                            "phoneNumber": this.user.phoneNumber
+                        };
 
-                    // console.log(post);
-                    // console.log("Danh sách người thích bài viết sau chỉnh sửa: ", this.feeds.find(f => f.id === postId).userLikeList.length);
-                }
-            }).catch(error => {
-                console.error('Error updating post like:', error);
-            });
+                        // Find and update all instances of the post in this.feeds
+
+                        this.feeds.forEach(f => {
+                            if (response.data === "Thích bài viết thành công!") {
+                                if (f.id === postId) {
+                                    f.userLikeList.push(userLike);
+                                }
+                                if ((f.postFather && f.postFather.id === postId)) {
+                                    f.postFather.userLikeList.push(userLike);
+                                }
+                            } else {
+                                if (f.id === postId) {
+                                    const index = f.userLikeList.findIndex(user => user.phoneNumber === this.user.phoneNumber);
+                                    if (index !== -1) {
+                                        f.userLikeList.splice(index, 1);
+                                    }
+                                }
+                                if ((f.postFather && f.postFather.id === postId)) {
+                                    const index = f.postFather.userLikeList.findIndex(user => user.phoneNumber === this.user.phoneNumber);
+                                    if (index !== -1) {
+                                        f.postFather.userLikeList.splice(index, 1);
+                                    }
+                                }
+
+                            }
+                        });
+
+                        // this.feeds.forEach(f => {
+                        //     if (f.id === postId || (f.postFather && f.postFather.id === postId)) {
+                        //         if (response.data === "Thích bài viết thành công!") {
+                        //             f.userLikeList.push(userLike);
+                        //         } else {
+                        //             const index = f.userLikeList.findIndex(user => user.phoneNumber === this.user.phoneNumber);
+                        //             if (index !== -1) {
+                        //                 f.userLikeList.splice(index, 1);
+                        //             }
+                        //         }
+                        //     }
+                        // });
+
+                        // Update showingFeed if applicable
+                        // if (this.showVisibleInfoFeed && this.showingFeed && this.showingFeed.id === postId) {
+                        //     this.showingFeed.userLikeList = this.feeds.find(f => f.id === postId).userLikeList;
+                        // }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating post like:', error);
+                });
         },
+
         likePost(feed) {
             console.log("Gọi hàm likePost(feed)");
-            //console.log("Id bài viết: " + feed.id);
             const foundFeed = this.feeds.find(f => f.id === feed.id);
 
             if (foundFeed) {
-                //console.log("Tìm thấy bài viết")
                 foundFeed.isLike = !foundFeed.isLike;
 
-                // Gọi hàm fetchUpdateLike để cập nhật trạng thái này lên server
+                console.log("Check isLike: " + foundFeed.isLike)
+
+                // Call fetchUpdateLike to update like status on server
                 this.fetchUpdateLike(feed.id);
 
-                // Nếu có đang hiển thị chi tiết feed (this.showVisibleInfoFeed), hãy cập nhật cho feed này
+                // Update all instances of the post in this.feeds
+                this.feeds.forEach(f => {
+                    if (f.id === feed.id) {
+                        f.isLike = foundFeed.isLike;
+                    }
+                });
+
+                this.feeds.forEach(f => {
+                    if (f.postFather !== null && f.postFather.id == feed.id) {
+                        f.postFather.isLike = foundFeed.isLike;
+                    }
+                }
+                );
+
+                // Update showingFeed if applicable
                 if (this.showVisibleInfoFeed && this.showingFeed && this.showingFeed.id === feed.id) {
                     this.showingFeed.isLike = foundFeed.isLike;
                 }
 
-                // Cập nhật lại trong danh sách feeds
-                const index = this.feeds.findIndex(f => f.id === feed.id);
-                if (index !== -1) {
-                    this.feeds[index] = foundFeed; // Directly update the array element
+                if (this.chosenFilter == 'allPosts') {
+                    this.fetchFeed();
+                }
+                else {
+                    this.fetchMyFeed();
                 }
             }
         },
@@ -2207,6 +2266,7 @@ export default {
         openFeedInfo(feed) {
             console.log("Gọi hàm: openFeedInfo");
             this.showVisibleInfoFeed = true;
+            this.updateIsUserLikePost(feed);
             this.showingFeed = feed;
             this.fetchComment(feed.id);
             //this.newComment.senderPhoneNumber = this.user.phoneNumber;
@@ -2358,6 +2418,12 @@ export default {
                         console.log(createdFeed)
                         this.updateIsUserLikePost(createdFeed);
                         this.closeFeedInfo();
+                        if (this.chosenFilter == 'allPosts') {
+                            this.fetchFeed();
+                        }
+                        else {
+                            this.fetchMyFeed();
+                        }
                         this.toast.success(response.data.mesage, { timeout: 3000 });
                     } else {
                         this.toast.error(response.data.mesage, { timeout: 3000 });
@@ -2786,7 +2852,14 @@ export default {
                 console.error(error);
                 // this.toast.error('An error occurred while updating the feed.', { timeout: 1500 });
             }
-        }
+        },
+        isValidFile(file) {
+            const maxSize = 100 * 1024 * 1024;
+            const isValidType = file.type.startsWith('image/') || file.type.startsWith('video/');
+            const isValidSize = file.size <= maxSize;
+
+            return isValidType && isValidSize;
+        },
     },
 }
 </script>
