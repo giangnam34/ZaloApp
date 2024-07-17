@@ -20,8 +20,8 @@
                 <div class="main-center col-span-2 space-y-4">
                     <div class="bg-white border border-gray-200 rounded-lg">
                         <div class="p-4">
-                            <span class="p-4 bg-gray-100 rounded-lg cursor-pointer d-block w-100" @click="showPostOption">{{
-                                user.fullName }} ơi, bạn đang nghĩ gì thế?</span>
+                            <span class="p-4 bg-gray-100 rounded-lg cursor-pointer d-block w-100" @click="showPostOption">What's is on your mind, {{
+                                user.fullName }}?</span>
                         </div>
                     </div>
 
@@ -74,12 +74,12 @@
                                                 <div class="popover-body">
                                                     <div class="popover-item" @click="deletePost(clickedFeed.id)">
                                                         <div>
-                                                            Xóa bài viết
+                                                            Delete post
                                                         </div>
                                                     </div>
                                                     <div class="popover-item" @click="openUpdatePost(clickedFeed)">
                                                         <div>
-                                                            Chỉnh sửa bài viết
+                                                            Edit post
                                                         </div>
                                                     </div>
                                                     <div class="separator"></div>
@@ -208,13 +208,13 @@
                                                         <div class="popover-body">
                                                             <div class="popover-item" @click="deletePost(clickedFeed.id)">
                                                                 <div>
-                                                                    Xóa bài viết
+                                                                    Delete post
                                                                 </div>
                                                             </div>
                                                             <div class="separator"></div>
                                                             <div class="popover-item" @click="hidePopover">
                                                                 <div>
-                                                                    Hủy
+                                                                    Cancel
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -576,7 +576,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div><span>Danh sách bạn bè</span></div>
+                        <div><span>List of friend</span></div>
                         <div class="friend-list-container">
                             <div v-for="friend in filteredFriends" v-bind:key="friend.phoneNumber"
                                 class="position-relative">
@@ -615,7 +615,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div><span>Danh sách bạn bè</span></div>
+                        <div><span>List of friend</span></div>
                         <div class="friend-list-container">
                             <div v-for="friend in filteredFriends" v-bind:key="friend.phoneNumber"
                                 class="position-relative">
@@ -701,12 +701,12 @@
                                                 <div class="popover-body">
                                                     <div class="popover-item" @click="deletePost(clickedFeed.id)">
                                                         <div>
-                                                            Xóa bài viết
+                                                            Delete post
                                                         </div>
                                                     </div>
                                                     <div class="popover-item" @click="openUpdatePost(clickedFeed)">
                                                         <div>
-                                                            Chỉnh sửa bài viết
+                                                            Edit post
                                                         </div>
                                                     </div>
                                                     <div class="popover-item" @click="hidePopover">
@@ -1092,7 +1092,7 @@
         @click:outside="closeUserInfoDialog">
         <v-card class="dialog-component-user">
             <v-card-title class="dialog-title-user">
-                <h2 class="title-user">Thông tin tài khoản
+                <h2 class="title-user">Info account
                     <div class="icon-close-user" @click="closeUserInfoDialog"><font-awesome-icon icon="fa-solid fa-x" />
                     </div>
                 </h2>
@@ -1117,20 +1117,20 @@
                 <hr style="border: none; border-bottom: 1px solid #ccc;">
                 <div class="profile-information-user">
                     <div class="profile-header-user">
-                        <strong>Thông tin cá nhân</strong>
+                        <strong>Info account</strong>
                     </div>
                     <div>
                         <div class="user-profile-details-user">
                             <div class="user-profile-item-user">
-                                <span class="title-user">Điện thoại</span>
+                                <span class="title-user">Phone number</span>
                                 <span class="content-user">{{ userFound.phoneNumber }}</span>
                             </div>
                             <div class="user-profile-item-user">
-                                <span class="title-user">Giới tính</span>
+                                <span class="title-user">Gender</span>
                                 <span class="content-user">{{ userFound.gender === 'Male' ? 'Nam' : 'Nữ' }}</span>
                             </div>
                             <div class="user-profile-item-user">
-                                <span class="title-user">Ngày sinh</span>
+                                <span class="title-user">Birthday</span>
                                 <span class="content-user">{{ displayedDate }}</span>
                             </div>
                         </div>
@@ -1142,29 +1142,29 @@
                     <div v-if="isBlock"
                         class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/3 text-sm"
                         @click="unBlockUser(userFound.phoneNumber)">
-                        Bỏ chặn
+                        Unblock
                     </div>
                     <div v-else-if="!sended"
                         class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/3 text-sm"
                         @click="blockUser(userFound.phoneNumber)">
-                        Chặn
+                        Block
                     </div>
                     <div v-if="!sended && !isFriend && !isBlock"
                         class="add-friend-button text-center cursor-pointer bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow"
                         @click="addFriend">
-                        Kết bạn
+                        Add friend
                     </div>
                     <div v-else-if="sended"
                         class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow">
-                        Chờ xác nhận...
+                        Waiting accept...
                     </div>
                     <div v-else-if="isBlock"
                         class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow">
-                        Không thể kết bạn
+                        Can't send invite request
                     </div>
                     <div v-else
                         class="add-friend-button text-center bg-blue-500 text-white rounded-lg h-10 ml-2 text-sm flex-grow">
-                        Đã là bạn bè
+                        Is friend
                     </div>
                 </div>
                 <div class="mb-2"></div>
@@ -1678,7 +1678,7 @@ export default {
                     //console.log("Response status: " + response.status)
                     //response.data.getInfoPostResponse.forEach(p => console.log("Updated at: " + p.updatedAt))
                     if (response.status === 200) {
-                        this.toast.success("Xóa bài viết thành công!", 1500);
+                        this.toast.success("Delete post successfully!", 1500);
                         if (this.showPopupVisible) {
                             this.showPopupVisible = false;
                         }

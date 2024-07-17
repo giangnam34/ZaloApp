@@ -3,7 +3,7 @@
         <div class="relative">
             <div id="search-content">
                 <font-awesome-icon icon="fa-solid fa-magnifying-glass" />
-                <input type="text" id="contact-input-search" placeholder="Tìm kiếm">
+                <input type="text" id="contact-input-search" placeholder="Search...">
                 <div title="Thêm bạn" class="cursor-pointer" @click="showFindFriendDialog">
                     <font-awesome-icon icon="fa-solid fa-user-plus" />
                 </div>
@@ -12,10 +12,10 @@
                 </div>
             </div>
             <div id="category-message">
-                <div id="all-message">Tất cả</div>
-                <div id="unread-message">Chưa đọc</div>
+                <div id="all-message">All</div>
+                <div id="unread-message">Unread</div>
                 <div id="category">
-                    Phân loại
+                    Filter
                     <font-awesome-icon icon="fa-solid fa-caret-down" style="color: #445574;" />
                 </div>
                 <div id="more">
@@ -47,7 +47,7 @@
         @click:outside="closeFindFriendDialog">
         <v-card class="dialog-component">
             <v-card-title class="dialog-title">
-                <h2 class="title">Thêm bạn
+                <h2 class="title">Add new friend
                     <div class="icon-close" @click="closeFindFriendDialog"><font-awesome-icon icon="fa-solid fa-x" />
                     </div>
                 </h2>
@@ -57,7 +57,7 @@
                 <div class="pt-1 pl-4 pr-4 pb-2">
                     <input type="text" v-model="searchPhoneNumber" placeholder="Số điện thoại"
                         title="Vui lòng nhập số điện thoại" class="search-input" />
-                    <div class="mt-4"><span>Có thể bạn quen</span></div>
+                    <div class="mt-4"><span>You may know</span></div>
                     <div class="friend-list-container">
                         <div v-for="friend in friends" v-bind:key="friend.phoneNumber" class="position-relative">
                             <div class="friend-info friend-container">
@@ -70,7 +70,7 @@
                                     <span>{{ friend.name }}</span>
                                 </div>
                                 <div class="action" @click="test2">
-                                    <button class="add-friend-button">Thêm bạn</button>
+                                    <button class="add-friend-button">Add new friend</button>
                                 </div>
                             </div>
                         </div>
@@ -79,11 +79,11 @@
                 <div class="profile-action">
                     <div
                         class="cancel-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mx-4 w-1/2">
-                        Hủy
+                        Cancel
                     </div>
                     <div
                         class="search-button text-center cursor-pointer bg-blue-500 text-white rounded-lg h-10 mx-4 w-1/2">
-                        Tìm kiếm
+                        Search
                     </div>
                 </div>
                 <div class="mb-2"></div>
@@ -94,7 +94,7 @@
         @click:outside="closeUserInfoDialog">
         <v-card class="dialog-component-user">
             <v-card-title class="dialog-title-user">
-                <h2 class="title-user">Thông tin tài khoản
+                <h2 class="title-user">Info account
                     <div class="icon-close-user" @click="closeUserInfoDialog"><font-awesome-icon icon="fa-solid fa-x" />
                     </div>
                 </h2>
@@ -119,20 +119,20 @@
                 <hr style="border: none; border-bottom: 1px solid #ccc;">
                 <div class="profile-information-user">
                     <div class="profile-header-user">
-                        <strong>Thông tin cá nhân</strong>
+                        <strong>Your info</strong>
                     </div>
                     <div>
                         <div class="user-profile-details-user">
                             <div class="user-profile-item-user">
-                                <span class="title-user">Điện thoại</span>
+                                <span class="title-user">Phone number</span>
                                 <span class="content-user">{{ user.phoneNumber }}</span>
                             </div>
                             <div class="user-profile-item-user">
-                                <span class="title-user">Giới tính</span>
+                                <span class="title-user">Gender</span>
                                 <span class="content-user">{{ user.sex === 'Male' ? 'Nam' : 'Nữ' }}</span>
                             </div>
                             <div class="user-profile-item-user">
-                                <span class="title-user">Ngày sinh</span>
+                                <span class="title-user">Birthday</span>
                                 <span class="content-user">{{ displayedDate }}</span>
                             </div>
                         </div>
@@ -143,11 +143,11 @@
                 <div class="profile-action-user">
                     <div
                         class="block-button text-center cursor-pointer bg-gray-400 text-black rounded-lg h-10 mr-2 w-1/2">
-                        Chặn
+                        Block
                     </div>
                     <div
                         class="add-friend-button text-center cursor-pointer bg-blue-500 text-white rounded-lg h-10 ml-2 w-1/2">
-                        Kết bạn
+                        Send invite friend
                     </div>
                 </div>
                 <div class="mb-2"></div>

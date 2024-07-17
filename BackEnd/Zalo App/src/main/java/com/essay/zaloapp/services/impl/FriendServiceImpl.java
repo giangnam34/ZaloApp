@@ -1,7 +1,6 @@
 package com.essay.zaloapp.services.impl;
 
 import com.essay.zaloapp.domain.enums.FriendStatus;
-import com.essay.zaloapp.domain.enums.ResourceType;
 import com.essay.zaloapp.domain.enums.TypeNotification;
 import com.essay.zaloapp.domain.models.*;
 import com.essay.zaloapp.domain.models.Composite.FriendsId;
@@ -522,6 +521,20 @@ public class FriendServiceImpl implements FriendService {
                         }
                     }
                     unFriendUser(userId,friendRequest);
+                    Long groupChatId = null;
+
+                    for (Long id : groupChatIds) {
+                        List<GroupChatUser> check = groupChatUserRepository.findAllByGroupId(id);
+                        if (check.size() == 2) {
+                            groupChatId = id;
+                            break;
+                        }
+                    }
+                    GroupChat groupChat = groupChatRepository.findById(groupChatId).get();
+                    List<GroupChatUser> groupChatUsers = groupChatUserRepository.findAllByGroupId(groupChatId);
+                    for (GroupChatUser groupChatUser : groupChatUsers) {
+                        chatMessageService.notifyToUser(userRepository.findByPhoneNumber(groupChatUser.getId().getPhoneNumberUser()).getId(), ChatNotification.builder().roomId(groupChat.getId()).typeNotification(TypeNotification.UNBLOCK).message(null).build());
+                    }
                     return ResponseEntity.ok("Đã bỏ chặn người dùng này thành công!!!");
                 } else {
                     return ResponseEntity.badRequest().body("Người dùng này không bị chặn bởi bạn!");
@@ -532,6 +545,17 @@ public class FriendServiceImpl implements FriendService {
         } catch (Exception e) {
             throw new Exception("Có lỗi xảy ra. Vui lòng thử lại!!!");
         }
+    }
+
+    @Override
+    public boolean isBlockUser(Long userId1, Long userId2) {
+        if (friendsRepository.existsFriendsByFriendsId(new FriendsId(Math.min(userId1, userId2), Math.max(userId1, userId2)))) {
+            Friends friends = friendsRepository.findByFriendsId(new FriendsId(Math.min(userId1, userId2), Math.max(userId1, userId2)));
+            if (friends.getFriendStatus() == FriendStatus.ISBlock && friends.getIsBlock() > 0)
+                return true;
+            return false;
+        }
+        return false;
     }
 
 }

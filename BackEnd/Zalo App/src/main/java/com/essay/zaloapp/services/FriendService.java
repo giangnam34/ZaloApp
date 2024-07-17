@@ -28,4 +28,6 @@ public interface FriendService {
     ResponseEntity<?> listAllFriendIsBlockByUser(Long userId) throws Exception;
 
     ResponseEntity<?> unBlockFriendUser(Long userId, FriendRequest friendRequest) throws Exception;
+
+    boolean isBlockUser(Long userId1, Long userId2);
 }

@@ -2,7 +2,7 @@
     <v-dialog class="dialog-container" v-model="dialogVisible" max-width="352px" @click:outside="closeDialog">
         <v-card class="dialog-component">
             <v-card-title class="dialog-title">
-                <h2 class="title">Thông tin tài khoản
+                <h2 class="title">Info account
                     <div class="icon-close" @click="closeDialog"><font-awesome-icon icon="fa-solid fa-x" /></div>
                 </h2>
             </v-card-title>
@@ -35,20 +35,20 @@
                 <hr style="border: none; border-bottom: 1px solid #ccc;">
                 <div class="profile-information">
                     <div class="profile-header">
-                        <strong>Thông tin cá nhân</strong>
+                        <strong>Info account</strong>
                     </div>
                     <div>
                         <div class="user-profile-details">
                             <div class="user-profile-item">
-                                <span class="title">Điện thoại</span>
+                                <span class="title">Phone number</span>
                                 <span class="content">{{ user.phoneNumber }}</span>
                             </div>
                             <div class="user-profile-item">
-                                <span class="title">Giới tính</span>
+                                <span class="title">Gender</span>
                                 <span class="content">{{ user.sex === 'Male' ? 'Nam' : 'Nữ' }}</span>
                             </div>
                             <div class="user-profile-item">
-                                <span class="title">Ngày sinh</span>
+                                <span class="title">Birthday</span>
                                 <span class="content">{{ displayedDate }}</span>
                             </div>
                         </div>
@@ -58,7 +58,7 @@
                 <div class="profile-action">
                     <div class="update-button" @click="openUpdateDialog">
                         <font-awesome-icon icon="fa-solid fa-pen-to-square" />
-                        <span>Cập nhật</span>
+                        <span>Update</span>
                     </div>
                 </div>
             </v-card-text>
@@ -71,15 +71,15 @@
                     <div @click="closeUpdateDialog" style="cursor: pointer; margin-right: 10px"><font-awesome-icon
                             icon="fa-solid fa-x" />
                     </div>
-                    <h2>Cập nhật thông tin tài khoản</h2>
+                    <h2>Update info account</h2>
                 </div>
             </v-card-title>
             <v-card-text>
                 <v-form @submit.prevent="submitUpdateForm">
-                    <v-text-field label="Họ và tên" v-model="updatedFullName"></v-text-field>
+                    <v-text-field label="Full name" v-model="updatedFullName"></v-text-field>
                     <v-row>
                         <v-col>
-                            <v-text-field v-model="updatedGender" label="Chọn giới tính" readonly
+                            <v-text-field v-model="updatedGender" label="Gender" readonly
                                 @click="toggleGenderMenu"></v-text-field>
                             <v-menu v-model="genderMenu" :close-on-content-click="false" transition="scale-transition"
                                 :style="{ left: popoverLeft, top: popoverTop }">
@@ -92,10 +92,10 @@
                             </v-menu>
                         </v-col>
                     </v-row>
-                    <v-text-field label="Ngày sinh" v-model="updatedBirthday" type="date"
+                    <v-text-field label="Birthday" v-model="updatedBirthday" type="date"
                         format="yyyy-MM-dd"></v-text-field>
 
-                    <v-btn type="submit" @click="updateUserInfo">Lưu</v-btn>
+                    <v-btn type="submit" @click="updateUserInfo">Save</v-btn>
                 </v-form>
             </v-card-text>
         </v-card>
