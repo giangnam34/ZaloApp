@@ -59,13 +59,36 @@ export default {
     AdminPage
   },
   async mounted() {
+    document.title = "NaThApp";
     await this.checkToken();
     this.loading = false;
     console.log(this.userIsValid);
     window.addEventListener("beforeunload", this.updateUserOfflineActivity);
+    // Cập nhật tab hiện tại của người dùng : chat, danh bạ hoặc post
+    const storedPage = localStorage.getItem('chosenPage');
+    const pageAccessedByReload = (
+      (window.performance.navigation && window.performance.navigation.type === 1) ||
+      window.performance
+        .getEntriesByType('navigation')
+        .map((nav) => nav.type)
+        .includes('reload')
+    );
+    if (storedPage) {
+      if (pageAccessedByReload) {
+        this.chosenPage = parseInt(storedPage);
+      } else {
+        this.chosenPage = 1;
+        this.resetChosenPage();
+      }
+    }
   },
   beforeUnmount() {
-    //window.removeEventListener('beforeunload', this.updateUserOfflineActivity);
+    window.removeEventListener('beforeunload', this.updateUserOfflineActivity);
+  },
+  watch: {
+    chosenPage(newPage) {
+      localStorage.setItem('chosenPage', newPage);
+    }
   },
   methods: {
     updateJWT(userData) {
@@ -175,15 +198,18 @@ export default {
 
     },
 
-    async updateUserOfflineActivity(){
+    async updateUserOfflineActivity() {
       const responseUser = await axios.get(`users/update-user-offline-activity/${this.currentUserID}`, {
-              headers: {
-                'Authorization': localStorage.getItem("token")
-              }
-            });
+        headers: {
+          'Authorization': localStorage.getItem("token")
+        }
+      });
       console.log(responseUser.status);
+    },
+    resetChosenPage() {
+      localStorage.setItem('chosenPage', 1);
     }
-  },
+  }
 }
 </script>
 

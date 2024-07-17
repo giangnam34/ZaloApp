@@ -67,12 +67,27 @@ export default {
   },
   emits: ['userLoggedIn'],
   created() {
-    // Lấy user từ localStorage
-    const userString = localStorage.getItem('user');
+    try {
+      // Lấy user từ localStorage
+      const userString = localStorage.getItem('user');
 
-    // Chuyển đổi chuỗi JSON thành đối tượng JavaScript
-    if (userString) {
-      this.user = JSON.parse(userString);
+      const chosenPage = localStorage.getItem('chosenPage');
+      const pageAccessedByReload = (
+        (window.performance.navigation && window.performance.navigation.type === 1) ||
+        window.performance
+          .getEntriesByType('navigation')
+          .map((nav) => nav.type)
+          .includes('reload')
+      );
+      if (chosenPage && pageAccessedByReload)
+        this.index = parseInt(chosenPage);
+
+      // Chuyển đổi chuỗi JSON thành đối tượng JavaScript
+      if (userString) {
+        this.user = JSON.parse(userString);
+      }
+    } catch (exception) {
+      console.log("Error in created ", exception);
     }
   },
   // watch: {

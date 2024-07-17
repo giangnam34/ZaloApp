@@ -14,4 +14,5 @@ public class UserOfRoom {
     private String username;
     private String avatar;
     private StatusOfUser status;
+    private String phoneNumber;
 }

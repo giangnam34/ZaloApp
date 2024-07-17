@@ -195,6 +195,43 @@ public class FriendServiceImpl implements FriendService {
                 friends.setFriendStatus(FriendStatus.IsUnFriend);
                 friends.setIsDelete(Objects.equals(userId, user1.getId()) ? 1L : 2L);
                 friendsRepository.save(friends);
+
+                User user = userRepository.findById(userId);
+                List<GroupChatUser> groupChatUserList1 = groupChatUserRepository.findByIdPhoneNumberUser(user.getPhoneNumber());
+                List<GroupChatUser> groupChatUserList2 = groupChatUserRepository.findByIdPhoneNumberUser(user2.getPhoneNumber());
+
+                List<Long> groupChatIds = new ArrayList<>();
+
+                for (GroupChatUser groupChatUser1 : groupChatUserList1) {
+                    for (GroupChatUser groupChatUser2 : groupChatUserList2) {
+                        if (groupChatUser1.getId().getGroupId() == groupChatUser2.getId().getGroupId()) {
+                            groupChatIds.add(groupChatUser1.getId().getGroupId());
+                        }
+                    }
+                }
+
+                Long groupChatId = null;
+
+                for (Long id : groupChatIds) {
+                    List<GroupChatUser> check = groupChatUserRepository.findAllByGroupId(id);
+                    if (check.size() == 2) {
+                        groupChatId = id;
+                        break;
+                    }
+                }
+
+                MessageChat messageChat = new MessageChat();
+                GroupChat groupChat = groupChatRepository.findById(groupChatId).get();
+
+                messageChat.setUser(user);
+                messageChat.setSeen(true);
+                messageChat.setGroupChat(groupChat);
+                messageChat.setIsSystem(true);
+                messageChat.setContent("Không thể tiếp tục gửi tin nhắn do hai người chưa là bạn bè");
+                messageChat.setSendAt(new Date(new Date().getTime()));
+                messageChat.setUpdatedAt(new Date(new Date().getTime()));
+                messageChatRepository.save(messageChat);
+
                 return ResponseEntity.ok("Hủy kết bạn thành công!");
             } else {
                 String message = "";
@@ -232,6 +269,8 @@ public class FriendServiceImpl implements FriendService {
                 Friends friends = friendsRepository.findByFriendsId(new FriendsId(user1.getId(), user2.getId()));
                 if (friends.getFriendStatus().equals(FriendStatus.ISBlock) && ((friends.getIsBlock() == 1 && Objects.equals(user2.getId(), userId)) || (friends.getIsBlock() == 2 && Objects.equals(user1.getId(), userId)))) {
                     return ResponseEntity.badRequest().body("Người dùng đã block bạn từ trước!!!");
+                } else if (friends.getFriendStatus().equals(FriendStatus.ISBlock) && ((friends.getIsBlock() == 1 && Objects.equals(user1.getId(), userId)) || (friends.getIsBlock() == 2 && Objects.equals(user2.getId(), userId)))) {
+                    return ResponseEntity.badRequest().body("Bạn đã block người dùng từ trước!!!");
                 }
                 friends.setFriendStatus(FriendStatus.ISBlock);
                 friends.setIsBlock(Objects.equals(user1.getId(), userId) ? 1L : 2L);
@@ -272,6 +311,10 @@ public class FriendServiceImpl implements FriendService {
                 messageChat.setSendAt(new Date(new Date().getTime()));
                 messageChat.setUpdatedAt(new Date(new Date().getTime()));
                 messageChatRepository.save(messageChat);
+                List<GroupChatUser> groupChatUsers = groupChatUserRepository.findAllByGroupId(groupChatId);
+                for (GroupChatUser groupChatUser : groupChatUsers) {
+                    chatMessageService.notifyToUser(userRepository.findByPhoneNumber(groupChatUser.getId().getPhoneNumberUser()).getId(), ChatNotification.builder().roomId(messageChat.getGroupChat().getId()).typeNotification(TypeNotification.BLOCK).message(chatMessageService.getAMessageToSend(messageChat).getChatMessageResponse()).build());
+                }
                 return ResponseEntity.ok("Chặn người dùng này thành công!!!");
             }
             Friends friends = new Friends(new FriendsId(user1.getId(), user2.getId()), null, Objects.equals(user1.getId(), userId) ? 1L : 2L, 0L, user2.getFullName(), user1.getFullName(), null, FriendStatus.ISBlock);
@@ -315,9 +358,7 @@ public class FriendServiceImpl implements FriendService {
 
             List<GroupChatUser> groupChatUsers = groupChatUserRepository.findAllByGroupId(groupChatId);
             for (GroupChatUser groupChatUser : groupChatUsers) {
-                if (!groupChatUser.getId().getPhoneNumberUser().equals(user.getPhoneNumber())) {
-                    chatMessageService.notifyToUser(userRepository.findByPhoneNumber(groupChatUser.getId().getPhoneNumberUser()).getId(), ChatNotification.builder().roomId(groupChatId).typeNotification(TypeNotification.UPDATE).message(response).build());
-                }
+                chatMessageService.notifyToUser(userRepository.findByPhoneNumber(groupChatUser.getId().getPhoneNumberUser()).getId(), ChatNotification.builder().roomId(messageChat.getGroupChat().getId()).typeNotification(TypeNotification.BLOCK).message(chatMessageService.getAMessageToSend(messageChat).getChatMessageResponse()).build());
             }
 
             return ResponseEntity.ok("Chặn người dùng này thành công!!!");
@@ -476,12 +517,11 @@ public class FriendServiceImpl implements FriendService {
                         List<MessageChat> messages = messageChatRepository.findAllByGroupIdNoPagination(groupId);
                         for (MessageChat message : messages) {
                             if (message.getIsSystem() && message.getContent().contains("Không thể tiếp tục gửi tin nhắn do đã bị chặn từ người dùng")) {
-                                message.setDeleted(true);
-                                messageChatRepository.save(message);
+                                messageChatRepository.delete(message);
                             }
                         }
                     }
-
+                    unFriendUser(userId,friendRequest);
                     return ResponseEntity.ok("Đã bỏ chặn người dùng này thành công!!!");
                 } else {
                     return ResponseEntity.badRequest().body("Người dùng này không bị chặn bởi bạn!");

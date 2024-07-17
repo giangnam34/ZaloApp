@@ -1,5 +1,6 @@
 package com.essay.zaloapp.services;
 
+import com.essay.zaloapp.domain.models.MessageChat;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewChatMessageRequest;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.AddNewRoomRequest;
 import com.essay.zaloapp.domain.payload.request.ChatMessage.SendNotificationRequest;
@@ -31,6 +32,8 @@ public interface ChatMessageService {
     ChatMessageServiceImpl.GetMessages createChatMessage(Long userId, AddNewChatMessageRequest addNewChatMessageRequest);
 
     ChatMessageServiceImpl.GetAMessage updateChatMessage(Long userId, UpdateChatMessageRequest updateChatMessageRequest);
+
+    ChatMessageServiceImpl.GetAMessage getAMessageToSend(MessageChat messageChat);
 
     String deleteMessage(Long userId, Long messageId);
 

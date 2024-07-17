@@ -277,11 +277,16 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                     calendar.setTime(lastMessage.getSendAt());
                     calendar.add(Calendar.HOUR_OF_DAY, -7);
                     adjustedDate = calendar.getTime();
-                    lastMessageResponse.setTimestamp(extractTime(adjustedDate));
+                    lastMessageResponse.setTimestamp(extractTime(lastMessage.getSendAt()));
                     lastMessageResponse.setSaved(lastMessage.getSaved());
                     lastMessageResponse.setDistributed(true);
                     lastMessageResponse.setSeen(lastMessage.getSeen());
                     lastMessageResponse.setIsNew(true);
+                    if (lastMessage.getDeleted()){
+                        lastMessageResponse.setContent("⛔ This message was deleted");
+                    } else if ( ( lastMessage.getContent().isEmpty() || lastMessage.getContent() == null) && lastMessage.getFiles() != null && !lastMessage.getFiles().isEmpty()){
+                        lastMessageResponse.setContent("\uD83D\uDCF9 Media content");
+                    }
                     response.setLastMessage(lastMessageResponse);
                 } else {
                     response.setLastMessage(null);
@@ -300,6 +305,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                     userOfRoom.set_id(userFound.getId() + "");
                     userOfRoom.setUsername(userFound.getFullName());
                     userOfRoom.setAvatar("http://localhost:8181/media/getImage/" + userFound.getImageAvatarUrl());
+                    userOfRoom.setPhoneNumber(userFound.getPhoneNumber());
 
                     StatusOfUser statusOfUser = new StatusOfUser();
                     statusOfUser.setState(String.valueOf(userFound.getStatus()).toLowerCase());
@@ -484,6 +490,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             if (!existingChat) {
                 groupChat = createNewGroupChat(addNewRoomRequest);
             } else {
+
                 return "Nhóm đã tồn tại!";
             }
 
@@ -511,7 +518,32 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                                 sender.setIsDeleted(false);
                                 GroupChat groupChatSender = groupChatRepository.findById(sender.getId().getGroupId()).get();
                                 groupChatSender.setDeletedCount(groupChatSender.getDeletedCount() - 1);
+
+
+
                                 groupChatRepository.save(groupChatSender);
+                            }
+
+                            List<Long> groupChatIds = new ArrayList<>();
+
+                            for (GroupChatUser groupChatUser1 : testSender) {
+                                for (GroupChatUser groupChatUser2 : testReceiver) {
+                                    if (groupChatUser1.getId().getGroupId().equals(groupChatUser2.getId().getGroupId())) {
+                                        List<GroupChatUser> groupChatUsersForTest = groupChatUserRepository.findAllByGroupId(groupChatUser1.getId().getGroupId());
+                                        if (groupChatUsersForTest.size() == 2) {
+                                            groupChatIds.add(groupChatUser1.getId().getGroupId());
+                                        }
+                                    }
+                                }
+                            }
+
+                            for (Long groupId : groupChatIds) {
+                                List<MessageChat> messages = messageChatRepository.findAllByGroupIdNoPagination(groupId);
+                                for (MessageChat message : messages) {
+                                    if (message.getIsSystem() && message.getContent().contains("Không thể tiếp tục gửi tin nhắn do hai người chưa là bạn bè")) {
+                                        messageChatRepository.delete(message);
+                                    }
+                                }
                             }
                             return "Tạo cuộc hội thoại thành công!";
                         }
@@ -710,7 +742,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 return new GetMessages("Không thể gửi tin nhắn không có nội dung hoặc file!", chatMessageResponses);
             }
             if (groupChatUsers.isEmpty()) {
-
                 return new GetMessages("Mã phòng không tồn tại!", chatMessageResponses);
             }
             Boolean check = false;
@@ -976,6 +1007,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             if (messageChatOptional.isEmpty()) {
                 return new GetAMessage("Tin nhắn không tồn tại!", new ChatMessageResponse());
             }
+            if (messageChatOptional.get().getGroupChat().getId() != updateChatMessageRequest.getRoomId()){
+                return new GetAMessage("Thông tin tin nhắn không chính xác", new ChatMessageResponse());
+            }
             MessageChat messageChat = messageChatOptional.get();
             if (user.getId() != messageChat.getUser().getId()) {
                 if (updateChatMessageRequest.getReactions() != null) {
@@ -1007,7 +1041,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                     List<GroupChatUser> groupChatUsers = groupChatUserRepository.findAllByGroupId(updateChatMessageRequest.getRoomId());
                     for (GroupChatUser groupChatUser : groupChatUsers) {
                         if (!groupChatUser.getId().getPhoneNumberUser().equals(user.getPhoneNumber())) {
+                            // Thông báo tới người được nhận tin nhắn
                             notifyToUser(userRepository.findByPhoneNumber(groupChatUser.getId().getPhoneNumberUser()).getId(), ChatNotification.builder().roomId(updateChatMessageRequest.getRoomId()).typeNotification(TypeNotification.UPDATE).message(getAMessageToSend(messageChat).getChatMessageResponse()).build());
+                            notifyToUser(userId, ChatNotification.builder().roomId(updateChatMessageRequest.getRoomId()).typeNotification(TypeNotification.UPDATE).message(getAMessageToSend(messageChat).getChatMessageResponse()).build());
                         }
                     }
                     return getAMessageToSend(messageChat);
@@ -1089,6 +1125,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             for (GroupChatUser groupChatUser : groupChatUsers) {
                 if (!groupChatUser.getId().getPhoneNumberUser().equals(user.getPhoneNumber())) {
                     notifyToUser(userRepository.findByPhoneNumber(groupChatUser.getId().getPhoneNumberUser()).getId(), ChatNotification.builder().roomId(updateChatMessageRequest.getRoomId()).typeNotification(TypeNotification.UPDATE).message(getAMessageToSend(messageChat).getChatMessageResponse()).build());
+                    notifyToUser(userId, ChatNotification.builder().roomId(updateChatMessageRequest.getRoomId()).typeNotification(TypeNotification.UPDATE).message(getAMessageToSend(messageChat).getChatMessageResponse()).build());
                 }
             }
             return getAMessageToSend(messageChat);
@@ -1098,7 +1135,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         }
     }
 
-    private GetAMessage getAMessageToSend(MessageChat messageChat) {
+    @Override
+    public GetAMessage getAMessageToSend(MessageChat messageChat) {
         MessageChat updatedMessage = messageChatRepository.save(messageChat);
         ChatMessageResponse response = new ChatMessageResponse();
         response.set_id(updatedMessage.getId() + "");
@@ -1120,11 +1158,14 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         response.setDisableReactions(updatedMessage.getDisableReactions());
 
         MessageChat messageChatForGetReactions = messageChatRepository.findByIdWithReactions(updatedMessage.getId());
-        Map<String, List<String>> reactions = messageChatForGetReactions.getReactions().stream()
-                .collect(Collectors.groupingBy(
-                        Reaction::getEmoji,
-                        Collectors.mapping(reaction -> reaction.getUser().getId().toString(), Collectors.toList())
-                ));
+        Map<String, List<String>> reactions = new HashMap<>();
+        if (messageChatForGetReactions.getReactions() != null){
+            messageChatForGetReactions.getReactions().stream()
+                    .collect(Collectors.groupingBy(
+                            Reaction::getEmoji,
+                            Collectors.mapping(reaction -> reaction.getUser().getId().toString(), Collectors.toList())
+                    ));
+        }
         response.setReactions(reactions);
         if (updatedMessage.getReplyMessage() == null) {
             response.setReplyMessage(null);
@@ -1134,7 +1175,34 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             replyMessageResponse.setContent(messageChatForReplyMessage.getContent());
             replyMessageResponse.setSenderId(messageChatForReplyMessage.getUser().getId() + "");
             List<FileData> files = new ArrayList<>();
-            for (Resource resource : messageChatForReplyMessage.getFiles()) {
+            if (messageChatForReplyMessage.getFiles() != null) {
+                for (Resource resource : messageChatForReplyMessage.getFiles()) {
+                    FileData fileData = new FileData();
+                    fileData.setProgress(Long.valueOf(100));
+                    fileData.setAudio(false);
+                    fileData.setSize(Long.valueOf(2200));
+                    fileData.setDuration(Float.valueOf(0));
+                    fileData.setUrl("http://localhost:8181/media/" + (resource.getResourceType().equals(ResourceType.Video) ? "getVideo/" : "getImage/") + resource.getResourceValue());
+                    String[] parts = resource.getResourceValue().split("\\.(?=[^\\.]+$)");
+                    String namePart = "";
+                    String extensionPart = "";
+                    if (parts.length == 2) {
+                        namePart += parts[0];
+                        extensionPart += parts[1];
+                    }
+                    fileData.setName(namePart);
+                    fileData.setType(extensionPart);
+                    fileData.setPreview("data" + resource.getResourceType() + "/" + extensionPart + ";base64");
+                    files.add(fileData);
+                }
+            }
+            replyMessageResponse.setFiles(files);
+            response.setReplyMessage(replyMessageResponse);
+        }
+
+        List<FileData> files = new ArrayList<>();
+        if(updatedMessage.getFiles() != null) {
+            for (Resource resource : updatedMessage.getFiles()) {
                 FileData fileData = new FileData();
                 fileData.setProgress(Long.valueOf(100));
                 fileData.setAudio(false);
@@ -1150,32 +1218,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 }
                 fileData.setName(namePart);
                 fileData.setType(extensionPart);
-                fileData.setPreview("data" + resource.getResourceType() + "/" + extensionPart + ";base64");
+                fileData.setPreview("data:" + resource.getResourceType() + "/" + extensionPart + ";base64");
                 files.add(fileData);
             }
-            replyMessageResponse.setFiles(files);
-            response.setReplyMessage(replyMessageResponse);
-        }
-
-        List<FileData> files = new ArrayList<>();
-        for (Resource resource : updatedMessage.getFiles()) {
-            FileData fileData = new FileData();
-            fileData.setProgress(Long.valueOf(100));
-            fileData.setAudio(false);
-            fileData.setSize(Long.valueOf(2200));
-            fileData.setDuration(Float.valueOf(0));
-            fileData.setUrl("http://localhost:8181/media/" + (resource.getResourceType().equals(ResourceType.Video) ? "getVideo/" : "getImage/") + resource.getResourceValue());
-            String[] parts = resource.getResourceValue().split("\\.(?=[^\\.]+$)");
-            String namePart = "";
-            String extensionPart = "";
-            if (parts.length == 2) {
-                namePart += parts[0];
-                extensionPart += parts[1];
-            }
-            fileData.setName(namePart);
-            fileData.setType(extensionPart);
-            fileData.setPreview("data:" + resource.getResourceType() + "/" + extensionPart + ";base64");
-            files.add(fileData);
         }
         response.setFiles(files);
 
@@ -1198,6 +1243,11 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             }
         }
         response.setTaggedUser(taggedUsers);
+        if (updatedMessage.getDeleted()){
+            response.setContent("⛔ This message was deleted");
+        } else if ( ( updatedMessage.getContent().isEmpty() || updatedMessage.getContent() == null) && updatedMessage.getFiles() != null && !updatedMessage.getFiles().isEmpty()){
+            response.setContent("\uD83D\uDCF9 Media content");
+        }
         return new GetAMessage("Cập nhật tin nhắn thành công!", response);
     }
 
@@ -1215,6 +1265,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             for (GroupChatUser groupChatUser : groupChatUsers) {
                 if (!groupChatUser.getId().getPhoneNumberUser().equals(messageChat.getUser().getPhoneNumber())) {
                     notifyToUser(userRepository.findByPhoneNumber(groupChatUser.getId().getPhoneNumberUser()).getId(), ChatNotification.builder().roomId(messageChat.getGroupChat().getId()).typeNotification(TypeNotification.UPDATE).message(getAMessageToSend(messageChat).getChatMessageResponse()).build());
+                    notifyToUser(userId, ChatNotification.builder().roomId(messageChat.getGroupChat().getId()).typeNotification(TypeNotification.UPDATE).message(getAMessageToSend(messageChat).getChatMessageResponse()).build());
                 }
             }
             return "Xóa tin nhắn thành công!";
